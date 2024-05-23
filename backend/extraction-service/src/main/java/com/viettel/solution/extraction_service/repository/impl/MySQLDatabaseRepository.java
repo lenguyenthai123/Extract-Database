@@ -37,7 +37,6 @@ public class MySQLDatabaseRepository implements DatabaseRepository {
         }
     }
 
-
     @Override
     public DatabaseMetaData getDatabaseMetaData(Connection connection) {
         try {

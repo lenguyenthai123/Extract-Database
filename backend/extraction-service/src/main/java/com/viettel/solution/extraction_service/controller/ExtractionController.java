@@ -1,7 +1,6 @@
 package com.viettel.solution.extraction_service.controller;
 
 
-import com.viettel.solution.extraction_service.entity.DataEntity;
 import com.viettel.solution.extraction_service.entity.DatabaseConfigEntity;
 import com.viettel.solution.extraction_service.entity.DatabaseEntity;
 import com.viettel.solution.extraction_service.service.ExtractionService;

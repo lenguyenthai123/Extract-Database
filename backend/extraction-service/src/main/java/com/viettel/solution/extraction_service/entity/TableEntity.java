@@ -9,10 +9,7 @@ import org.springframework.stereotype.Component;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 @Data               // Bao gồm @Getter, @Setter, @ToString, @EqualsAndHashCode, và @RequiredArgsConstructor
@@ -23,7 +20,7 @@ public class TableEntity {
 
     private String tableName;
 
-    private List<Map<String, String>> columns;
+    private List<ColumnEntity> columns;
 
     private List<Map<String, Object>> data;
 
@@ -36,14 +33,30 @@ public class TableEntity {
         TableEntity tableEntity = new TableEntity();
         tableEntity.tableName = tableName;
 
-        tableEntity.columns = new ArrayList<>();
         ResultSet columnsResultSet = metaData.getColumns(null, null, tableName, "%");
 
+        // Lấy thông tin các khóa chính
+        Set<String> primaryKeys = new HashSet<>();
+        ResultSet primaryKeysResultSet = metaData.getPrimaryKeys(null, null, tableName);
+        while (primaryKeysResultSet.next()) {
+            primaryKeys.add(primaryKeysResultSet.getString("COLUMN_NAME"));
+        }
+
         while (columnsResultSet.next()) {
-            Map<String, String> column = new HashMap<>();
-            column.put("columnName", columnsResultSet.getString("COLUMN_NAME"));
-            column.put("dataType", columnsResultSet.getString("TYPE_NAME"));
-            column.put("columnSize", columnsResultSet.getString("COLUMN_SIZE"));
+            String columnName = columnsResultSet.getString("COLUMN_NAME");
+            String dataType = columnsResultSet.getString("TYPE_NAME");
+            Integer columnSize=columnsResultSet.getInt("COLUMN_SIZE");
+
+            // Kiểm tra cột có phải là khóa chính không
+            Boolean isPrimaryKey = primaryKeys.contains(columnName);
+
+            ColumnEntity column = ColumnEntity.builder()
+                    .columnName(columnName)
+                    .dataType(dataType)
+                    .columnSize(columnSize)
+                    .isPrimaryKey(isPrimaryKey)
+                    .build();
+
             tableEntity.columns.add(column);
         }
 
