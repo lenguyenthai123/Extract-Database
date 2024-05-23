@@ -1,0 +1,64 @@
+<mxfile host="app.diagrams.net" modified="2024-05-23T08:09:56.888Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="u20szqy415fLvoJ7esTk" version="24.4.0" type="device">
+  <diagram name="Page-1" id="YSPt2d9Ksu2BUQ8WZU3d">
+    <mxGraphModel dx="1006" dy="539" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="G5y8i0_Qac83Vwd3yza6-1" value="Web browser" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="250" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="G5y8i0_Qac83Vwd3yza6-2" value="API Gateway" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="330" y="250" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="G5y8i0_Qac83Vwd3yza6-3" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="G5y8i0_Qac83Vwd3yza6-1" target="G5y8i0_Qac83Vwd3yza6-2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="390" y="310" as="sourcePoint" />
+            <mxPoint x="440" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="G5y8i0_Qac83Vwd3yza6-4" value="Database Service" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="530" y="100" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="G5y8i0_Qac83Vwd3yza6-5" value="CRUD Service" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="530" y="250" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="G5y8i0_Qac83Vwd3yza6-6" value="Reporting Service" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="530" y="400" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="G5y8i0_Qac83Vwd3yza6-7" value="Database for log" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="210" width="130" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="G5y8i0_Qac83Vwd3yza6-9" value="Broker of Kafka" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="880" y="100" width="140" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="G5y8i0_Qac83Vwd3yza6-11" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="G5y8i0_Qac83Vwd3yza6-2" target="G5y8i0_Qac83Vwd3yza6-4">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="740" y="360" as="sourcePoint" />
+            <mxPoint x="790" y="310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="G5y8i0_Qac83Vwd3yza6-12" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="G5y8i0_Qac83Vwd3yza6-2" target="G5y8i0_Qac83Vwd3yza6-5">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="440" y="260" as="sourcePoint" />
+            <mxPoint x="560" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="G5y8i0_Qac83Vwd3yza6-13" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="G5y8i0_Qac83Vwd3yza6-2" target="G5y8i0_Qac83Vwd3yza6-6">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="450" y="270" as="sourcePoint" />
+            <mxPoint x="570" y="180" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="G5y8i0_Qac83Vwd3yza6-14" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="G5y8i0_Qac83Vwd3yza6-4">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="740" y="360" as="sourcePoint" />
+            <mxPoint x="790" y="310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="G5y8i0_Qac83Vwd3yza6-15" value="Log Moudle" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="820" y="250" width="120" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

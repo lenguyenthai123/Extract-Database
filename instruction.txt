@@ -1,0 +1,28 @@
+Việc chia nhóm service backend và frontend là một phần quan trọng trong việc tổ chức và quản lý dự án, đặc biệt khi triển khai kiến trúc microservices. Dưới đây là một hướng dẫn chi tiết về việc chia nhóm các service backend và frontend.
+
+Nhóm Service Backend
+Backend thường bao gồm nhiều microservice, mỗi service đảm nhận một chức năng cụ thể. Dưới đây là các nhóm service backend theo các chức năng đã liệt kê:
+
+1. API Gateway Service
+API Gateway Service: Quản lý các yêu cầu từ người dùng và chuyển tiếp đến các microservice khác. Có thể sử dụng các công cụ như Zuul, Spring Cloud Gateway hoặc Kong.
+2. Authentication and Authorization Service
+Auth Service: Quản lý xác thực và ủy quyền người dùng, phát hành và xác minh các token JWT hoặc OAuth2.
+3. Database Service
+Data Extraction Service: Trích xuất dữ liệu từ các cơ sở dữ liệu như MySQL, MariaDB, Oracle, và tổ chức lưu trữ dữ liệu đã trích xuất.
+4. CRUD Service
+CRUD Service: Cung cấp các API để thực hiện các thao tác CRUD trên dữ liệu đã lưu trữ.
+5. Reporting Service
+Reporting Service: Tạo các báo cáo (docx, excel, pdf) từ dữ liệu đã lưu trữ.
+6. Cache and Search Service
+Cache Service: Sử dụng Redis hoặc Memcached để cache dữ liệu nhằm cải thiện hiệu suất.
+Search Service: Tích hợp Elasticsearch để cung cấp khả năng tìm kiếm nhanh chóng.
+7. Logging and Monitoring Service
+Logging Service: Thu thập và lưu trữ logs từ tất cả các dịch vụ.
+Monitoring Service: Giám sát hiệu suất và trạng thái của các dịch vụ, sử dụng công cụ như Prometheus và Grafana.
+Nhóm Service Frontend
+Frontend sẽ bao gồm các thành phần liên quan đến giao diện người dùng và thường được triển khai như một ứng dụng web độc lập.
+
+8. Frontend Service
+Frontend Service: Ứng dụng Angular cung cấp giao diện người dùng, giao tiếp với các API từ các backend service thông qua API Gateway.
+Cấu Trúc Thư Mục Cho Monorepo
+Dưới đây là cấu trúc thư mục gợi ý cho một monorepo chứa cả backend và frontend service:
