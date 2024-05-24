@@ -1,22 +1,20 @@
 package com.viettel.solution.extraction_service.repository;
 
-import com.viettel.solution.extraction_service.entity.DatabaseConfigEntity;
-import com.viettel.solution.extraction_service.entity.DatabaseEntity;
+import com.viettel.solution.extraction_service.entity.Column;
+import com.viettel.solution.extraction_service.entity.DatabaseConfig;
+import com.viettel.solution.extraction_service.entity.DatabaseStructure;
+import com.viettel.solution.extraction_service.entity.Table;
 import com.viettel.solution.extraction_service.repository.impl.MySQLDatabaseRepository;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.util.ArrayList;
-import java.util.List;
 
 public interface DatabaseRepository {
 
-
-    public DatabaseEntity getDatabaseStructure(DatabaseConfigEntity databaseConfigEntity);
-
+    // Helper
     public DatabaseMetaData getDatabaseMetaData(Connection connection);
 
-    public Connection connect(DatabaseConfigEntity databaseConfigEntity);
+    public Connection connect(DatabaseConfig databaseConfigEntity);
 
     public void disconnect(Connection connection);
 
@@ -27,4 +25,13 @@ public interface DatabaseRepository {
         }
         return null;
     }
+    //----------------------------------------------------------------------
+
+    public DatabaseStructure getDatabaseStructure(DatabaseConfig databaseConfigEntity);
+    public Table getTableStructure(DatabaseConfig databaseConfigEntity, String tableName);
+    public Column getColumnStructure(DatabaseConfig databaseConfigEntity, String tableName, String columnName);
+
+
+
+
 }

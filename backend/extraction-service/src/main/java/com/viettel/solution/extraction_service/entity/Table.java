@@ -3,7 +3,6 @@ package com.viettel.solution.extraction_service.entity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.sql.DatabaseMetaData;
@@ -15,22 +14,22 @@ import java.util.*;
 @Data               // Bao gồm @Getter, @Setter, @ToString, @EqualsAndHashCode, và @RequiredArgsConstructor
 @AllArgsConstructor // Tạo constructor với tất cả các tham số
 @Builder
-public class TableEntity {
+public class Table {
 
 
     private String tableName;
 
-    private List<ColumnEntity> columns;
+    private List<Column> columns;
 
     private List<Map<String, Object>> data;
 
-    public TableEntity() {
+    public Table() {
         this.columns = new ArrayList<>();
         this.data = new ArrayList<>();
     }
 
-    public static TableEntity createTableEntity(DatabaseMetaData metaData, String tableName) throws SQLException {
-        TableEntity tableEntity = new TableEntity();
+    public static Table createTableEntity(DatabaseMetaData metaData, String tableName) throws SQLException {
+        Table tableEntity = new Table();
         tableEntity.tableName = tableName;
 
         ResultSet columnsResultSet = metaData.getColumns(null, null, tableName, "%");
@@ -50,7 +49,7 @@ public class TableEntity {
             // Kiểm tra cột có phải là khóa chính không
             Boolean isPrimaryKey = primaryKeys.contains(columnName);
 
-            ColumnEntity column = ColumnEntity.builder()
+            Column column = Column.builder()
                     .columnName(columnName)
                     .dataType(dataType)
                     .columnSize(columnSize)

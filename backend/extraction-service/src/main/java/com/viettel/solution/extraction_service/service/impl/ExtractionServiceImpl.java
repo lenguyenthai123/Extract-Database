@@ -1,23 +1,33 @@
 package com.viettel.solution.extraction_service.service.impl;
 
-import com.viettel.solution.extraction_service.entity.DatabaseConfigEntity;
-import com.viettel.solution.extraction_service.entity.DatabaseEntity;
+import com.viettel.solution.extraction_service.entity.Column;
+import com.viettel.solution.extraction_service.entity.DatabaseConfig;
+import com.viettel.solution.extraction_service.entity.DatabaseStructure;
+import com.viettel.solution.extraction_service.entity.Table;
 import com.viettel.solution.extraction_service.repository.DatabaseRepository;
 import com.viettel.solution.extraction_service.service.ExtractionService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Map;
 
 @Service
 public class ExtractionServiceImpl implements ExtractionService {
 
 
     @Override
-    public DatabaseEntity getDatabaseStructure(DatabaseConfigEntity databaseConfigEntity) {
+    public DatabaseStructure getDatabaseStructure(DatabaseConfig databaseConfigEntity) {
         DatabaseRepository databaseRepository = DatabaseRepository.getPrototype(databaseConfigEntity.getType());
         return databaseRepository.getDatabaseStructure(databaseConfigEntity);
+    }
+
+    @Override
+    public Table getTableStructure(DatabaseConfig databaseConfigEntity, String tableName) {
+        DatabaseRepository databaseRepository = DatabaseRepository.getPrototype(databaseConfigEntity.getType());
+        return databaseRepository.getTableStructure(databaseConfigEntity, tableName);
+    }
+
+    @Override
+    public Column getTableStructure(DatabaseConfig databaseConfigEntity, String tableName, String columnName) {
+        DatabaseRepository databaseRepository = DatabaseRepository.getPrototype(databaseConfigEntity.getType());
+        return databaseRepository.getColumnStructure(databaseConfigEntity, tableName, columnName);
     }
 
 }

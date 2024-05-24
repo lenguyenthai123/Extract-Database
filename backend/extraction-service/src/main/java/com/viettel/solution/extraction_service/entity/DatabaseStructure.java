@@ -1,11 +1,8 @@
 package com.viettel.solution.extraction_service.entity;
 
-import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.sql.DatabaseMetaData;
@@ -20,17 +17,17 @@ import java.util.Map;
 @Data               // Bao gồm @Getter, @Setter, @ToString, @EqualsAndHashCode, và @RequiredArgsConstructor
 @AllArgsConstructor // Tạo constructor với tất cả các tham số
 @Builder
-public class DatabaseEntity {
+public class DatabaseStructure {
 
-    private List<TableEntity> tables;
+    private List<Table> tables;
 
-    public DatabaseEntity() {
+    public DatabaseStructure() {
         this.tables = new ArrayList<>();
     }
 
-    static public DatabaseEntity createDatabaseEntity(DatabaseMetaData metaData) throws SQLException {
+    static public DatabaseStructure createDatabaseEntity(DatabaseMetaData metaData) throws SQLException {
 
-        DatabaseEntity databaseEntity = new DatabaseEntity();
+        DatabaseStructure databaseEntity = new DatabaseStructure();
         ResultSet tablesResultSet = metaData.getTables(null, null, "%", new String[]{"TABLE"});
 
         while (tablesResultSet.next()) {
@@ -40,7 +37,7 @@ public class DatabaseEntity {
             if (tableName.equals("sys_config")) {
                 continue;
             }
-            TableEntity tableEntity = TableEntity.createTableEntity(metaData, tableName);
+            Table tableEntity = Table.createTableEntity(metaData, tableName);
             databaseEntity.tables.add(tableEntity);
         }
         return databaseEntity;

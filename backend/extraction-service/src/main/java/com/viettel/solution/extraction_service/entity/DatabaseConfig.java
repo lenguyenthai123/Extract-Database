@@ -1,6 +1,5 @@
 package com.viettel.solution.extraction_service.entity;
 
-import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Component;
 @NoArgsConstructor  // Tạo constructor không tham số
 @AllArgsConstructor // Tạo constructor với tất cả các tham số
 @Builder            // Tạo Builder pattern
-public class DatabaseConfigEntity {
+public class DatabaseConfig {
 
     private String url;
     private String username;
