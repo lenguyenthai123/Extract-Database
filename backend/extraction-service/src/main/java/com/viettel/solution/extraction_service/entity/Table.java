@@ -21,11 +21,13 @@ public class Table {
     private List<Column> columns;
     private List<Constraint> constraints;
     private List<Index> indexs;
+    private List<Trigger> triggers;
 
     public Table() {
         this.columns = new ArrayList<>();
         this.constraints = new ArrayList<>();
         this.indexs = new ArrayList<>();
+        this.triggers = new ArrayList<>();
     }
 
 

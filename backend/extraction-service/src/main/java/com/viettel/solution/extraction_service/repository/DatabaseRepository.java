@@ -8,7 +8,6 @@ public interface DatabaseRepository {
 
     public Database getDatabase(Connection connection, String databaseName);
 
-    public Database getSQLDatabase(Connection connection, String databaseName);
 
 
 }

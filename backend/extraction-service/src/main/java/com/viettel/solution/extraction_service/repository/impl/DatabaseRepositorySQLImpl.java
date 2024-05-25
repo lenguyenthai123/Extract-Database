@@ -1,8 +1,8 @@
 package com.viettel.solution.extraction_service.repository.impl;
 
-import com.viettel.solution.extraction_service.entity.*;
+import com.viettel.solution.extraction_service.entity.Database;
+import com.viettel.solution.extraction_service.entity.Table;
 import com.viettel.solution.extraction_service.repository.DatabaseRepository;
-import com.viettel.solution.extraction_service.repository.SchemaRepository;
 import com.viettel.solution.extraction_service.repository.TableRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -10,14 +10,13 @@ import org.springframework.stereotype.Repository;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class DatabaseRepositoryImpl implements DatabaseRepository {
+public class DatabaseRepositorySQLImpl implements DatabaseRepository {
 
     @Autowired
-    private SchemaRepository schemaRepository;
+    private TableRepository tableRepository;
 
     @Override
     public Database getDatabase(Connection connection, String databaseName) {
@@ -27,19 +26,14 @@ public class DatabaseRepositoryImpl implements DatabaseRepository {
                 return null;
             } else {
 
-                Database databaseEntity = new Database();
-                databaseEntity.setName(databaseName);
-
                 // Lấy thông tin các schema
-                List<Schema> schemas = schemaRepository.getAllSchema(connection, databaseName);
-                databaseEntity.setSchemas(schemas);
+                List<Table> tables = tableRepository.getAllTable(connection, databaseName, null);
 
-                return databaseEntity;
+
+                return new Database(tables, databaseName);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-
-
 }

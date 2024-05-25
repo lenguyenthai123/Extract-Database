@@ -19,9 +19,10 @@ public class TableRepositoryImpl implements TableRepository {
 
     @Autowired
     private ConstraintRepository constraintRepository;
-
     @Autowired
     private IndexRepositoryImpl indexRepository;
+    @Autowired
+    private TriggerRepositoryImpl triggerRepository;
 
     @Override
     public Table getTable(Connection connection, String databaseName, String schemaName, String tableName) {
@@ -41,6 +42,12 @@ public class TableRepositoryImpl implements TableRepository {
             List<Index> indexs = indexRepository.getAllIndex(connection, databaseName, schemaName, tableName);
             if (indexs != null) {
                 tableEntity.setIndexs(indexs);
+            }
+
+            // Lấy trigger liên quan đến bảng này
+            List<Trigger> triggers = triggerRepository.getAllTrigger(connection, databaseName, schemaName, tableName);
+            if (triggers != null) {
+                tableEntity.setTriggers(triggers);
             }
 
             // Lấy thông tin các khóa chính của bảng để xác định cột nào là khóa chính
