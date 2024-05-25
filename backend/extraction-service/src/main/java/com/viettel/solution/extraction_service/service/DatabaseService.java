@@ -1,15 +1,14 @@
 package com.viettel.solution.extraction_service.service;
 
+import com.viettel.solution.extraction_service.dto.RequestDto;
 import com.viettel.solution.extraction_service.entity.Column;
 import com.viettel.solution.extraction_service.entity.DatabaseConfig;
 import com.viettel.solution.extraction_service.entity.DatabaseStructure;
 import com.viettel.solution.extraction_service.entity.Table;
 
-public interface ExtractionService {
+public interface DatabaseService {
 
-    public DatabaseStructure getDatabaseStructure(DatabaseConfig databaseConfigEntity);
+    public DatabaseStructure getDatabaseStructure(RequestDto requestDto);
 
-    public Table getTableStructure(DatabaseConfig databaseConfigEntity, String tableName);
-    public Column getTableStructure(DatabaseConfig databaseConfigEntity, String tableName, String columnName);
 
 }

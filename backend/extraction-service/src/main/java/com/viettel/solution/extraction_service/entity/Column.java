@@ -20,14 +20,17 @@ import java.util.Set;
 @Builder
 public class Column {
 
-    private String columnName;
+    private String name;
 
     private String dataType;
 
-    private Integer columnSize;
+    private Integer size;
 
     private boolean isPrimaryKey;
-    private boolean isForeignKey;
+    private boolean nullable;
+    private boolean autoIncrement;
+    private String defaultValue;
+    private String description;
 
 
     static public Column createColumnEntity(DatabaseMetaData metaData, String tableName, String columnNameKey) throws SQLException {
@@ -40,30 +43,28 @@ public class Column {
             primaryKeys.add(primaryKeysResultSet.getString("COLUMN_NAME"));
         }
 
-        // Lấy thông tin các khóa ngoại
-        Set<String> foreignKeys = new HashSet<>();
-        ResultSet foreignKeysResultSet = metaData.getImportedKeys(null, null, tableName);
-        while (foreignKeysResultSet.next()) {
-            foreignKeys.add(foreignKeysResultSet.getString("FKCOLUMN_NAME"));
-        }
-
 
         while (columnsResultSet.next()) {
             String columnName = columnsResultSet.getString("COLUMN_NAME");
 
             if (columnName.equals(columnNameKey)) {
-
                 String dataType = columnsResultSet.getString("TYPE_NAME");
                 Integer columnSize = columnsResultSet.getInt("COLUMN_SIZE");
-
-                // Kiểm tra cột có phải là khóa chính không
-                Boolean isPrimaryKey = primaryKeys.contains(columnName);
+                boolean isPrimaryKey = primaryKeys.contains(columnName);
+                boolean nullable = "YES".equals(columnsResultSet.getString("IS_NULLABLE"));
+                boolean autoIncrement = "YES".equals(columnsResultSet.getString("IS_AUTOINCREMENT"));
+                String defaultValue = columnsResultSet.getString("COLUMN_DEF");
+                String description = columnsResultSet.getString("REMARKS");
 
                 return Column.builder()
-                        .columnName(columnName)
+                        .name(columnName)
                         .dataType(dataType)
-                        .columnSize(columnSize)
+                        .size(columnSize)
                         .isPrimaryKey(isPrimaryKey)
+                        .nullable(nullable)
+                        .autoIncrement(autoIncrement)
+                        .defaultValue(defaultValue)
+                        .description(description)
                         .build();
             }
         }

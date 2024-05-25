@@ -25,22 +25,4 @@ public class DatabaseStructure {
         this.tables = new ArrayList<>();
     }
 
-    static public DatabaseStructure createDatabaseEntity(DatabaseMetaData metaData) throws SQLException {
-
-        DatabaseStructure databaseEntity = new DatabaseStructure();
-        ResultSet tablesResultSet = metaData.getTables(null, null, "%", new String[]{"TABLE"});
-
-        while (tablesResultSet.next()) {
-
-            Map<String, Object> table = new HashMap<>();
-            String tableName = tablesResultSet.getString("TABLE_NAME");
-            if (tableName.equals("sys_config")) {
-                continue;
-            }
-            Table tableEntity = Table.createTableEntity(metaData, tableName);
-            databaseEntity.tables.add(tableEntity);
-        }
-        return databaseEntity;
-    }
-
 }

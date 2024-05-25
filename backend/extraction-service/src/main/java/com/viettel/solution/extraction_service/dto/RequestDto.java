@@ -1,4 +1,5 @@
-package com.viettel.solution.extraction_service.entity;
+package com.viettel.solution.extraction_service.dto;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,11 +9,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Data               // Bao gồm @Getter, @Setter, @ToString, @EqualsAndHashCode, và @RequiredArgsConstructor
-@NoArgsConstructor  // Tạo constructor không tham số
 @AllArgsConstructor // Tạo constructor với tất cả các tham số
-@Builder            // Tạo Builder pattern
-public class DatabaseConfig {
+@NoArgsConstructor
+@Builder
+public class RequestDto {
 
+    private String usernameId;
     private String url;
     private String username;
     private String password;
@@ -21,8 +23,9 @@ public class DatabaseConfig {
     private String port;
     private String databaseName;
     private String schema;
-    private String driverClassName;
-    private String jdbcUrl;
-    private String connectionProperties;
-    private String usernameId;
+    private String table;
+    private String column;
+    private String constraint;
+    private String index;
+    private String view;
 }
