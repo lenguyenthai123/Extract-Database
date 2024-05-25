@@ -21,6 +21,7 @@ public class ConnectionController {
                 return ResponseEntity.badRequest().body("Connection failed");
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body("Connection failed");
         }
     }

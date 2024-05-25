@@ -25,7 +25,8 @@ public class TableServiceImpl implements TableService {
             if (connection == null) {
                 return null;
             }
-            return tableRepository.getTableStructure(connection, requestDto.getDatabaseName());
+            //return tableRepository.getTableStructure(connection, requestDto.getDatabaseName());
+            return null;
         } catch (Exception e) {
             e.printStackTrace();
             return null;

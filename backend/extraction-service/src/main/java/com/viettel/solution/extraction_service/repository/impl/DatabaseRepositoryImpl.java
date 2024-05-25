@@ -6,6 +6,7 @@ import com.viettel.solution.extraction_service.entity.DatabaseConfig;
 import com.viettel.solution.extraction_service.entity.DatabaseStructure;
 import com.viettel.solution.extraction_service.entity.Table;
 import com.viettel.solution.extraction_service.repository.DatabaseRepository;
+import com.viettel.solution.extraction_service.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -24,21 +25,9 @@ public class DatabaseRepositoryImpl implements DatabaseRepository {
 
 
     @Override
-    public DatabaseMetaData getDatabaseMetaData(Connection connection) {
-        try {
-            if (connection == null) {
-                return null;
-            }
-            DatabaseMetaData metaData = connection.getMetaData();
-            return metaData;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    @Override
     public DatabaseStructure getDatabaseStructure(Connection connection, String databaseName) {
         try {
-            DatabaseMetaData metaData = getDatabaseMetaData(connection);
+            DatabaseMetaData metaData = connection.getMetaData();
             if (metaData == null) {
                 return null;
             } else {
@@ -52,7 +41,7 @@ public class DatabaseRepositoryImpl implements DatabaseRepository {
                     if (tableName.equals("sys_config")) {
                         continue;
                     }
-                    Table tableEntity = tableRepository.getTableStructure(connection, tableName);
+                    Table tableEntity = tableRepository.getTableStructure(connection, databaseName, databaseName, tableName);
 
                     databaseEntity.getTables().add(tableEntity);
                 }

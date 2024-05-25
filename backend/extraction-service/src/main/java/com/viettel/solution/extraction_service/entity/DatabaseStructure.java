@@ -19,10 +19,14 @@ import java.util.Map;
 @Builder
 public class DatabaseStructure {
 
+    private String name;
     private List<Table> tables;
+
+    private List<Schema> schemas;
 
     public DatabaseStructure() {
         this.tables = new ArrayList<>();
+        this.schemas = new ArrayList<>();
     }
 
 }

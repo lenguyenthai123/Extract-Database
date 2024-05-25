@@ -7,11 +7,6 @@ import java.sql.DatabaseMetaData;
 
 public interface DatabaseRepository {
 
-    // Helper
-    public DatabaseMetaData getDatabaseMetaData(Connection connection);
-
-    //----------------------------------------------------------------------
-
     public DatabaseStructure getDatabaseStructure(Connection connection, String databaseName);
 
 
