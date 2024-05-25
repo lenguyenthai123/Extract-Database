@@ -20,11 +20,12 @@ public class Table {
     private String name;
     private List<Column> columns;
     private List<Constraint> constraints;
-
+    private List<Index> indexs;
 
     public Table() {
         this.columns = new ArrayList<>();
         this.constraints = new ArrayList<>();
+        this.indexs = new ArrayList<>();
     }
 
 

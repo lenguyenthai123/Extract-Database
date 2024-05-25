@@ -1,9 +1,6 @@
 package com.viettel.solution.extraction_service.repository.impl;
 
-import com.viettel.solution.extraction_service.entity.Column;
-import com.viettel.solution.extraction_service.entity.Constraint;
-import com.viettel.solution.extraction_service.entity.DatabaseConfig;
-import com.viettel.solution.extraction_service.entity.Table;
+import com.viettel.solution.extraction_service.entity.*;
 import com.viettel.solution.extraction_service.repository.ConstraintRepository;
 import com.viettel.solution.extraction_service.repository.TableRepository;
 import org.checkerframework.checker.units.qual.C;
@@ -23,6 +20,9 @@ public class TableRepositoryImpl implements TableRepository {
     @Autowired
     private ConstraintRepository constraintRepository;
 
+    @Autowired
+    private IndexRepositoryImpl indexRepository;
+
     @Override
     public Table getTable(Connection connection, String databaseName, String schemaName, String tableName) {
 
@@ -31,21 +31,28 @@ public class TableRepositoryImpl implements TableRepository {
             Table tableEntity = new Table();
             tableEntity.setName(tableName);
 
-            ResultSet columnsResultSet = metaData.getColumns(databaseName, schemaName, tableName, "%");
-
             // Lấy toàn bộ các constraint trong bảng.
             List<Constraint> constraints = constraintRepository.getAllConstraint(connection, databaseName, schemaName, tableName);
-            if(constraints != null) {
+            if (constraints != null) {
                 tableEntity.setConstraints(constraints);
             }
 
-            // Lấy thông tin các khóa chính
+            // Lấy toàn bộ các index trong bảng.
+            List<Index> indexs = indexRepository.getAllIndex(connection, databaseName, schemaName, tableName);
+            if (indexs != null) {
+                tableEntity.setIndexs(indexs);
+            }
+
+            // Lấy thông tin các khóa chính của bảng để xác định cột nào là khóa chính
             Set<String> primaryKeys = new HashSet<>();
             ResultSet primaryKeysResultSet = metaData.getPrimaryKeys(databaseName, schemaName, tableName);
             while (primaryKeysResultSet.next()) {
                 String primaryKey = primaryKeysResultSet.getString("COLUMN_NAME");
                 primaryKeys.add(primaryKey);
             }
+
+            // Lấy các cột trong bảng
+            ResultSet columnsResultSet = metaData.getColumns(databaseName, schemaName, tableName, "%");
             while (columnsResultSet.next()) {
                 String columnName = columnsResultSet.getString("COLUMN_NAME");
                 String dataType = columnsResultSet.getString("TYPE_NAME");

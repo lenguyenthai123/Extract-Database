@@ -21,11 +21,8 @@ import java.util.Set;
 public class Column {
 
     private String name;
-
     private String dataType;
-
     private Integer size;
-
     private boolean isPrimaryKey;
     private boolean nullable;
     private boolean autoIncrement;
