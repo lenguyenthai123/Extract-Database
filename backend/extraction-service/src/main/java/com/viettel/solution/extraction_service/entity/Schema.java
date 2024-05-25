@@ -21,4 +21,9 @@ public class Schema {
     public Schema() {
         this.tables = new ArrayList<>();
     }
+
+
+    // This function create for MySQL
+
+
 }

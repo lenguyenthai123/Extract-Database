@@ -4,63 +4,48 @@ import com.viettel.solution.extraction_service.entity.Column;
 import com.viettel.solution.extraction_service.entity.Constraint;
 import com.viettel.solution.extraction_service.entity.DatabaseConfig;
 import com.viettel.solution.extraction_service.entity.Table;
+import com.viettel.solution.extraction_service.repository.ConstraintRepository;
 import com.viettel.solution.extraction_service.repository.TableRepository;
 import org.checkerframework.checker.units.qual.C;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 
 @Repository
 public class TableRepositoryImpl implements TableRepository {
 
+    @Autowired
+    private ConstraintRepository constraintRepository;
+
     @Override
-    public Table getTableStructure(Connection connection, String databaseName, String schemaName, String tableName) {
+    public Table getTable(Connection connection, String databaseName, String schemaName, String tableName) {
 
         try {
             DatabaseMetaData metaData = connection.getMetaData();
             Table tableEntity = new Table();
             tableEntity.setName(tableName);
 
-            ResultSet columnsResultSet = metaData.getColumns(null, null, tableName, "%");
+            ResultSet columnsResultSet = metaData.getColumns(databaseName, schemaName, tableName, "%");
+
+            // Lấy toàn bộ các constraint trong bảng.
+            List<Constraint> constraints = constraintRepository.getAllConstraint(connection, databaseName, schemaName, tableName);
+            if(constraints != null) {
+                tableEntity.setConstraints(constraints);
+            }
 
             // Lấy thông tin các khóa chính
             Set<String> primaryKeys = new HashSet<>();
-            ResultSet primaryKeysResultSet = metaData.getPrimaryKeys(null, null, tableName);
+            ResultSet primaryKeysResultSet = metaData.getPrimaryKeys(databaseName, schemaName, tableName);
             while (primaryKeysResultSet.next()) {
                 String primaryKey = primaryKeysResultSet.getString("COLUMN_NAME");
                 primaryKeys.add(primaryKey);
-
-                Constraint constraint = Constraint.builder()
-                        .name(primaryKeysResultSet.getString("PK_NAME"))
-                        .tableName(tableName)
-                        .columnName(primaryKey)
-                        .constraintType("PRIMARY KEY")
-                        .build();
             }
-
-            // Lấy thông tin các khóa ngoại
-            Set<String> foreignKeys = new HashSet<>();
-            ResultSet foreignKeysResultSet = metaData.getImportedKeys(null, null, tableName);
-            while (foreignKeysResultSet.next()) {
-                String foreignKey = foreignKeysResultSet.getString("FKCOLUMN_NAME");
-                foreignKeys.add(foreignKey);
-
-                Constraint constraint = Constraint.builder()
-                        .name(foreignKeysResultSet.getString("FK_NAME"))
-                        .tableName(tableName)
-                        .columnName(foreignKey)
-                        .refTableName(foreignKeysResultSet.getString("PKTABLE_NAME"))
-                        .refColumnName(foreignKeysResultSet.getString("PKCOLUMN_NAME"))
-                        .constraintType("FOREIGN KEY")
-                        .build();
-            }
-
             while (columnsResultSet.next()) {
                 String columnName = columnsResultSet.getString("COLUMN_NAME");
                 String dataType = columnsResultSet.getString("TYPE_NAME");
@@ -83,4 +68,30 @@ public class TableRepositoryImpl implements TableRepository {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public List<Table> getAllTable(Connection connection, String databaseName, String schemaName) {
+        try {
+            List<Table> tables = new ArrayList<>();
+            DatabaseMetaData metaData = connection.getMetaData();
+            if (metaData == null) {
+                return null;
+            }
+            ResultSet tablesResultSet = metaData.getTables(databaseName, schemaName, "%", new String[]{"TABLE"});
+
+            while (tablesResultSet.next()) {
+                Map<String, Object> table = new HashMap<>();
+                String tableName = tablesResultSet.getString("TABLE_NAME");
+                if (tableName.equals("sys_config")) {
+                    continue;
+                }
+                Table tableEntity = getTable(connection, databaseName, schemaName, tableName);
+                tables.add(tableEntity);
+            }
+            return tables;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
