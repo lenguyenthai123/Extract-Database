@@ -1,127 +1,126 @@
 package com.viettel.solution.extraction_service.database;
 
 import com.viettel.solution.extraction_service.entity.DatabaseConfig;
+import com.viettel.solution.extraction_service.utils.HibernateUtil;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hibernate.jdbc.Work;
+
 public class DatabaseConnection {
-
-    static private String MYSQL_DRIVER = "com.mysql.cj.jdbc.Driver";
-    static private String ORACLE_DRIVER = "oracle.jdbc.driver.OracleDriver";
-    static private String MARIADB_DRIVER = "org.mariadb.jdbc.Driver";
-
-    static public Map<String, Connection> connectionMySqlMap;
-    static public Map<String, Connection> connectionOracleMap;
-    static public Map<String, Connection> connectionMariaDbMap;
+    static public Map<String, SessionFactory> sessionFactoryMySqlMap;
+    static public Map<String, SessionFactory> sessionFactoryOracleMap;
+    static public Map<String, SessionFactory> sessionFactoryMariaDbMap;
 
     static {
-        connectionMySqlMap = new HashMap<>();
-        connectionOracleMap = new HashMap<>();
-        connectionMariaDbMap = new HashMap<>();
+        sessionFactoryMySqlMap = new HashMap<>();
+        sessionFactoryOracleMap = new HashMap<>();
+        sessionFactoryMariaDbMap = new HashMap<>();
     }
 
-    static public synchronized Connection getConnection(String usernameId, String type) {
-        if (type.equals("mysql")) {
-            return connectionMySqlMap.get(usernameId);
-        } else if (type.equals("oracle")) {
-            return connectionOracleMap.get(usernameId);
-        } else if (type.equals("mariadb")) {
-            return connectionMariaDbMap.get(usernameId);
+    static public synchronized SessionFactory getSessionFactory(String usernameId, String type) {
+        SessionFactory sessionFactory = null;
+        switch (type.toLowerCase()) {
+            case "mysql":
+                sessionFactory = sessionFactoryMySqlMap.get(usernameId);
+                break;
+            case "oracle":
+                sessionFactory = sessionFactoryOracleMap.get(usernameId);
+                break;
+            case "mariadb":
+                sessionFactory = sessionFactoryMariaDbMap.get(usernameId);
+                break;
+            default:
+                return null;
         }
-        return null;
+        return sessionFactory;
     }
 
-    static public synchronized boolean closeConnection(String usernameId, String type) {
-        Connection connection = null;
-        if (type.equals("mysql")) {
-            connection = connectionMySqlMap.get(usernameId);
-            connectionMySqlMap.remove(usernameId);
-        } else if (type.equals("oracle")) {
-            connection = connectionOracleMap.get(usernameId);
-            connectionOracleMap.remove(usernameId);
-        } else if (type.equals("mariadb")) {
-            connection = connectionMariaDbMap.get(usernameId);
-            connectionMariaDbMap.remove(usernameId);
+    static public synchronized boolean closeSessionFactory(String usernameId, String type) {
+        SessionFactory sessionFactory = null;
+        switch (type.toLowerCase()) {
+            case "mysql":
+                sessionFactory = sessionFactoryMySqlMap.remove(usernameId);
+                break;
+            case "oracle":
+                sessionFactory = sessionFactoryOracleMap.remove(usernameId);
+                break;
+            case "mariadb":
+                sessionFactory = sessionFactoryMariaDbMap.remove(usernameId);
+                break;
+            default:
+                return false;
         }
-        disconnect(connection);
+        if (sessionFactory != null) {
+            sessionFactory.close();
+            return true;
+        }
+
         return false;
     }
 
-    static private void disconnect(Connection connection) {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
+    static public synchronized boolean createSessionFactory(String usernameId, DatabaseConfig databaseConfig) {
+        SessionFactory sessionFactory = HibernateUtil.createSessionFactory(databaseConfig);
+        switch (databaseConfig.getType().toLowerCase()) {
+            case "mysql":
+                sessionFactoryMySqlMap.put(usernameId, sessionFactory);
+                break;
+            case "oracle":
+                sessionFactoryOracleMap.put(usernameId, sessionFactory);
+                break;
+            case "mariadb":
+                sessionFactoryMariaDbMap.put(usernameId, sessionFactory);
+                break;
+            default:
+                return false;
+        }
+        return sessionFactory != null;
+    }
+
+    public static DatabaseMetaData getDatabaseMetaData(SessionFactory sessionFactory) {
+        final DatabaseMetaData[] databaseMetaData = new DatabaseMetaData[1];
+        // Open a session to interact with the database
+        Session session = sessionFactory.openSession();
+
+        // Use the Hibernate Work interface to execute a JDBC operation
+        session.doWork(new Work() {
+            @Override
+            public void execute(Connection connection) throws SQLException {
+                // Get the DatabaseMetaData from the connection
+                databaseMetaData[0] = connection.getMetaData();
             }
-        } catch (SQLException e) {
-            System.err.println("Error while disconnecting from MySQL database.");
+        });
+        // Close the session
+        session.close();
+
+        return databaseMetaData[0];
+    }
+
+    public static Connection getConnection(SessionFactory sessionFactory) {
+        final Connection[] connectionHolder = new Connection[1];
+
+        // Open a session to interact with the database
+        try (Session session = sessionFactory.openSession()) {
+            // Use the Hibernate Work interface to execute a JDBC operation
+            session.doWork(new Work() {
+                @Override
+                public void execute(Connection connection) throws SQLException {
+                    // Assign the connection to the connectionHolder array
+                    connectionHolder[0] = connection;
+                }
+            });
+        } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return connectionHolder[0];
     }
 
-    static public synchronized boolean createConnection(String usernameId, DatabaseConfig databaseConfig) {
-        Connection connection = null;
-        if (databaseConfig.getType().equalsIgnoreCase("mysql")) {
-            connection = createConnectionMySql(databaseConfig);
-            connectionMySqlMap.put(usernameId, connection);
-        } else if (databaseConfig.getType().equalsIgnoreCase("oracle")) {
-            connection = createConnectionOracle(databaseConfig);
-            connectionOracleMap.put(usernameId, connection);
-        } else if (databaseConfig.getType().equalsIgnoreCase("mariadb")) {
-            connection = createConnectionMariaDb(databaseConfig);
-            connectionMariaDbMap.put(usernameId, connection);
-        }
-        return connection != null;
-    }
-
-    static private Connection createConnectionMySql(DatabaseConfig config) {
-
-        try {
-            // Tải driver MySQL
-            Class.forName(MYSQL_DRIVER);
-            // Kết nối đến cơ sở dữ liệu MySQL
-            Connection connection = DriverManager.getConnection("jdbc:mysql://" + config.getHost() + ":" + config.getPort() + "/" + config.getDatabaseName(), config.getUsername(), config.getPassword());
-            System.out.println("Connected to MySQL database.");
-
-            return connection;
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    static private Connection createConnectionOracle(DatabaseConfig config) {
-
-        try {
-            // Tải driver Oracle
-            Class.forName(ORACLE_DRIVER);
-            // Kết nối đến cơ sở dữ liệu Oracle
-            Connection connection = DriverManager.getConnection("jdbc:oracle:thin:@" + config.getHost() + ":" + config.getPort() + ":" + config.getDatabaseName(), config.getUsername(), config.getPassword());
-            System.out.println("Connected to Oracle database.");
-
-            return connection;
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    static private Connection createConnectionMariaDb(DatabaseConfig config) {
-
-        try {
-            // Tải driver MariaDb
-            Class.forName(MARIADB_DRIVER);
-            // Kết nối đến cơ sở dữ liệu MariaDb
-            Connection connection = DriverManager.getConnection("jdbc:mariadb://" + config.getHost() + ":" + config.getPort() + "/" + config.getDatabaseName(), config.getUsername(), config.getPassword());
-            System.out.println("Connected to MariaDb database.");
-
-            return connection;
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 }
+

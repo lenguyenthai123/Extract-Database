@@ -22,7 +22,9 @@ public class Schema {
         this.tables = new ArrayList<>();
     }
 
-
+    public Schema(List<Table> tables) {
+        this.tables = tables;
+    }
     // This function create for MySQL
 
 

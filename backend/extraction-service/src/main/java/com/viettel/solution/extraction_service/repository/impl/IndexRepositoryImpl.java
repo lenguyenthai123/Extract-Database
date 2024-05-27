@@ -1,7 +1,9 @@
 package com.viettel.solution.extraction_service.repository.impl;
 
+import com.viettel.solution.extraction_service.database.DatabaseConnection;
 import com.viettel.solution.extraction_service.entity.Index;
 import com.viettel.solution.extraction_service.repository.IndexRepository;
+import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
@@ -16,11 +18,11 @@ import java.util.List;
 public class IndexRepositoryImpl implements IndexRepository {
 
     @Override
-    public Index getIndex(Connection connection, String databaseName, String schemaName, String tableName, String indexName) {
+    public Index getIndex(SessionFactory sessionFactory, String databaseName, String schemaName, String tableName, String indexName) {
         Index index = null;
 
         try {
-            DatabaseMetaData metaData = connection.getMetaData();
+            DatabaseMetaData metaData = DatabaseConnection.getDatabaseMetaData(sessionFactory);
             if (metaData == null) {
                 return null;
             }
@@ -47,16 +49,26 @@ public class IndexRepositoryImpl implements IndexRepository {
     }
 
     @Override
-    public List<Index> getAllIndex(Connection connection, String databaseName, String schemaName, String tableName) {
+    public List<Index> getAllIndex(SessionFactory sessionFactory, String databaseName, String schemaName, String tableName) {
         List<Index> indexes = new ArrayList<>();
 
         try {
-            DatabaseMetaData metaData = connection.getMetaData();
+            DatabaseMetaData metaData = DatabaseConnection.getDatabaseMetaData(sessionFactory);
             try (ResultSet rs = metaData.getIndexInfo(databaseName, schemaName, tableName, false, false)) {
                 while (rs.next()) {
                     String currentIndexName = rs.getString("INDEX_NAME");
                     if (currentIndexName != null) {
-                        Index index = findIndexByName(indexes, currentIndexName);
+                        Index index = null;
+
+                        // Find index by name if it exists before so we can add columns to it
+                        // => index with mutiple columns
+                        for (Index i : indexes) {
+                            if (i.getName().equalsIgnoreCase(currentIndexName)) {
+                                index = i;
+                                break;
+                            }
+                        }
+
                         if (index == null) {
                             index = new Index();
                             index.setName(currentIndexName);

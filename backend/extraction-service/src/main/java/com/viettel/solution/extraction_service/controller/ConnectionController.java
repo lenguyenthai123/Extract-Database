@@ -14,7 +14,7 @@ public class ConnectionController {
     @PostMapping("/connect")
     public ResponseEntity<?> getConnection(@RequestBody DatabaseConfig databaseConfigEntity) {
         try {
-            boolean result = DatabaseConnection.createConnection("12", databaseConfigEntity);
+            boolean result = DatabaseConnection.createSessionFactory(databaseConfigEntity.getUsernameId(), databaseConfigEntity);
             if (result) {
                 return ResponseEntity.ok("Connection successful");
             } else {
@@ -30,7 +30,7 @@ public class ConnectionController {
     public ResponseEntity<?> disconnect(@RequestBody DatabaseConfig databaseConfigEntity) {
         try {
 
-            boolean result = DatabaseConnection.closeConnection("12", "mysql");
+            boolean result = DatabaseConnection.closeSessionFactory("12", "mysql");
 
             if (result) {
                 return ResponseEntity.ok("Connection closed");

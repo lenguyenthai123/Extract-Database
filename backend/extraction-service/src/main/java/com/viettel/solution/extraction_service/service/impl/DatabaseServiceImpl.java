@@ -8,21 +8,32 @@ import com.viettel.solution.extraction_service.repository.DatabaseRepository;
 import com.viettel.solution.extraction_service.repository.SchemaRepository;
 import com.viettel.solution.extraction_service.service.DatabaseService;
 
+import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.xml.crypto.Data;
 import java.sql.Connection;
+import java.util.List;
 
 @Service
 public class DatabaseServiceImpl implements DatabaseService {
 
 
     @Autowired
-    private DatabaseRepository databaseRepository;
+    private SchemaRepository schemaRepository;
+
+    private DatabaseRepository databaseRepositorySQL; // For MariabDB too!!!
+    private DatabaseRepository databaseRepositoryOracle;
 
     @Autowired
-    private SchemaRepository schemaRepository;
+    public DatabaseServiceImpl(@Qualifier("databaseRepositorySQLImpl") DatabaseRepository databaseRepositorySQL,
+                               @Qualifier("databaseRepositoryOracleImpl") DatabaseRepository databaseRepositorOracleImpl) {
+        this.databaseRepositorySQL = databaseRepositorySQL;
+        this.databaseRepositoryOracle = databaseRepositorOracleImpl;
+    }
+
 
     @Override
     public Database getDatabase(RequestDto requestDto) {
@@ -31,16 +42,17 @@ public class DatabaseServiceImpl implements DatabaseService {
             String usernameId = requestDto.getUsernameId();
             String type = requestDto.getType();
 
-            Connection connection = DatabaseConnection.getConnection(usernameId, type);
-            if (connection == null) {
+            SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
+            if (sessionFactory == null) {
                 return null;
             }
 
-            if (type.equalsIgnoreCase("mysql")) {
-                Database database = databaseRepository.getSQLDatabase(connection, requestDto.getDatabaseName());
+            if (type.equalsIgnoreCase("mysql") || type.equalsIgnoreCase("mariadb")) {
+                Database database = databaseRepositorySQL.getDatabase(sessionFactory);
+
                 return database;
             } else {
-                return databaseRepository.getDatabase(connection, requestDto.getDatabaseName());
+                return databaseRepositoryOracle.getDatabase(sessionFactory);
             }
 
         } catch (Exception e) {

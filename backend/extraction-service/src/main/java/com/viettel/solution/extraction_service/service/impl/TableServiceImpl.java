@@ -14,14 +14,14 @@ import java.sql.Connection;
 public class TableServiceImpl implements TableService {
 
 
-    @Autowired
-    private TableRepository tableRepository;
+/*    @Autowired
+    private TableRepository tableRepository;*/
 
     @Override
     public Table getTableStructure(RequestDto requestDto) {
         try {
 
-            Connection connection = DatabaseConnection.getConnection(requestDto.getUsernameId(), requestDto.getType());
+            Connection connection = null;//DatabaseConnection.getConnection(requestDto.getUsernameId(), requestDto.getType());
             if (connection == null) {
                 return null;
             }

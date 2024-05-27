@@ -25,4 +25,6 @@ public class DatabaseConfig {
     private String jdbcUrl;
     private String connectionProperties;
     private String usernameId;
+    // For Oracle
+    private String serviceName;
 }

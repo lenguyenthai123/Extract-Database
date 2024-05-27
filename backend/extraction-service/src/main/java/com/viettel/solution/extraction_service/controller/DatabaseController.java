@@ -23,7 +23,6 @@ public class DatabaseController {
     public ResponseEntity<Database> getDatabase(@ModelAttribute RequestDto requestDto) {
         try {
             Database databaseEntity = databaseService.getDatabase(requestDto);
-            System.out.println(databaseEntity.toString());
             return ResponseEntity.ok(databaseEntity);
 
         } catch (Exception e) {
@@ -34,7 +33,7 @@ public class DatabaseController {
     @GetMapping("/test")
     public ResponseEntity<String> getTest(@ModelAttribute RequestDto requestDto) {
         try {
-            Connection connection = DatabaseConnection.getConnection("12", "mysql");
+            Connection connection = null;//DatabaseConnection.getConnection("12", "mysql");
             DatabaseMetaData metaData = connection.getMetaData();
 
 // Database Metadata

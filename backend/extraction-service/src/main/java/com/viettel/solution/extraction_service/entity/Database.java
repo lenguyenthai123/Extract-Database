@@ -15,22 +15,21 @@ import java.util.List;
 public class Database {
 
     private String name;
-
     private List<Schema> schemas;
 
     public Database() {
         this.schemas = new ArrayList<>();
     }
 
-    public Database(List<Table> tables, String name) {
-        this.name = name;
 
-        Schema schema = new Schema();
-        schema.setTables(tables);
-        schema.setName(name);
+    public Database(List<Schema> schemas) {
+        this.schemas = schemas;
+    }
+
+    // For oracle
+    public Database(Schema schema) {
         this.schemas = new ArrayList<>();
         this.schemas.add(schema);
-
-
     }
+
 }
