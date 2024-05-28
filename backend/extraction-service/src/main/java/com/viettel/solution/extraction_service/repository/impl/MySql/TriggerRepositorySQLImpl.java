@@ -51,9 +51,9 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
         List<Trigger> triggers = null;
 
         try (Session session = sessionFactory.openSession()) {
-            String query = "SELECT TRIGGER_NAME as NAME, EVENT_MANIPULATION as EVENT, "
-                    + "EVENT_OBJECT_TABLE as TABLE_NAME, ACTION_TIMING as TIMING, "
-                    + "ACTION_CONDITION as ACTION_CONDITION , ACTION_STATEMENT as DO_ACTION  "
+            String query = "SELECT TRIGGER_NAME as name, EVENT_MANIPULATION as event, "
+                    + "EVENT_OBJECT_TABLE as tableName, ACTION_TIMING as timing, "
+                    + "ACTION_CONDITION as actionCondition, ACTION_STATEMENT as doAction "
                     + "FROM INFORMATION_SCHEMA.TRIGGERS "
                     + "WHERE TRIGGER_SCHEMA = :schemaName AND EVENT_OBJECT_TABLE = :tableName";
 

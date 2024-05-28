@@ -21,21 +21,15 @@ import java.sql.Timestamp;
 public class Trigger {
 
 
-    @Column(name = "NAME")
     private String name;
 
-    @Column(name = "EVENT")
     private String event;
 
-    @Column(name = "TABLE_NAME")
     private String tableName;
 
-    @Column(name = "TIMING")
     private String timing;
 
-    @Column(name = "DO_ACTION")
     private String doAction;
 
-    @Column(name = "ACTION_CONDITION")
     private String actionCondition;
 }

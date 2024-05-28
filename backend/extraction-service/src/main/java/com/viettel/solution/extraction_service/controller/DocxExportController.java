@@ -1,15 +1,17 @@
 package com.viettel.solution.extraction_service.controller;
 
+import com.viettel.solution.extraction_service.dto.RequestDto;
+import com.viettel.solution.extraction_service.service.ExportService;
 import org.apache.poi.xwpf.usermodel.*;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblWidth;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblWidth;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -18,6 +20,28 @@ import java.math.BigInteger;
 @RestController
 @RequestMapping("/export-docx")
 public class DocxExportController {
+
+
+    private ExportService exportService;
+
+    @Autowired
+    public DocxExportController(@Qualifier("docxExportServiceImpl") ExportService exportService) {
+        this.exportService = exportService;
+    }
+
+    @GetMapping("/database")
+    public ResponseEntity<byte[]> exportDatabase(@ModelAttribute RequestDto requestDto) {
+        // Tạo phản hồi HTTP
+        byte[] docxfile = exportService.exportDatabase(requestDto);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Báo cáo.docx");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(docxfile);
+    }
 
     @GetMapping
     public ResponseEntity<byte[]> exportDocx() {
