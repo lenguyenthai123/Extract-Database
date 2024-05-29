@@ -1,26 +1,17 @@
 package com.viettel.solution.extraction_service.service.impl;
 
-import com.itextpdf.io.font.constants.StandardFonts;
-import com.itextpdf.kernel.colors.Color;
-import com.itextpdf.kernel.colors.DeviceRgb;
-import com.itextpdf.kernel.font.PdfFont;
-import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Tab;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.viettel.solution.extraction_service.database.DatabaseConnection;
 import com.viettel.solution.extraction_service.dto.RequestDto;
 import com.viettel.solution.extraction_service.entity.*;
-import com.viettel.solution.extraction_service.generator.DocxGenerator;
 import com.viettel.solution.extraction_service.generator.PdfGenerator;
 import com.viettel.solution.extraction_service.service.DatabaseService;
 import com.viettel.solution.extraction_service.service.ExportService;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -31,19 +22,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.viettel.solution.extraction_service.generator.PdfGenerator.font;
+import static com.viettel.solution.extraction_service.generator.PdfGenerator.tabStops;
+
 @Service
 @Qualifier("pdfExportServiceImpl")
 public class PdfExportServiceImpl implements ExportService {
 
-    static PdfFont font;
-
-    static {
-        try {
-            font = PdfFontFactory.createFont(StandardFonts.TIMES_ROMAN);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     @Autowired
     DatabaseService databaseService;
@@ -65,9 +50,6 @@ public class PdfExportServiceImpl implements ExportService {
             PdfDocument pdf = new PdfDocument(writer);
             Document document = new Document(pdf);
 
-            // Dữ liệu bảng mẫu
-            List<List<String>> tableData = List.of(List.of("Header 1", "Header 2", "Header 3"), List.of("Row 1, Col 1 with long text", "Row 1, Col 2", "Row 1, Col 3"), List.of("Row 2, Col 1", "Row 2, Col 2 with even longer text that should wrap", "Row 2, Col 3"));
-
             // Tạo và định dạng đoạn văn cho tiêu đề
             Paragraph title = new Paragraph("Database: " + database.getName())
                     .setFont(font)
@@ -80,7 +62,8 @@ public class PdfExportServiceImpl implements ExportService {
 
             if (database.getSchemas().isEmpty()) {
                 // Thêm đoạn văn thông báo không có dữ liệu vào tài liệu PDF
-                document.add(new Paragraph("\nNo data found")
+                document.add(new Paragraph()
+                        .add("N/A")
                         .setFont(font)
                         .setFontSize(PdfGenerator.getFontSizeForTitleLevel(4))
                         .setTextAlignment(TextAlignment.CENTER));
@@ -99,10 +82,11 @@ public class PdfExportServiceImpl implements ExportService {
                         document,
                         (i + 1) + " Schema: " + schema.getName().toUpperCase(),
                         2,
-                        true);
+                        true,0);
 
                 if (schema.getTables().isEmpty()) {
-                    Paragraph notFound = new Paragraph("N/A")
+                    Paragraph notFound = new Paragraph()
+                            .add("N/A")
                             .setFont(font)
                             .setFontSize(PdfGenerator.getFontSizeForTitleLevel(4));
                     // Thêm tiêu đề vào tài liệu PDF
@@ -113,6 +97,14 @@ public class PdfExportServiceImpl implements ExportService {
 
                 // Add empty space
                 PdfGenerator.addEmptyParagraph(document);
+
+
+                // Danh sách outline các bảng
+                PdfGenerator.addTitleToDocument(
+                        document,
+                        "Danh sách các bảng".toUpperCase(),
+                        2,
+                        true,1);
 
                 // Tạo outline cho moi dau schema
                 List<List<String>> outlineData = new ArrayList<>(List.of(columnHeadersOfOutline));
@@ -131,23 +123,24 @@ public class PdfExportServiceImpl implements ExportService {
                 for (int j = 0; j < schema.getTables().size(); j++) {
                     Table table = schema.getTables().get(j);
 
+
                     // Divide heading for table
                     String headingTable = headingShema + "." + (j + 1);
 
                     // Generate table for columns
-                    PdfGenerator.addTitleToDocument(document, "\t" + headingTable + " " + table.getName().toUpperCase(), 3, false);
+                    PdfGenerator.addTitleToDocument(document, headingTable + " " + table.getName().toUpperCase(), 3, false, 1);
                     addTableOfColumns(document, table);
 
                     // Generate table for constraints
-                    PdfGenerator.addTitleToDocument(document, "\t\t" + headingTable + ".1 Constraint", 4, true);
+                    PdfGenerator.addTitleToDocument(document, headingTable + ".1 Constraint", 4, true, 2);
                     addConstraintTable(document, table);
 
                     // Generate table for indexes
-                    PdfGenerator.addTitleToDocument(document, "\t\t" + headingTable + ".2 Index", 4, true);
+                    PdfGenerator.addTitleToDocument(document, headingTable + ".2 Index", 4, true, 2);
                     addIndexTable(document, table);
 
                     // Generate table for triggers
-                    PdfGenerator.addTitleToDocument(document, "\t\t" + headingTable + ".3 Trigger", 4, true);
+                    PdfGenerator.addTitleToDocument(document, headingTable + ".3 Trigger", 4, true, 2);
                     addTriggerTable(document, table);
 
                     PdfGenerator.addEmptyParagraph(document);
@@ -170,7 +163,10 @@ public class PdfExportServiceImpl implements ExportService {
 
     private void addTableOfColumns(Document document, Table table) throws IOException {
         if (table.getColumns().isEmpty()) {
-            Paragraph notFound = new Paragraph("\t N/A")
+            Paragraph notFound = new Paragraph()
+                    .addTabStops(tabStops)
+                    .add(new Tab())
+                    .add("N/A")
                     .setFont(font)
                     .setFontSize(PdfGenerator.getFontSizeForTitleLevel(4));
             // Thêm tiêu đề vào tài liệu PDF
@@ -197,7 +193,11 @@ public class PdfExportServiceImpl implements ExportService {
 
     private void addConstraintTable(Document document, Table table) throws IOException {
         if (table.getConstraints().isEmpty()) {
-            Paragraph notFound = new Paragraph("\t\t N/A")
+            Paragraph notFound = new Paragraph()
+                    .addTabStops(tabStops)
+                    .add(new Tab())
+                    .add(new Tab())
+                    .add("N/A")
                     .setFont(font)
                     .setFontSize(PdfGenerator.getFontSizeForTitleLevel(4));
             // Thêm tiêu đề vào tài liệu PDF
@@ -226,7 +226,11 @@ public class PdfExportServiceImpl implements ExportService {
 
     private void addIndexTable(Document document, Table table) throws IOException {
         if (table.getIndexs().isEmpty()) {
-            Paragraph notFound = new Paragraph("\t\t N/A")
+            Paragraph notFound = new Paragraph()
+                    .addTabStops(tabStops)
+                    .add(new Tab())
+                    .add(new Tab())
+                    .add("N/A")
                     .setFont(font)
                     .setFontSize(PdfGenerator.getFontSizeForTitleLevel(4));
             // Thêm tiêu đề vào tài liệu PDF
@@ -247,7 +251,11 @@ public class PdfExportServiceImpl implements ExportService {
 
     private void addTriggerTable(Document document, Table table) throws IOException {
         if (table.getTriggers().isEmpty()) {
-            Paragraph notFound = new Paragraph("\t\t N/A")
+            Paragraph notFound = new Paragraph()
+                    .addTabStops(tabStops)
+                    .add(new Tab())
+                    .add(new Tab())
+                    .add("N/A")
                     .setFont(font)
                     .setFontSize(PdfGenerator.getFontSizeForTitleLevel(4));
             // Thêm tiêu đề vào tài liệu PDF
