@@ -60,7 +60,7 @@ public class PdfGenerator {
         addEmptyParagraph(document);
     }
 
-    private static void addEmptyParagraph(Document document) {
+    public static void addEmptyParagraph(Document document) {
         document.add(new Paragraph("\n"));
     }
 
