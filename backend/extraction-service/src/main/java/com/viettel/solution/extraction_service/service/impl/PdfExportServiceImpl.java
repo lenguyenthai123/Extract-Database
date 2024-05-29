@@ -13,10 +13,7 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.viettel.solution.extraction_service.database.DatabaseConnection;
 import com.viettel.solution.extraction_service.dto.RequestDto;
-import com.viettel.solution.extraction_service.entity.Column;
-import com.viettel.solution.extraction_service.entity.Database;
-import com.viettel.solution.extraction_service.entity.Schema;
-import com.viettel.solution.extraction_service.entity.Table;
+import com.viettel.solution.extraction_service.entity.*;
 import com.viettel.solution.extraction_service.generator.DocxGenerator;
 import com.viettel.solution.extraction_service.generator.PdfGenerator;
 import com.viettel.solution.extraction_service.service.DatabaseService;
@@ -200,6 +197,56 @@ public class PdfExportServiceImpl implements ExportService {
             tableData.add(List.of(name, dataType + " (" + size + ") ", isNullable, isAutoIncrement, isPrimaryKey, defaultValue, description));
         }
         PdfGenerator.addTableToDocument(document, tableData);
+    }
+
+    private void addConstraintTable(Document document, Table table) throws IOException {
+        if (table.getConstraints().isEmpty()) {
+            Paragraph notFound = new Paragraph("N/A")
+                    .setFont(font)
+                    .setFontSize(PdfGenerator.getFontSizeForTitleLevel(4));
+            // Thêm tiêu đề vào tài liệu PDF
+            document.add(notFound);
+            PdfGenerator.addEmptyParagraph(document);
+            return;
+        }
+
+        List<List<String>> constraintData = new ArrayList<>(List.of(columnHeadersOfConstraint));
+        for (Constraint constraint : table.getConstraints()) {
+            String name = constraint.getName() == null ? "" : constraint.getName();
+            String columnName = constraint.getColumnName() == null ? "" : constraint.getColumnName();
+            String constraintType = constraint.getConstraintType() == null ? "" : constraint.getConstraintType();
+            String refTableName = constraint.getRefTableName() == null ? "" : constraint.getRefTableName();
+            String refColumnName = constraint.getRefColumnName() == null ? "" : constraint.getRefColumnName();
+
+            constraintData.add(
+                    List.of(name,
+                            columnName,
+                            constraintType,
+                            refTableName,
+                            refColumnName));
+        }
+        PdfGenerator.addTableToDocument(document, constraintData);
+    }
+
+    private void addIndexTable(Document document, Table table) throws IOException {
+        if (table.getIndexs().isEmpty()) {
+            Paragraph notFound = new Paragraph("N/A")
+                    .setFont(font)
+                    .setFontSize(PdfGenerator.getFontSizeForTitleLevel(4));
+            // Thêm tiêu đề vào tài liệu PDF
+            document.add(notFound);
+            PdfGenerator.addEmptyParagraph(document);
+            return;
+        }
+
+        List<List<String>> indexData = new ArrayList<>(List.of(columnHeadersOfIndex));
+        for (Index index : table.getIndexs()) {
+            String columnNames = String.join(", ", index.getColumns());
+            indexData.add(
+                    List.of(String.valueOf(index.getName()),
+                            String.valueOf(columnNames)));
+        }
+        PdfGenerator.addTableToDocument(document, indexData);
     }
 
 
