@@ -9,6 +9,7 @@ public interface ExportService {
     static List<String> columnHeadersOfConstraint = List.of("Tên khóa", "Tên trường", "Kiểu", "Bảng tham chiếu", "Cột tham chiếu");
     static List<String> columnHeadersOfIndex = List.of("Tên Index", "Cột tham chiếu");
     static List<String> columnHeadersOfTrigger = List.of("Tên Trigger", "Event", "Timing", "Action", "Condition");
+    static List<String> columnHeadersOfOutline = List.of("Tên bảng", "Mô tả");
 
     public byte[] exportDatabase(RequestDto requestDto);
 }

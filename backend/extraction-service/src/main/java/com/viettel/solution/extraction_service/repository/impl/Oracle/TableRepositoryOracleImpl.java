@@ -105,10 +105,12 @@ public class TableRepositoryOracleImpl implements TableRepository {
 
                 while (tablesResultSet.next()) {
                     String tableName = tablesResultSet.getString("TABLE_NAME");
+                    String description = tablesResultSet.getString("REMARKS");
                     if (tableName.equals("sys_config")) {
                         continue;
                     }
                     Table tableEntity = getTable(sessionFactory, databaseName, schemaName, tableName);
+                    tableEntity.setDescription(description);
                     tables.add(tableEntity);
                 }
                 return tables;

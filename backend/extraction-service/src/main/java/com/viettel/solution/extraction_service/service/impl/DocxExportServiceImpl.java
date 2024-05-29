@@ -73,7 +73,7 @@ public class DocxExportServiceImpl implements ExportService {
 
                 DocxGenerator.addTitleToDocument(
                         document,
-                        (i + 1) + " Schema: " + schema.getName(),
+                        (i + 1) + " Schema: " + schema.getName().toUpperCase(),
                         2);
 
                 if (schema.getTables().isEmpty()) {
@@ -85,6 +85,22 @@ public class DocxExportServiceImpl implements ExportService {
                     DocxGenerator.addEmptyParagraph(document);
                     continue;
                 }
+
+                DocxGenerator.addEmptyParagraph(document);
+
+                // Tạo outline cho moi dau schema
+                List<List<String>> outlineData = new ArrayList<>(List.of(columnHeadersOfOutline));
+
+                for (int j = 0; j < schema.getTables().size(); j++) {
+                    Table table = schema.getTables().get(j);
+                    String name = table.getName().toUpperCase();
+                    String description = table.getDescription() == null ? "" : table.getDescription();
+                    outlineData.add(List.of(name, description));
+
+                }
+                DocxGenerator.addTableToDocument(document, schema.getTables().size() + 1, columnHeadersOfOutline.size(), outlineData);
+                DocxGenerator.addEmptyParagraph(document);
+
 
                 for (int j = 0; j < schema.getTables().size(); j++) {
                     Table table = schema.getTables().get(j);
@@ -114,11 +130,13 @@ public class DocxExportServiceImpl implements ExportService {
             }
 
             document.write(byteArrayOutputStream);
+            document.close();
             return byteArrayOutputStream.toByteArray();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         return null;
     }
 

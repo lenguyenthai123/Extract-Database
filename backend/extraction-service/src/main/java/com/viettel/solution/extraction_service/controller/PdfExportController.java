@@ -10,18 +10,49 @@ import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
+import com.viettel.solution.extraction_service.dto.RequestDto;
+import com.viettel.solution.extraction_service.service.ExportService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 @RestController
+@RequestMapping("/export-pdf")
 public class PdfExportController {
+
+
+
+
+    private ExportService exportService;
+
+    @Autowired
+    public PdfExportController(@Qualifier("pdfExportServiceImpl") ExportService exportService) {
+        this.exportService = exportService;
+    }
+
+    @GetMapping("/database")
+    public ResponseEntity<byte[]> exportDatabase(@ModelAttribute RequestDto requestDto) {
+        // Tạo phản hồi HTTP
+        byte[] pdfFile = exportService.exportDatabase(requestDto);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Báo cáo.pdf");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfFile);
+    }
 
     @GetMapping("/export-pdf")
     public ResponseEntity<byte[]> exportPdf() {

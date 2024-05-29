@@ -34,6 +34,7 @@ public class TableRepositorySQLImpl implements TableRepository {
     public TableRepositorySQLImpl(@Qualifier("triggerRepositorySQLImpl") TriggerRepository triggerRepository) {
         this.triggerRepository = triggerRepository;
     }
+
     @Override
     public Table getTable(SessionFactory sessionFactory, String databaseName, String schemaName, String tableName) {
 
@@ -75,6 +76,7 @@ public class TableRepositorySQLImpl implements TableRepository {
                     String dataType = columnsResultSet.getString("TYPE_NAME");
                     Integer columnSize = columnsResultSet.getInt("COLUMN_SIZE");
 
+
                     // Kiểm tra cột có phải là khóa chính không
                     Boolean isPrimaryKey = primaryKeys.contains(columnName);
 
@@ -106,10 +108,12 @@ public class TableRepositorySQLImpl implements TableRepository {
 
                 while (tablesResultSet.next()) {
                     String tableName = tablesResultSet.getString("TABLE_NAME");
+                    String description = tablesResultSet.getString("REMARKS");
                     if (tableName.equals("sys_config")) {
                         continue;
                     }
                     Table tableEntity = getTable(sessionFactory, databaseName, schemaName, tableName);
+                    tableEntity.setDescription(description);
                     tables.add(tableEntity);
                 }
                 return tables;

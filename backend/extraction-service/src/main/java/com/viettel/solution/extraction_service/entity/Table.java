@@ -22,6 +22,7 @@ public class Table {
     private List<Constraint> constraints;
     private List<Index> indexs;
     private List<Trigger> triggers;
+    private String description;
 
     public Table() {
         this.columns = new ArrayList<>();
