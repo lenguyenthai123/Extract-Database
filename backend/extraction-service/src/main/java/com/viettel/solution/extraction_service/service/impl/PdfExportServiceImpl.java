@@ -143,21 +143,17 @@ public class PdfExportServiceImpl implements ExportService {
                     addConstraintTable(document, table);
 
                     // Generate table for indexes
-                    DocxGenerator.addTitleToDocument(document, "\t\t" + headingTable + ".2 Index", 4);
+                    PdfGenerator.addTitleToDocument(document, "\t\t" + headingTable + ".2 Index", 4, true);
                     addIndexTable(document, table);
 
                     // Generate table for triggers
-                    DocxGenerator.addTitleToDocument(document, "\t\t" + headingTable + ".3 Trigger", 4);
+                    PdfGenerator.addTitleToDocument(document, "\t\t" + headingTable + ".3 Trigger", 4, true);
                     addTriggerTable(document, table);
 
-                    DocxGenerator.addEmptyParagraph(document);
+                    PdfGenerator.addEmptyParagraph(document);
                 }
-                DocxGenerator.addEmptyParagraph(document);
+                PdfGenerator.addEmptyParagraph(document);
             }
-
-            document.write(byteArrayOutputStream);
-            document.close();
-            return byteArrayOutputStream.toByteArray();
 
             // Đóng tài liệu PDF
             document.close();
@@ -174,7 +170,7 @@ public class PdfExportServiceImpl implements ExportService {
 
     private void addTableOfColumns(Document document, Table table) throws IOException {
         if (table.getColumns().isEmpty()) {
-            Paragraph notFound = new Paragraph("N/A")
+            Paragraph notFound = new Paragraph("\t N/A")
                     .setFont(font)
                     .setFontSize(PdfGenerator.getFontSizeForTitleLevel(4));
             // Thêm tiêu đề vào tài liệu PDF
@@ -201,7 +197,7 @@ public class PdfExportServiceImpl implements ExportService {
 
     private void addConstraintTable(Document document, Table table) throws IOException {
         if (table.getConstraints().isEmpty()) {
-            Paragraph notFound = new Paragraph("N/A")
+            Paragraph notFound = new Paragraph("\t\t N/A")
                     .setFont(font)
                     .setFontSize(PdfGenerator.getFontSizeForTitleLevel(4));
             // Thêm tiêu đề vào tài liệu PDF
@@ -230,7 +226,7 @@ public class PdfExportServiceImpl implements ExportService {
 
     private void addIndexTable(Document document, Table table) throws IOException {
         if (table.getIndexs().isEmpty()) {
-            Paragraph notFound = new Paragraph("N/A")
+            Paragraph notFound = new Paragraph("\t\t N/A")
                     .setFont(font)
                     .setFontSize(PdfGenerator.getFontSizeForTitleLevel(4));
             // Thêm tiêu đề vào tài liệu PDF
@@ -249,5 +245,33 @@ public class PdfExportServiceImpl implements ExportService {
         PdfGenerator.addTableToDocument(document, indexData);
     }
 
+    private void addTriggerTable(Document document, Table table) throws IOException {
+        if (table.getTriggers().isEmpty()) {
+            Paragraph notFound = new Paragraph("\t\t N/A")
+                    .setFont(font)
+                    .setFontSize(PdfGenerator.getFontSizeForTitleLevel(4));
+            // Thêm tiêu đề vào tài liệu PDF
+            document.add(notFound);
+            PdfGenerator.addEmptyParagraph(document);
+            return;
+        }
+
+        List<List<String>> triggerData = new ArrayList<>(List.of(columnHeadersOfTrigger));
+        for (Trigger trigger : table.getTriggers()) {
+            String name = trigger.getName() == null ? "" : trigger.getName();
+            String event = trigger.getEvent() == null ? "" : trigger.getEvent();
+            String timing = trigger.getTiming() == null ? "" : trigger.getTiming();
+            String doAction = trigger.getDoAction() == null ? "" : trigger.getDoAction();
+            String actionCondition = trigger.getActionCondition() == null ? "" : trigger.getActionCondition();
+
+            triggerData.add(
+                    List.of(name,
+                            event,
+                            timing,
+                            doAction,
+                            actionCondition));
+        }
+        PdfGenerator.addTableToDocument(document, triggerData);
+    }
 
 }

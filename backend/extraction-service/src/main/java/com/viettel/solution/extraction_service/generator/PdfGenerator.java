@@ -29,8 +29,9 @@ public class PdfGenerator {
         Table table = new Table(numCols);
 
         // Định dạng tiêu đề của bảng
-        PdfFont font = PdfFontFactory.createFont("Times-Roman");
-        PdfFont boldFont = PdfFontFactory.createFont("Times-BoldItalic");
+        PdfFont font = PdfFontFactory.createFont("/static/font/NotoSerif_Condensed-Regular.ttf", PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
+        PdfFont boldFont = PdfFontFactory.createFont("/static/font/NotoSerif_Condensed-MediumItalic.ttf", PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
+
         Color headerColor = new DeviceRgb(246, 197, 172);
 
         // Định dạng và thêm dữ liệu vào bảng
@@ -69,10 +70,7 @@ public class PdfGenerator {
         PdfFont font = PdfFontFactory.createFont(StandardFonts.TIMES_ROMAN);
 
         // Tạo và định dạng đoạn văn cho tiêu đề
-        Paragraph title = new Paragraph(titleText)
-                .setFont(font)
-                .setFontSize(getFontSizeForTitleLevel(titleLevel))
-                .setTextAlignment(TextAlignment.LEFT);
+        Paragraph title = new Paragraph(titleText).setFont(font).setFontSize(getFontSizeForTitleLevel(titleLevel)).setTextAlignment(TextAlignment.LEFT);
 
         // Đặt kiểu chữ đậm nếu cần
         if (bold) {
