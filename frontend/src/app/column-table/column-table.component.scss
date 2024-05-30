@@ -85,3 +85,16 @@ aside {
     align-items: center;
     flex-wrap: wrap;
 }
+td {
+    padding: 0; /* Loại bỏ padding để input chiếm toàn bộ không gian */
+  }
+  
+input[type="text"],
+select {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box; /* Đảm bảo padding và border không ảnh hưởng đến kích thước */
+    border: none; /* Loại bỏ border nếu muốn input hoàn toàn khớp với cell */
+    padding: 8px; /* Tùy chỉnh padding nếu cần */
+    margin: 0;
+  }
