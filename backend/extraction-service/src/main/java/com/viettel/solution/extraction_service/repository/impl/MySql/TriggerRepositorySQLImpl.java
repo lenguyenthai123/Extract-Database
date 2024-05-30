@@ -33,7 +33,7 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
                     + "WHERE TRIGGER_SCHEMA = :schemaName AND EVENT_OBJECT_TABLE = :tableName AND TRIGGER_NAME = :triggerName";
 
             NativeQuery<Trigger> nativeQuery = session.createNativeQuery(query);
-            nativeQuery.setParameter("schemaName", databaseName);
+            nativeQuery.setParameter("schemaName", schemaName);
             nativeQuery.setParameter("tableName", tableName);
             nativeQuery.setParameter("triggerName", triggerName);
             nativeQuery.setResultTransformer(Transformers.aliasToBean(Trigger.class));
@@ -58,7 +58,7 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
                     + "WHERE TRIGGER_SCHEMA = :schemaName AND EVENT_OBJECT_TABLE = :tableName";
 
             NativeQuery<Trigger> nativeQuery = session.createNativeQuery(query);
-            nativeQuery.setParameter("schemaName", databaseName);
+            nativeQuery.setParameter("schemaName", schemaName);
             nativeQuery.setParameter("tableName", tableName);
             nativeQuery.setResultTransformer(Transformers.aliasToBean(Trigger.class));
 

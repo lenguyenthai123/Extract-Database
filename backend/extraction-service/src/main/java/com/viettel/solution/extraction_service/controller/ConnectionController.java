@@ -3,10 +3,7 @@ package com.viettel.solution.extraction_service.controller;
 import com.viettel.solution.extraction_service.database.DatabaseConnection;
 import com.viettel.solution.extraction_service.entity.DatabaseConfig;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/")
@@ -24,6 +21,17 @@ public class ConnectionController {
             e.printStackTrace();
             return ResponseEntity.badRequest().body("Connection failed");
         }
+    }
+    @GetMapping("/test")
+    public ResponseEntity<?> test() {
+        //fake json
+        DatabaseConfig databaseConfigEntity = new DatabaseConfig();
+        databaseConfigEntity.setUrl("jdbc:mysql://localhost:3306/12");
+        databaseConfigEntity.setUsername("root");
+        databaseConfigEntity.setPassword("root");
+        databaseConfigEntity.setType("mysql");
+        return ResponseEntity.ok(databaseConfigEntity);
+
     }
 
     @PostMapping("/disconnect")

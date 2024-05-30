@@ -1,6 +1,7 @@
 package com.viettel.solution.extraction_service.entity;
 
 
+import com.viettel.solution.extraction_service.dto.ColumnDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,6 +21,11 @@ import java.util.Set;
 @Builder
 public class Column {
 
+    private String databaseName;
+    private String schemaName;
+    private String tableName;
+    private String type;
+
     private String name;
     private String dataType;
     private Integer size;
@@ -30,41 +36,18 @@ public class Column {
     private String description;
 
 
-    static public Column createColumnEntity(DatabaseMetaData metaData, String tableName, String columnNameKey) throws SQLException {
-        ResultSet columnsResultSet = metaData.getColumns(null, null, tableName, "%");
-
-        // Lấy thông tin các khóa chính
-        Set<String> primaryKeys = new HashSet<>();
-        ResultSet primaryKeysResultSet = metaData.getPrimaryKeys(null, null, tableName);
-        while (primaryKeysResultSet.next()) {
-            primaryKeys.add(primaryKeysResultSet.getString("COLUMN_NAME"));
-        }
-
-
-        while (columnsResultSet.next()) {
-            String columnName = columnsResultSet.getString("COLUMN_NAME");
-
-            if (columnName.equals(columnNameKey)) {
-                String dataType = columnsResultSet.getString("TYPE_NAME");
-                Integer columnSize = columnsResultSet.getInt("COLUMN_SIZE");
-                boolean isPrimaryKey = primaryKeys.contains(columnName);
-                boolean nullable = "YES".equals(columnsResultSet.getString("IS_NULLABLE"));
-                boolean autoIncrement = "YES".equals(columnsResultSet.getString("IS_AUTOINCREMENT"));
-                String defaultValue = columnsResultSet.getString("COLUMN_DEF");
-                String description = columnsResultSet.getString("REMARKS");
-
-                return Column.builder()
-                        .name(columnName)
-                        .dataType(dataType)
-                        .size(columnSize)
-                        .isPrimaryKey(isPrimaryKey)
-                        .nullable(nullable)
-                        .autoIncrement(autoIncrement)
-                        .defaultValue(defaultValue)
-                        .description(description)
-                        .build();
-            }
-        }
-        return null;
+    public Column(ColumnDto columnDto) {
+        this.databaseName = columnDto.getDatabaseName();
+        this.schemaName = columnDto.getSchemaName();
+        this.tableName = columnDto.getTableName();
+        this.type = columnDto.getType();
+        this.name = columnDto.getName();
+        this.dataType = columnDto.getDataType();
+        this.size = columnDto.getSize();
+        this.isPrimaryKey = columnDto.isPrimaryKey();
+        this.nullable = columnDto.isNullable();
+        this.autoIncrement = columnDto.isAutoIncrement();
+        this.defaultValue = columnDto.getDefaultValue();
+        this.description = columnDto.getDescription();
     }
 }

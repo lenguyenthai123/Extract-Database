@@ -31,7 +31,7 @@ public class HibernateUtil {
             default:
                 throw new IllegalArgumentException("Unsupported database type: " + config.getType());
         }
-
+        configuration.setProperty("hibernate.connection.autocommit", "false");
         configuration.setProperty("hibernate.connection.username", config.getUsername());
         configuration.setProperty("hibernate.connection.password", config.getPassword());
 

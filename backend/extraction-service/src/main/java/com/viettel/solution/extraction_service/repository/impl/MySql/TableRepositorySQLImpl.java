@@ -69,6 +69,7 @@ public class TableRepositorySQLImpl implements TableRepository {
                     primaryKeys.add(primaryKey);
                 }
             }
+
             // Lấy các cột trong bảng
             try (ResultSet columnsResultSet = metaData.getColumns(databaseName, schemaName, tableName, "%")) {
                 while (columnsResultSet.next()) {

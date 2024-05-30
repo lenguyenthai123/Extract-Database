@@ -20,7 +20,7 @@ public class DatabaseConfig {
     private String host;
     private String port;
     private String databaseName;
-    private String schema;
+    private String schemaName;
     private String driverClassName;
     private String jdbcUrl;
     private String connectionProperties;
