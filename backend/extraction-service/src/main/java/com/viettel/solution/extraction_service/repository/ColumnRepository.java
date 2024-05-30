@@ -9,7 +9,7 @@ public interface ColumnRepository {
 
     public Column getColumn(SessionFactory sessionFactory, RequestDto requestDto);
 
-    public Column updateColumn(SessionFactory sessionFactory, ColumnDto columnDto);
+    public boolean updateColumn(SessionFactory sessionFactory, ColumnDto columnDto);
 
     public boolean deleteColumn(SessionFactory sessionFactory, ColumnDto columnDto);
 

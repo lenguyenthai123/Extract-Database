@@ -7,7 +7,7 @@ import com.viettel.solution.extraction_service.entity.Column;
 public interface ColumnService {
     ColumnDto getColumn(RequestDto requestDto);
 
-    ColumnDto updateColumn(ColumnDto column);
+    boolean updateColumn(ColumnDto column);
 
     boolean deleteColumn(ColumnDto column);
 

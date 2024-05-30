@@ -84,12 +84,82 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
     @Transactional
     public boolean addColumn(SessionFactory sessionFactory, ColumnDto columnDto) {
         Session session = sessionFactory.openSession();
+        Transaction transaction = null;
+        try {
+            if (!tableExists(session, columnDto.getSchemaName(), columnDto.getTableName())) {
+                throw new RuntimeException("Table does not exist");
+            }
+            if (columnExists(session, columnDto.getSchemaName(), columnDto.getTableName(), columnDto.getName())) {
+                throw new RuntimeException("Column already exists");
+            }
+            return addOrUpdateColumn(sessionFactory, columnDto, "ADD");
+        } catch (RuntimeException e) {
+            transaction.rollback();
+            throw e;
+        } finally {
+            session.close();
+        }
+    }
+
+    @Override
+    public boolean updateColumn(SessionFactory sessionFactory, ColumnDto columnDto) {
+        Session session = sessionFactory.openSession();
+        Transaction transaction = null;
+        try {
+            if (!tableExists(session, columnDto.getSchemaName(), columnDto.getTableName())) {
+                throw new RuntimeException("Table does not exist");
+            }
+            if (!columnExists(session, columnDto.getSchemaName(), columnDto.getTableName(), columnDto.getName())) {
+                throw new RuntimeException("Column does not exist");
+            }
+            return addOrUpdateColumn(sessionFactory, columnDto, "MODIFY");
+        } catch (RuntimeException e) {
+            transaction.rollback();
+            throw e;
+        } finally {
+            session.close();
+        }
+    }
+
+    @Override
+    public boolean deleteColumn(SessionFactory sessionFactory, ColumnDto columnDto) {
+        Session session = sessionFactory.openSession();
+        Transaction transaction = null;
+        try {
+            transaction = session.beginTransaction();
+
+            String schema = columnDto.getSchemaName();
+            String tableName = columnDto.getTableName();
+            String columnName = columnDto.getName();
+
+            // Kiểm tra cột có tồn tại không
+            if (!columnExists(session, schema, tableName, columnName)) {
+                throw new RuntimeException("Column does not exist");
+            }
+
+            // Xóa cột
+            String deleteColumnQuery = String.format("ALTER TABLE %s.%s DROP COLUMN %s", schema, tableName, columnName);
+            session.createNativeQuery(deleteColumnQuery).executeUpdate();
+
+            transaction.commit();
+            return true;
+        } catch (RuntimeException e) {
+            transaction.rollback();
+            throw e;
+        } finally {
+            session.close();
+        }
+
+    }
+
+
+    private boolean addOrUpdateColumn(SessionFactory sessionFactory, ColumnDto columnDto, String action) {
+        Session session = sessionFactory.openSession();
 
         Transaction transaction = null;
 
         try {
             transaction = session.beginTransaction();
-
 
             String schema = columnDto.getSchemaName();
             String tableName = columnDto.getTableName();
@@ -103,8 +173,8 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
             String description = columnDto.getDescription();
 
             StringBuilder alterTableQuery = new StringBuilder();
-            alterTableQuery.append(String.format("ALTER TABLE %s.%s ADD COLUMN %s %s",
-                    schema, tableName, columnName, columnType));
+            alterTableQuery.append(String.format("ALTER TABLE %s.%s %s COLUMN %s %s",
+                    schema, tableName, action, columnName, columnType));
 
             if (size != null) {
                 alterTableQuery.append(String.format("(%d)", size));
@@ -167,17 +237,6 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
         } finally {
             session.close();
         }
-    }
-
-
-    @Override
-    public Column updateColumn(SessionFactory sessionFactory, ColumnDto columnDto) {
-        return null;
-    }
-
-    @Override
-    public boolean deleteColumn(SessionFactory sessionFactory, ColumnDto columnDto) {
-        return false;
     }
 
 

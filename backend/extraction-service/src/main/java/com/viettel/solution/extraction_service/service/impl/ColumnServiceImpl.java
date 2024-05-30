@@ -79,13 +79,53 @@ public class ColumnServiceImpl implements ColumnService {
 
 
     @Override
-    public ColumnDto updateColumn(ColumnDto column) {
-        return null;
+    public boolean updateColumn(ColumnDto column) {
+        try {
+
+            String usernameId = column.getUsernameId();
+            String type = column.getType();
+
+            SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
+            if (sessionFactory == null) {
+                return false;
+            }
+
+            if (type.equalsIgnoreCase("mysql") || type.equalsIgnoreCase("mariadb")) {
+                return columnRepositorySQL.updateColumn(sessionFactory, column);
+
+            } else {
+                return false;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override
     public boolean deleteColumn(ColumnDto column) {
-        return false;
+        try {
+
+            String usernameId = column.getUsernameId();
+            String type = column.getType();
+
+            SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
+            if (sessionFactory == null) {
+                return false;
+            }
+
+            if (type.equalsIgnoreCase("mysql") || type.equalsIgnoreCase("mariadb")) {
+                return columnRepositorySQL.deleteColumn(sessionFactory, column);
+
+            } else {
+                return false;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
 

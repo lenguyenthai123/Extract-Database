@@ -44,9 +44,20 @@ public class ColumnController {
         return ResponseEntity.ok(flag);
     }
 
+    @PutMapping
+    public ResponseEntity<Boolean> updateColumn(@RequestBody @Valid ColumnDto column) {
+
+        boolean flag = columnService.updateColumn(column);
+
+        return ResponseEntity.ok(flag);
+    }
+
     @DeleteMapping
-    public ResponseEntity<Column> deleteColumn() {
-        return null;
+    public ResponseEntity<Boolean> deleteColumn(@RequestBody @Valid ColumnDto column) {
+
+        boolean flag = columnService.deleteColumn(column);
+
+        return ResponseEntity.ok(flag);
     }
 
 }
