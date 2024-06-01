@@ -19,9 +19,7 @@ public class RequestDto {
 
     @NotBlank(message = "usernameId is required")
     private String usernameId;
-
     private String databaseName;
-
     @NotBlank(message = "schemaName is required")
     private String schemaName;
 

@@ -19,7 +19,6 @@ public class ColumnDto {
 
     // Indentify connection
     @NotBlank(message = "usernameId is required")
-
     private String usernameId;
 
     private String databaseName;
@@ -41,7 +40,7 @@ public class ColumnDto {
 
     private Integer size;
 
-    private boolean isPrimaryKey;
+    private boolean primaryKey;
 
     private boolean nullable;
 
@@ -53,6 +52,8 @@ public class ColumnDto {
 
     //Convert from Column to ColumnDto
     public ColumnDto(Column column) {
+        if (column == null)
+            return;
         this.databaseName = column.getDatabaseName();
         this.schemaName = column.getSchemaName();
         this.tableName = column.getTableName();
@@ -60,7 +61,7 @@ public class ColumnDto {
         this.name = column.getName();
         this.dataType = column.getDataType();
         this.size = column.getSize();
-        this.isPrimaryKey = column.isPrimaryKey();
+        this.primaryKey = column.isPrimaryKey();
         this.nullable = column.isNullable();
         this.autoIncrement = column.isAutoIncrement();
         this.defaultValue = column.getDefaultValue();

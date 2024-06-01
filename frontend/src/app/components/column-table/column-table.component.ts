@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms'; // Import FormsModule
 import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { Column } from '../../models/column.model';
-import { ColumnService } from '../../services/column.service';
+import { ColumnService } from '../../services/column/column.service';
 
 @Component({
   selector: 'app-column-table',
@@ -86,8 +86,10 @@ export class ColumnTableComponent {
     if (this.actionInsert) {
       // Call API insert
 
-      const { status, message }: { status: boolean; message: string } =
-        this.columnService.add(this.rows[0]);
+      //      const { status, message }: { status: boolean; message: string } =
+      //        this.columnService.add(this.rows[0]);
+
+      const message: string = 'Thêm cột thành công!';
 
       if (!status) {
         this.appendAlert(message, 'danger');

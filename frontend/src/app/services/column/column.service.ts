@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
-import { Column } from '../models/column.model';
+import { Column } from '../../models/column.model';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 import { throwError, Observable } from 'rxjs';
-
+import { environment } from '../../env/environment';
 @Injectable({
   providedIn: 'root',
 })
 export class ColumnService {
-  private apiUrl = 'http://localhost:8080'; // Đặt URL API của bạn ở đây
+  private apiUrl = environment.apiUrl; // Đặt URL API của bạn ở đây
 
   constructor(private http: HttpClient) {}
 
@@ -40,16 +40,15 @@ export class ColumnService {
 
   // Phương thức POST
   add(column: Column): Observable<Column> {
-    return this.http
-      .get<Column>(`${this.apiUrl}/table`, {
-        params: {
-          type: 'mysql',
-          schemaName: 'football',
-          table: 'players',
-          usernameId: '121212',
-        },
-      })
-      .subscribe({
+    return this.http.get<Column>(`${this.apiUrl}/table`, {
+      params: {
+        type: 'mysql',
+        schemaName: 'football',
+        table: 'players',
+        usernameId: '121212',
+      },
+    });
+    /* .subscribe({
         next: (data) => {
           console.log(data);
         },
@@ -57,7 +56,7 @@ export class ColumnService {
           console.error(error.status);
           console.error(error.message);
         },
-      });
+      });*/
   }
 
   private handleError(error: HttpErrorResponse) {

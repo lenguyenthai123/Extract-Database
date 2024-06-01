@@ -5,6 +5,8 @@ import com.viettel.solution.extraction_service.dto.ColumnDto;
 import com.viettel.solution.extraction_service.dto.RequestDto;
 import com.viettel.solution.extraction_service.entity.*;
 import com.viettel.solution.extraction_service.repository.ColumnRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -24,6 +26,7 @@ import static com.viettel.solution.extraction_service.repository.impl.CommonRepo
 @Repository
 @Qualifier("MySql")
 public class ColumnRepositorySQLImpl implements ColumnRepository {
+
 
     @Override
     public Column getColumn(SessionFactory sessionFactory, RequestDto requestDto) {
@@ -81,10 +84,8 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
     }
 
     @Override
-    @Transactional
     public boolean addColumn(SessionFactory sessionFactory, ColumnDto columnDto) {
         Session session = sessionFactory.openSession();
-        Transaction transaction = null;
         try {
             if (!tableExists(session, columnDto.getSchemaName(), columnDto.getTableName())) {
                 throw new RuntimeException("Table does not exist");
@@ -94,7 +95,6 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
             }
             return addOrUpdateColumn(sessionFactory, columnDto, "ADD");
         } catch (RuntimeException e) {
-            transaction.rollback();
             throw e;
         } finally {
             session.close();
@@ -104,7 +104,6 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
     @Override
     public boolean updateColumn(SessionFactory sessionFactory, ColumnDto columnDto) {
         Session session = sessionFactory.openSession();
-        Transaction transaction = null;
         try {
             if (!tableExists(session, columnDto.getSchemaName(), columnDto.getTableName())) {
                 throw new RuntimeException("Table does not exist");
@@ -114,7 +113,6 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
             }
             return addOrUpdateColumn(sessionFactory, columnDto, "MODIFY");
         } catch (RuntimeException e) {
-            transaction.rollback();
             throw e;
         } finally {
             session.close();
@@ -158,6 +156,7 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
 
         Transaction transaction = null;
 
+        boolean checkRollback = false;
         try {
             transaction = session.beginTransaction();
 
@@ -194,6 +193,7 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
 
             // Execute the query to add the column
             session.createNativeQuery(alterTableQuery.toString()).executeUpdate();
+            checkRollback = true;
 
             // If the column should be a primary key, add it as a primary key
             if (primaryKey != null && primaryKey) {
@@ -224,7 +224,7 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
                     commentQuery.append(" AUTO_INCREMENT");
                 }
 
-                commentQuery.append(String.format(" COMMEvNT '%s'", description));
+                commentQuery.append(String.format(" COMMENT '%s'", description));
 
                 session.createNativeQuery(commentQuery.toString()).executeUpdate();
             }
@@ -232,7 +232,13 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
             transaction.commit();
             return true;
         } catch (RuntimeException e) {
-            transaction.rollback();
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            if(checkRollback)
+            {
+                deleteColumn(sessionFactory, columnDto);
+            }
             throw e;
         } finally {
             session.close();
