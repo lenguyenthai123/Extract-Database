@@ -11,7 +11,9 @@ import org.springframework.stereotype.Component;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Component
@@ -49,5 +51,13 @@ public class Column {
         this.autoIncrement = columnDto.isAutoIncrement();
         this.defaultValue = columnDto.getDefaultValue();
         this.description = columnDto.getDescription();
+    }
+
+    public static List<Column> convertList(List<ColumnDto> columnDtos) {
+        List<Column> columns = new ArrayList<>();
+        for (ColumnDto columnDto : columnDtos) {
+            columns.add(new Column(columnDto));
+        }
+        return columns;
     }
 }

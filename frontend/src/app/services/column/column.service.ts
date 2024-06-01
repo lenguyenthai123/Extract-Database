@@ -13,15 +13,15 @@ export class ColumnService {
   constructor(private http: HttpClient) {}
 
   isValid(column: Column): { status: boolean; message: string } {
-    if (column.fieldName == '') {
+    if (column.name == '') {
       const message = 'Field name must not be empty!';
       return { status: false, message: message };
     }
-    if (column.fieldName.length > 255) {
+    if (column.name.length > 255) {
       const message = 'Field name must not exceed 255 characters!';
       return { status: false, message: message };
     }
-    if (column.fieldName.includes(' ')) {
+    if (column.name.includes(' ')) {
       const message = 'Field name must not contain spaces!';
       return { status: false, message: message };
     }
@@ -48,15 +48,17 @@ export class ColumnService {
         usernameId: '121212',
       },
     });
-    /* .subscribe({
-        next: (data) => {
-          console.log(data);
-        },
-        error: (error: HttpErrorResponse) => {
-          console.error(error.status);
-          console.error(error.message);
-        },
-      });*/
+  }
+
+  getList(): Observable<Column[]> {
+    return this.http.get<Column[]>(`${this.apiUrl}/column/list`, {
+      params: {
+        type: 'mysql',
+        schemaName: 'company',
+        table: 'orders',
+        usernameId: '121212',
+      },
+    });
   }
 
   private handleError(error: HttpErrorResponse) {

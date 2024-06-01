@@ -10,6 +10,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Component
 @Data               // Bao gồm @Getter, @Setter, @ToString, @EqualsAndHashCode, và @RequiredArgsConstructor
 @AllArgsConstructor // Tạo constructor với tất cả các tham số
@@ -66,6 +69,14 @@ public class ColumnDto {
         this.autoIncrement = column.isAutoIncrement();
         this.defaultValue = column.getDefaultValue();
         this.description = column.getDescription();
+    }
+
+    public static List<ColumnDto> convertList(List<Column> columns) {
+        List<ColumnDto> columnDtos = new ArrayList<>();
+        for (Column column : columns) {
+            columnDtos.add(new ColumnDto(column));
+        }
+        return columnDtos;
     }
 
 }

@@ -1,6 +1,6 @@
 export interface Column {
   id: number;
-  fieldName: string;
+  name: string;
   dataType: string;
   nullable: boolean;
   autoIncrement: boolean;

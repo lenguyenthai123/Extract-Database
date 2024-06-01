@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/column")
 public class ColumnController {
@@ -34,6 +36,20 @@ public class ColumnController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(column);
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<?> getAllColumn(@ModelAttribute RequestDto requestDto) {
+        if (requestDto.getTable().isBlank()) {
+            return ResponseEntity.badRequest().body("Table name is required");
+        }
+
+        List<ColumnDto> columns = columnService.getAllColumn(requestDto);
+
+        if (columns == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(columns);
     }
 
     @PostMapping

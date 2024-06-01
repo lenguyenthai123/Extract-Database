@@ -13,6 +13,7 @@ import { Connection } from '../../models/connection.model';
 import { ConnectionService } from '../../services/connection/connection.service';
 import { RouterOutlet, RouterLink, Router } from '@angular/router';
 import { ColumnTableComponent } from '../column-table/column-table.component';
+import { DataService } from '../../services/data/data.service';
 
 @Component({
   selector: 'app-connection',
@@ -42,7 +43,8 @@ export class ConnectionComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private connectionService: ConnectionService,
-    private router: Router
+    private router: Router,
+    private dataService: DataService
   ) {}
   ngAfterViewInit() {
     this.alertPlaceholder = document.getElementById('liveAlertPlaceholder');
@@ -60,6 +62,9 @@ export class ConnectionComponent implements OnInit {
     // Gọi service để kết nối đến database
     this.connectionService.connect(connection).subscribe({
       next: (data) => {
+        // Saving type of database
+        this.dataService.saveData('type', connection.type);
+
         this.message = 'Kết nối thành công';
         this.status = 'success';
 

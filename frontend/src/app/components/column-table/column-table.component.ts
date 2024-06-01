@@ -1,10 +1,10 @@
-import { booleanAttribute, Component } from '@angular/core';
+import { booleanAttribute, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms'; // Import FormsModule
 import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { Column } from '../../models/column.model';
 import { ColumnService } from '../../services/column/column.service';
-
+import { DataService } from '../../services/data/data.service';
 @Component({
   selector: 'app-column-table',
   standalone: true,
@@ -12,9 +12,11 @@ import { ColumnService } from '../../services/column/column.service';
   templateUrl: './column-table.component.html',
   styleUrl: './column-table.component.scss',
 })
-export class ColumnTableComponent {
+export class ColumnTableComponent implements OnInit {
   preRows: Column[] = [];
   rows: Column[] = [];
+
+  typeOfDatabase: string = '';
 
   numberChanged: number = 0;
   changedList: [number, number][] = [];
@@ -29,46 +31,55 @@ export class ColumnTableComponent {
   actionUpdate: boolean = false;
   actionDelete: boolean = false;
 
-  constructor(private columnService: ColumnService) {
-    // Thêm một hàng mẫu ban đầu
-    this.rows.push({
-      id: 1,
-      fieldName: 'field_name',
-      dataType: 'VARCHAR(255)',
-      nullable: false, // Giá trị mặc định là false
-      autoIncrement: false, // Giá trị mặc định là false
-      primaryKey: false, // Giá trị mặc định là false
-      defaultValue: 'NULL',
-      description: 'Description',
-      disabled: false,
-    });
-  }
+  isLoading: boolean = false;
+  isDone: boolean = false;
+  status: string = '';
+  message: string = '';
+
+  constructor(
+    private columnService: ColumnService,
+    private dataService: DataService
+  ) {}
 
   ngAfterViewInit() {
     this.alertPlaceholder = document.getElementById('liveAlertPlaceholder');
     this.alertTrigger = document.getElementById('liveAlertBtn');
   }
 
-  appendAlert = (message: String, type: String) => {
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = [
-      `<div class="alert alert-${type} alert-dismissible" role="alert">`,
-      `   <div>${message}</div>`,
-      '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
-      '</div>',
-    ].join('');
+  ngOnInit(): void {
+    this.isLoading = true;
 
-    if (this.alertPlaceholder !== null) {
-      const alertElement = this.alertPlaceholder.appendChild(wrapper);
-
-      // Tự động ẩn thông báo sau 3 giây
-      setTimeout(() => {
-        if (alertElement && alertElement.parentNode) {
-          alertElement.parentNode.removeChild(alertElement);
+    this.columnService.getList().subscribe({
+      next: (data) => {
+        this.preRows = data;
+        this.rows = data;
+        // Cập nhật lại id cho từng hàng
+        for (let i = 0; i < this.rows.length; i++) {
+          this.rows[i].id = i + 1;
         }
-      }, 3000);
-    }
-  };
+
+        this.isLoading = false;
+
+        console.log('Data: ', data);
+      },
+      error: (error) => {
+        this.isLoading = false;
+
+        this.raiseAlert('Lỗi kết nối đến server', 'danger');
+
+        console.error('There was an error!', error);
+      },
+    });
+  }
+  turnOffNotify() {
+    this.isDone = false;
+  }
+
+  raiseAlert(message: string, type: string): void {
+    this.message = message;
+    this.status = type;
+    this.isDone = true;
+  }
 
   save() {
     // Xử lý validation
@@ -77,7 +88,7 @@ export class ColumnTableComponent {
         this.columnService.isValid(this.rows[i]);
 
       if (!status) {
-        this.appendAlert(message, 'danger');
+        this.raiseAlert(message, 'danger');
         return;
       }
     }
@@ -92,7 +103,7 @@ export class ColumnTableComponent {
       const message: string = 'Thêm cột thành công!';
 
       if (!status) {
-        this.appendAlert(message, 'danger');
+        this.raiseAlert(message, 'danger');
         return;
       }
       // Call API.
@@ -104,7 +115,7 @@ export class ColumnTableComponent {
       // Enable toàn bộ row.
       this.enableAllRows();
 
-      this.appendAlert('Thêm cột thành công!', 'success');
+      this.raiseAlert('Thêm cột thành công!', 'success');
       this.actionInsert = false;
     }
 
@@ -117,10 +128,10 @@ export class ColumnTableComponent {
         const { status, message: msg }: { status: boolean; message: string } =
           this.columnService.isValid(this.rows[rowId - 1]);
         if (!status) {
-          this.appendAlert(msg, 'danger');
+          this.raiseAlert(msg, 'danger');
         } else {
           // Call API.
-          this.appendAlert('Update successfully!', 'success');
+          this.raiseAlert('Update successfully!', 'success');
           this.actionUpdate = false;
         }
       }
@@ -138,7 +149,7 @@ export class ColumnTableComponent {
     this.actionInsert = true;
     this.rows.unshift({
       id: this.rows.length + 1,
-      fieldName: '',
+      name: '',
       dataType: '',
       nullable: false, // Giá trị mặc định là false
       autoIncrement: false, // Giá trị mặc định là false

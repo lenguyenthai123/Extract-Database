@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -82,6 +83,61 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public List<Column> getAllColumn(SessionFactory sessionFactory, RequestDto requestDto) {
+        try {
+            List<Column> columns = new ArrayList<>();
+
+            DatabaseMetaData metaData = DatabaseConnection.getDatabaseMetaData(sessionFactory);
+
+            String databaseName = requestDto.getDatabaseName();
+            String schemaName = requestDto.getSchemaName();
+            String tableName = requestDto.getTable();
+
+            // Lấy thông tin các khóa chính của bảng để xác định cột nào là khóa chính
+            Set<String> primaryKeys = new HashSet<>();
+            try (ResultSet primaryKeysResultSet = metaData.getPrimaryKeys(databaseName, schemaName, tableName)) {
+                while (primaryKeysResultSet.next()) {
+                    String primaryKey = primaryKeysResultSet.getString("COLUMN_NAME");
+                    primaryKeys.add(primaryKey);
+                }
+            }
+
+            // Lấy các cột trong bảng
+            try (ResultSet columnsResultSet = metaData.getColumns(databaseName, schemaName, tableName, "%")) {
+                while (columnsResultSet.next()) {
+                    String name = columnsResultSet.getString("COLUMN_NAME");
+                    String dataType = columnsResultSet.getString("TYPE_NAME");
+                    Integer columnSize = columnsResultSet.getInt("COLUMN_SIZE");
+                    Boolean isNullable = "YES".equals(columnsResultSet.getString("IS_NULLABLE"));
+                    Boolean isAutoIncrement = "YES".equals(columnsResultSet.getString("IS_AUTOINCREMENT"));
+                    String defaultValue = columnsResultSet.getString("COLUMN_DEF");
+                    String description = columnsResultSet.getString("REMARKS");
+
+                    // Kiểm tra cột có phải là khóa chính không
+                    Boolean isPrimaryKey = primaryKeys.contains(name);
+
+                    Column column = Column.builder()
+                            .name(name)
+                            .dataType(dataType)
+                            .size(columnSize)
+                            .isPrimaryKey(isPrimaryKey)
+                            .description(description)
+                            .autoIncrement(isAutoIncrement)
+                            .defaultValue(defaultValue)
+                            .nullable(isNullable)
+                            .build();
+
+                    columns.add(column);
+                }
+            }
+            return columns;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     @Override
     public boolean addColumn(SessionFactory sessionFactory, ColumnDto columnDto) {
@@ -235,8 +291,7 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
             if (transaction != null) {
                 transaction.rollback();
             }
-            if(checkRollback)
-            {
+            if (checkRollback) {
                 deleteColumn(sessionFactory, columnDto);
             }
             throw e;

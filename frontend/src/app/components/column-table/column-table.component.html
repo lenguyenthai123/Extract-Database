@@ -12,27 +12,32 @@
     />
   </head>
   <body>
-    <div id="liveAlertPlaceholder"></div>
+    @if(isDone) {
+    <div
+      [ngClass]="{
+        alert: true,
+        'alert-dismissible': true,
+        'alert-success': status === 'success',
+        'alert-danger': status === 'danger'
+      }"
+      role="alert"
+    >
+      <div>{{ message }}</div>
 
-    <div class="d-flex justify-content-between mb-3">
-      <div>
-        <button class="btn btn-outline-secondary">
-          <i class="bi bi-file-earmark"></i>
-        </button>
-        <button class="btn btn-outline-secondary">
-          <i class="bi bi-arrow-left"></i>
-        </button>
-        <button class="btn btn-outline-secondary">
-          <i class="bi bi-arrow-right"></i>
-        </button>
-        <button class="btn btn-outline-secondary">
-          <i class="bi bi-arrow-clockwise"></i>
-        </button>
-        <button class="btn btn-outline-secondary">Filters</button>
-        <button class="btn btn-outline-secondary">Columns</button>
-      </div>
-      <button class="btn btn-dark">Add record</button>
+      <button
+        type="button"
+        (click)="turnOffNotify()"
+        class="btn-close"
+        data-bs-dismiss="alert"
+        aria-label="Close"
+      ></button>
     </div>
+    } @if(isLoading) {
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    }
+
     <div class="navigate-table mb-3 d-flex">
       <h2>Table: Invoice</h2>
       <button type="button" class="btn btn-outline-secondary margin-buton">
@@ -100,7 +105,7 @@
             <td>
               <input
                 type="text"
-                [(ngModel)]="row.fieldName"
+                [(ngModel)]="row.name"
                 [disabled]="row['disabled']"
                 (ngModelChange)="onFieldChange($event, row.id, 1)"
                 required

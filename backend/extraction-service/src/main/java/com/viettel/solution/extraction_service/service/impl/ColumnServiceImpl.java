@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ColumnServiceImpl implements ColumnService {
 
@@ -53,6 +55,33 @@ public class ColumnServiceImpl implements ColumnService {
     }
 
     @Override
+    public List<ColumnDto> getAllColumn(RequestDto requestDto) {
+        try {
+            String usernameId = requestDto.getUsernameId();
+            String type = requestDto.getType();
+
+            SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
+            if (sessionFactory == null) {
+                return null;
+            }
+
+            if (type.equalsIgnoreCase("mysql") || type.equalsIgnoreCase("mariadb")) {
+                List<Column> columns = columnRepositorySQL.getAllColumn(sessionFactory, requestDto);
+
+                return ColumnDto.convertList(columns);
+            } else {
+
+                return null;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+    @Override
     public boolean addColumn(ColumnDto column) {
         try {
 
@@ -70,7 +99,6 @@ public class ColumnServiceImpl implements ColumnService {
             } else {
                 return false;
             }
-
         } catch (Exception e) {
             e.printStackTrace();
             return false;
