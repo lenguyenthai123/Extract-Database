@@ -36,7 +36,7 @@ export class ConnectionService {
         username: con.username,
         password: con.password,
         databaseName: '',
-        usernameId: '121212',
+        usernameId: '12',
       },
       requestOptions
     );

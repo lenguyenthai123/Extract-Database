@@ -32,7 +32,7 @@ public class RequestDto {
     private String host;
     private String port;
 
-    private String table;
+    private String tableName;
     private String column;
     private String constraint;
     private String index;

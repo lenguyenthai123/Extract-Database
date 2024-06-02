@@ -1,16 +1,22 @@
 import { Injectable } from '@angular/core';
 import { Column } from '../../models/column.model';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { catchError } from 'rxjs/operators';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpParams,
+  HttpHeaders,
+} from '@angular/common/http';
+import { catchError, count } from 'rxjs/operators';
 import { throwError, Observable } from 'rxjs';
 import { environment } from '../../env/environment';
+import { DataService } from '../data/data.service';
 @Injectable({
   providedIn: 'root',
 })
 export class ColumnService {
   private apiUrl = environment.apiUrl; // Đặt URL API của bạn ở đây
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private dataService: DataService) {}
 
   isValid(column: Column): { status: boolean; message: string } {
     if (column.name == '') {
@@ -38,30 +44,55 @@ export class ColumnService {
     return { status: true, message: '' };
   }
 
+  createParams(): HttpParams {
+    return new HttpParams()
+      .set('type', this.dataService.getData('type'))
+      .set('schemaName', this.dataService.getData('schemaName'))
+      .set('tableName', this.dataService.getData('tableName'))
+      .set('usernameId', '12');
+  }
+
+  httpOptionsWithJson = {
+    headers: new HttpHeaders({
+      'Content-Type': 'application/json',
+    }),
+  };
   // Phương thức POST
-  add(column: Column): Observable<Column> {
-    return this.http.get<Column>(`${this.apiUrl}/table`, {
-      params: {
-        type: 'mysql',
-        schemaName: 'football',
-        table: 'players',
-        usernameId: '121212',
+  add(column: Column): Observable<unknown> {
+    return this.http.post<unknown>(
+      `${this.apiUrl}/column`,
+      {
+        type: this.dataService.getData('type'),
+        schemaName: this.dataService.getData('schemaName'),
+        tableName: this.dataService.getData('tableName'),
+
+        usernameId: '12',
+        name: column.name,
+        dataType: column.dataType,
+        size: '',
+        primaryKey: column.primaryKey,
+        nullable: column.nullable,
+        autoIncrement: column.autoIncrement,
+        defaultValue: column.defaultValue,
+        description: column.description,
       },
+      this.httpOptionsWithJson
+    );
+  }
+
+  getList(tableName: string): Observable<Column[]> {
+    let params = this.createParams();
+    return this.http.get<Column[]>(`${this.apiUrl}/column/list`, {
+      params: params,
     });
   }
 
-  getList(
-    type: string,
-    schemaName: string,
-    tableName: string
-  ): Observable<Column[]> {
-    return this.http.get<Column[]>(`${this.apiUrl}/column/list`, {
-      params: {
-        type: type,
-        schemaName: schemaName,
-        table: tableName,
-        usernameId: '121212',
-      },
+  detele(column: Column): Observable<unknown> {
+    let params = this.createParams();
+    console.log(params);
+    params = params.set('name', column.name);
+    return this.http.delete<unknown>(`${this.apiUrl}/column`, {
+      params: params,
     });
   }
 

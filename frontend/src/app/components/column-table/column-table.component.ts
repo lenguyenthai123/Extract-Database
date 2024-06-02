@@ -1,4 +1,10 @@
-import { booleanAttribute, Component, OnInit } from '@angular/core';
+import {
+  booleanAttribute,
+  Component,
+  OnInit,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms'; // Import FormsModule
 import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
@@ -6,6 +12,7 @@ import { Column } from '../../models/column.model';
 import { ColumnService } from '../../services/column/column.service';
 import { DataService } from '../../services/data/data.service';
 import { Table } from '../../models/table.model';
+
 @Component({
   selector: 'app-column-table',
   standalone: true,
@@ -27,6 +34,7 @@ export class ColumnTableComponent implements OnInit {
 
   alertPlaceholder: HTMLElement | null = null;
   alertTrigger: HTMLElement | null = null;
+  liveToast: ElementRef | null = null;
 
   actionInsert: boolean = false;
   actionUpdate: boolean = false;
@@ -66,11 +74,7 @@ export class ColumnTableComponent implements OnInit {
   }
 
   loadAllColumns() {
-    const type = this.dataService.getData('type');
-    const schema = this.dataService.getData('schema');
-    const table = this.table.name;
-
-    this.columnService.getList(type, schema, table).subscribe({
+    this.columnService.getList(this.table.name).subscribe({
       next: (data) => {
         this.preRows = data;
         this.rows = data;
@@ -115,32 +119,49 @@ export class ColumnTableComponent implements OnInit {
       }
     }
 
+    // Variable to control
+    let checkInsert: boolean = true;
+    let checkUpdate: boolean = true;
+
     // Xử lý trường hợp Insert
     if (this.actionInsert) {
-      // Call API insert
-
-      //      const { status, message }: { status: boolean; message: string } =
-      //        this.columnService.add(this.rows[0]);
-
-      const message: string = 'Thêm cột thành công!';
-
-      if (!status) {
-        this.raiseAlert(message, 'danger');
-        return;
-      }
+      checkInsert = true;
       // Call API.
+      console.log(this.rows[0]);
 
-      // Xóa hàng mẫu và thêm vào cuối.
-      this.rows.push(this.rows[0]);
-      this.rows.splice(0, 1);
+      this.columnService.add(this.rows[0]).subscribe({
+        next: (data) => {
+          if (data === true) {
+            alert(data);
+            console.log(data);
 
-      // Enable toàn bộ row.
-      this.enableAllRows();
+            // Xóa hàng mẫu và thêm vào cuối.
+            this.rows.push(this.rows[0]);
+            this.rows.splice(0, 1);
 
-      this.raiseAlert('Thêm cột thành công!', 'success');
-      this.actionInsert = false;
+            // Enable toàn bộ row.
+            this.enableAllRows();
+
+            this.raiseAlert('Thêm cột thành công!', 'success');
+            this.actionInsert = false;
+
+            // Bật chức năng thêm và tắt chức năng save
+            checkInsert = true;
+
+            // Update old row
+            this.preRows.unshift(this.rows[0]);
+          } else {
+            this.raiseAlert('Thêm cột thất bại', 'danger');
+          }
+        },
+        error: (error) => {
+          console.log(error.error);
+          this.raiseAlert('Thêm cột thất bại', 'danger');
+        },
+      });
     }
 
+    /*
     //Xử lý trường hợp Update
     if (this.actionUpdate) {
       let message: String = '';
@@ -158,42 +179,51 @@ export class ColumnTableComponent implements OnInit {
         }
       }
     }
-
-    // Bật chức năng thêm và tắt chức năng save
-    this.enableSaveAndDiscardBtn(false);
+    */
 
     //reset numberChanged
-    this.numberChanged = 0;
-    this.changedList = [];
+
+    if (checkInsert && checkUpdate) {
+      this.enableSaveAndDiscardBtn(false);
+      this.numberChanged = 0;
+      this.changedList = [];
+    }
   }
 
   addRow() {
+    // Assign flag insert true
     this.actionInsert = true;
-    this.rows.unshift({
-      id: this.rows.length + 1,
-      name: '',
-      dataType: '',
-      nullable: false, // Giá trị mặc định là false
-      autoIncrement: false, // Giá trị mặc định là false
-      primaryKey: false, // Giá trị mặc định là false
-      defaultValue: '',
-      description: '',
-      disabled: false,
-    });
-    this.disableAllRowsExcept(this.rows.length - 1);
+
+    // Create new column
+    let column: Column = new Column();
+    column.id = this.rows.length + 1;
+    this.rows.unshift(column);
+
+    // Disable all rows except the first row
+    this.disableAllRowsExcept();
     this.enableSaveAndDiscardBtn(true);
   }
 
   deleteRow(index: number) {
-    this.rows.splice(index, 1);
-    for (let i = 0; i < this.rows.length; i++) {
-      this.rows[i].id = i + 1;
-    }
-  }
-  disableAllRowsExcept(rowId: number) {
-    this.rows.forEach((row) => {
-      row['disabled'] = row.id === rowId;
+    this.columnService.detele(this.rows[index]).subscribe({
+      next: (data) => {
+        alert(data);
+        console.log(data);
+
+        this.rows.splice(index, 1);
+        for (let i = 0; i < this.rows.length; i++) {
+          this.rows[i].id = i + 1;
+        }
+      },
+      error: (error) => {
+        console.log(error);
+      },
     });
+  }
+  disableAllRowsExcept() {
+    for (let i = 1; i < this.rows.length; i++) {
+      this.rows[i]['disabled'] = true;
+    }
   }
   enableAllRows() {
     this.rows.forEach((row) => {
@@ -219,9 +249,29 @@ export class ColumnTableComponent implements OnInit {
       this.numberChanged++;
     }
   }
+  updateChanged(rowId: number) {
+    let check: boolean = false;
+    for (let i = this.changedList.length - 1; i >= 0; i--) {
+      {
+        if (this.changedList[i][0] == rowId) {
+          check = true;
+          this.changedList.splice(i, 1);
+          this.numberChanged--;
+        }
+      }
+    }
+    if (check && this.numberChanged == 0) {
+      this.enableSaveAndDiscardBtn(false);
+    }
+  }
 
-  discard() {
-    return 1;
+  discardChanged() {
+    for (let i = 0; i < this.preRows.length; i++) {
+      this.rows[i].set(this.preRows[i]);
+    }
+    this.enableSaveAndDiscardBtn(false);
+    this.numberChanged = 0;
+    this.changedList = [];
   }
 
   enableSaveAndDiscardBtn(flag: boolean) {

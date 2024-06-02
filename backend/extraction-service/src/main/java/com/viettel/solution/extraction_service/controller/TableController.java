@@ -20,7 +20,6 @@ public class TableController {
 
     @GetMapping("/list")
     public ResponseEntity<List<Table>> getTable(@ModelAttribute RequestDto req) {
-        System.out.println("Table name" + req.getTable());
         List<Table> tables = tableService.getAllName(req);
         if (tables == null) {
             return ResponseEntity.notFound().build();

@@ -38,7 +38,7 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
 
             String databaseName = requestDto.getDatabaseName();
             String schemaName = requestDto.getSchemaName();
-            String tableName = requestDto.getTable();
+            String tableName = requestDto.getTableName();
             String columnName = requestDto.getColumn();
 
             // Lấy thông tin các khóa chính của bảng để xác định cột nào là khóa chính
@@ -93,7 +93,7 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
 
             String databaseName = requestDto.getDatabaseName();
             String schemaName = requestDto.getSchemaName();
-            String tableName = requestDto.getTable();
+            String tableName = requestDto.getTableName();
 
             // Lấy thông tin các khóa chính của bảng để xác định cột nào là khóa chính
             Set<String> primaryKeys = new HashSet<>();

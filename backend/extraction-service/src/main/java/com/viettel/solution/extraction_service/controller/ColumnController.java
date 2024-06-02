@@ -26,7 +26,7 @@ public class ColumnController {
         if (requestDto.getColumn().isBlank()) {
             return ResponseEntity.badRequest().body("Column name is required");
         }
-        if (requestDto.getTable().isBlank()) {
+        if (requestDto.getTableName().isBlank()) {
             return ResponseEntity.badRequest().body("Table name is required");
         }
 
@@ -40,7 +40,7 @@ public class ColumnController {
 
     @GetMapping("/list")
     public ResponseEntity<?> getAllColumn(@ModelAttribute RequestDto requestDto) {
-        if (requestDto.getTable().isBlank()) {
+        if (requestDto.getTableName().isBlank()) {
             return ResponseEntity.badRequest().body("Table name is required");
         }
 
@@ -69,7 +69,7 @@ public class ColumnController {
     }
 
     @DeleteMapping
-    public ResponseEntity<Boolean> deleteColumn(@RequestBody @Valid ColumnDto column) {
+    public ResponseEntity<Boolean> deleteColumn(@ModelAttribute ColumnDto column) {
 
         boolean flag = columnService.deleteColumn(column);
 

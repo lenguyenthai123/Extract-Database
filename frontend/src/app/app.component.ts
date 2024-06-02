@@ -3,6 +3,7 @@ import { RouterOutlet, Router, RouterModule } from '@angular/router';
 import { ColumnTableComponent } from './components/column-table/column-table.component';
 import { ConnectionComponent } from './components/connection/connection.component';
 import { DatabaseComponent } from './components/database/database.component';
+import { ApplicationConfig } from '@angular/core';
 @Component({
   selector: 'app-root',
   standalone: true,

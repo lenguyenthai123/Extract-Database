@@ -69,7 +69,7 @@ export class DatabaseComponent {
           this.schemas.push({ id: i, name: data[i] });
         }
         this.onLoadAllTable(this.schemas[0].name);
-        this.dataService.saveData('schema', this.schemas[0].name);
+        this.dataService.saveData('schemaName', this.schemas[0].name);
 
         console.log(data);
       },
@@ -81,7 +81,7 @@ export class DatabaseComponent {
   }
   onSchemaChange(event: any) {
     const schemaName: string = event.target.value;
-    this.dataService.saveData('schema', schemaName);
+    this.dataService.saveData('schemaName', schemaName);
     this.onLoadAllTable(schemaName);
   }
 
@@ -93,7 +93,7 @@ export class DatabaseComponent {
           this.tables[i].id = i + 1;
         }
         this.chosenTable = this.tables[0];
-
+        this.dataService.saveData('tableName', this.tables[0].name);
         this.dataService.pulishString(this.chosenTable);
       },
 
@@ -105,6 +105,7 @@ export class DatabaseComponent {
 
   onTableSelect(table: Table) {
     this.chosenTable = table;
+    this.dataService.saveData('tableName', this.chosenTable.name);
     this.dataService.pulishString(this.chosenTable);
   }
 }
