@@ -70,7 +70,7 @@ export class ConnectionComponent implements OnInit {
 
         this.isDone = true;
         this.isLoading = false;
-        this.router.navigate(['/column-table']);
+        this.router.navigate(['/database']);
       },
       error: (error) => {
         this.message = 'Kết nối thất bại';
@@ -89,7 +89,7 @@ export class ConnectionComponent implements OnInit {
     this.connectionForm = this.fb.group({
       // Define the form controls
       host: new FormControl('localhost', [Validators.required]),
-      port: new FormControl('3307', [Validators.required]),
+      port: new FormControl('3306', [Validators.required]),
       type: new FormControl('mysql', [Validators.required]),
       serviceName: new FormControl(''),
       username: new FormControl('root', [Validators.required]),

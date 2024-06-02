@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
+import java.util.List;
 
 @Service
 public class TableServiceImpl implements TableService {
@@ -25,11 +26,13 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
-    public Table getTableStructure(RequestDto requestDto) {
+    public List<Table> getAllName(RequestDto requestDto) {
         try {
 
             String usernameId = requestDto.getUsernameId();
             String type = requestDto.getType();
+            String databaseName = requestDto.getDatabaseName();
+            String schema = requestDto.getSchemaName();
 
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
             if (sessionFactory == null) {
@@ -37,9 +40,9 @@ public class TableServiceImpl implements TableService {
             }
 
             if (type.equalsIgnoreCase("mysql") || type.equalsIgnoreCase("mariadb")) {
-                Table table = tableRepository.getTable(sessionFactory, requestDto.getDatabaseName(), requestDto.getSchemaName(), requestDto.getTable());
+                List<Table> tables = tableRepository.getAllTableName(sessionFactory, databaseName, schema);
 
-                return table;
+                return tables;
             } else {
                 return null;
             }

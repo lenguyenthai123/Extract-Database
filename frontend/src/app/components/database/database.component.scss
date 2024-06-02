@@ -52,10 +52,18 @@ aside {
 }
 .navigate-table {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.navigate-option {
+  display: flex;
   flex-direction: row;
   align-items: center;
   flex-wrap: wrap;
 }
+
 .margin-buton {
   margin-left: 20px;
 }
@@ -95,4 +103,17 @@ aside {
   text-align: center;
   color: rgb(25, 25, 25);
   font-family: intervariable, sans-serif;
+}
+.table-list-item {
+  font-weight: 500;
+  color: rgb(38, 38, 38);
+  font-family: intervariable, sans-serif, ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-size: 14px;
+  border: 0px;
+  cursor: pointer;
+}
+.table-list-item:hover {
+  background-color: #ece5e5; /* Thay đổi màu nền khi hover */
+  color: #000; /* Thay đổi màu chữ khi hover */
 }

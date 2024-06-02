@@ -124,4 +124,29 @@ public class TableRepositorySQLImpl implements TableRepository {
         }
     }
 
+    @Override
+    public List<Table> getAllTableName(SessionFactory sessionFactory, String databaseName, String schemaName) {
+        try {
+            List<Table> tables = new ArrayList<>();
+            DatabaseMetaData metaData = DatabaseConnection.getDatabaseMetaData(sessionFactory);
+            if (metaData == null) {
+                return null;
+            }
+            try (ResultSet tablesResultSet = metaData.getTables(databaseName, schemaName, "%", new String[]{"TABLE"})) {
+
+                while (tablesResultSet.next()) {
+                    String tableName = tablesResultSet.getString("TABLE_NAME");
+                    String description = tablesResultSet.getString("REMARKS");
+                    if (tableName.equals("sys_config")) {
+                        continue;
+                    }
+                    Table table = Table.builder().name(tableName).description(description).build();
+                    tables.add(table);
+                }
+                return tables;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

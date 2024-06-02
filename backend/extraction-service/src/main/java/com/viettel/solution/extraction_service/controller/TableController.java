@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/table")
 public class TableController {
@@ -16,15 +18,14 @@ public class TableController {
     @Autowired
     private TableService tableService;
 
-    @GetMapping
-    public ResponseEntity<Table> getTable(@ModelAttribute RequestDto req) {
+    @GetMapping("/list")
+    public ResponseEntity<List<Table>> getTable(@ModelAttribute RequestDto req) {
         System.out.println("Table name" + req.getTable());
-        Table table = tableService.getTableStructure(req);
-        if (table == null) {
-            return ResponseEntity.badRequest().body(null);
+        List<Table> tables = tableService.getAllName(req);
+        if (tables == null) {
+            return ResponseEntity.notFound().build();
         } else {
-            return ResponseEntity.ok(table);
+            return ResponseEntity.ok(tables);
         }
-
     }
 }

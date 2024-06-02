@@ -1,108 +1,118 @@
 <!-- src/app/database-form/database-form.component.html -->
-<div class="container">
-  <div id="liveAlertPlaceholder"></div>
+<div class="container-fluid">
+  <div class="row row1">
+    <div class="col-lg-4"></div>
+    <div class="col-lg-4">
+      <div id="liveAlertPlaceholder"></div>
 
-  @if(isDone) {
-  <div
-    [ngClass]="{
-      alert: true,
-      'alert-dismissible': true,
-      'alert-success': status === 'success',
-      'alert-danger': status === 'danger'
-    }"
-    role="alert"
-  >
-    <div>{{ message }}</div>
+      @if(isDone) {
+      <div
+        [ngClass]="{
+          alert: true,
+          'alert-dismissible': true,
+          'alert-success': status === 'success',
+          'alert-danger': status === 'danger'
+        }"
+        role="alert"
+      >
+        <div>{{ message }}</div>
 
-    <button
-      type="button"
-      class="btn-close"
-      data-bs-dismiss="alert"
-      aria-label="Close"
-    ></button>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="Close"
+        ></button>
+      </div>
+      } @if(isLoading) {
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      }
+      <h2>Database Information Form</h2>
+      <form [formGroup]="connectionForm" (ngSubmit)="handleSubmit()">
+        <div class="form-group">
+          <label for="host">Host:</label>
+          <input
+            type="text"
+            id="host"
+            formControlName="host"
+            class="form-control design-select"
+          />
+        </div>
+        @if(isFieldInvalid('host')){
+        <div class="text-danger">Host is required.</div>
+        }
+        <div class="form-group">
+          <label for="port">Port:</label>
+          <input
+            type="number"
+            id="port"
+            formControlName="port"
+            class="form-control design-select"
+          />
+        </div>
+        @if(isFieldInvalid('port')){
+        <div class="text-danger">Port is required.</div>
+        }
+        <div class="form-group">
+          <label for="type">Type of Database:</label>
+          <select
+            id="type"
+            formControlName="type"
+            class="form-control design-select"
+          >
+            <option value="" disabled>Select</option>
+            <option value="mysql">MySQL</option>
+            <option value="mariadb">MariaDB</option>
+            <option value="oracle">Oracle</option>
+          </select>
+        </div>
+        @if(isFieldInvalid('type')){
+        <div class="text-danger">Type is required.</div>
+        }
+        <div class="form-group">
+          <label for="url">Service name:</label>
+          <input
+            type="text"
+            placeholder="If type is Oracle, enter service name here."
+            id="url"
+            formControlName="serviceName"
+            class="form-control design-select"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="username">Username:</label>
+          <input
+            type="text"
+            id="username"
+            formControlName="username"
+            class="form-control design-select"
+          />
+        </div>
+        @if(isFieldInvalid('username')){
+        <div class="text-danger">Username is required.</div>
+        }
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input
+            type="password"
+            id="password"
+            formControlName="password"
+            class="form-control design-select"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="connectionForm.invalid || checkConnectionForm()"
+        >
+          Connect
+        </button>
+      </form>
+    </div>
+    <div class="col-lg-4"></div>
   </div>
-  } @if(isLoading) {
-  <div class="spinner-border text-primary" role="status">
-    <span class="visually-hidden">Loading...</span>
-  </div>
-  }
-  <h1>Database Information Form</h1>
-  <form [formGroup]="connectionForm" (ngSubmit)="handleSubmit()">
-    <div class="form-group">
-      <label for="host">Host:</label>
-      <input
-        type="text"
-        id="host"
-        formControlName="host"
-        class="form-control"
-      />
-    </div>
-    @if(isFieldInvalid('host')){
-    <div class="text-danger">Host is required.</div>
-    }
-    <div class="form-group">
-      <label for="port">Port:</label>
-      <input
-        type="number"
-        id="port"
-        formControlName="port"
-        class="form-control"
-      />
-    </div>
-    @if(isFieldInvalid('port')){
-    <div class="text-danger">Port is required.</div>
-    }
-    <div class="form-group">
-      <label for="type">Type of Database:</label>
-      <select id="type" formControlName="type" class="form-control">
-        <option value="" disabled>Select</option>
-        <option value="mysql">MySQL</option>
-        <option value="mariadb">MariaDB</option>
-        <option value="oracle">Oracle</option>
-      </select>
-    </div>
-    @if(isFieldInvalid('type')){
-    <div class="text-danger">Type is required.</div>
-    }
-    <div class="form-group">
-      <label for="url">Service name:</label>
-      <input
-        type="text"
-        placeholder="If type is Oracle, enter service name here."
-        id="url"
-        formControlName="serviceName"
-        class="form-control"
-      />
-    </div>
-
-    <div class="form-group">
-      <label for="username">Username:</label>
-      <input
-        type="text"
-        id="username"
-        formControlName="username"
-        class="form-control"
-      />
-    </div>
-    @if(isFieldInvalid('username')){
-    <div class="text-danger">Username is required.</div>
-    }
-    <div class="form-group">
-      <label for="password">Password:</label>
-      <input
-        type="password"
-        id="password"
-        formControlName="password"
-        class="form-control"
-      />
-    </div>
-
-    <button
-      type="submit"
-      class="btn btn-primary"
-      [disabled]="connectionForm.invalid || checkConnectionForm()"
-    >
-      Connect
-    </button>
-  </form>
 </div>

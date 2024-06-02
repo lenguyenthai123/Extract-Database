@@ -13,4 +13,6 @@ public interface TableRepository {
 
     public List<Table> getAllTable(SessionFactory sessionFactory, String databaseName, String schemaName);
 
+    public List<Table> getAllTableName(SessionFactory sessionFactory, String databaseName, String schemaName);
+
 }

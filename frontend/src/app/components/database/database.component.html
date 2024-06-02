@@ -1,0 +1,102 @@
+<div class="container-fluid">
+  <div class="row">
+    <aside class="col-md-5 col-lg-2 px-4 py-3 bg-white border-end">
+      <div class="mb-3">
+        <select id="database-select" class="form-select design-select">
+          <option value="cinema_management">database: cinema_management</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <select
+          id="schema-select"
+          class="form-select design-select"
+          (change)="onSchemaChange($event)"
+        >
+          @for(schema of schemas; track schema.id){
+          <option [value]="schema.name">{{ schema.name }}</option>
+          }
+        </select>
+      </div>
+      <input
+        type="text"
+        placeholder="Search tables"
+        class="form-control mb-3 design-select"
+      />
+      <ul class="list-group">
+        @for(table of tables; track table.id){
+        <li
+          class="list-group-item table-list-item"
+          (click)="onTableSelect(table)"
+        >
+          <span class="icon">
+            <img
+              src="assets/icons/table.png"
+              alt="Icon"
+              style="width: 24px; height: 24px"
+            />
+          </span>
+          {{ table.name }}
+        </li>
+        }
+      </ul>
+    </aside>
+    <main class="col-md-7 col-lg-10 px-4 py-3">
+      @if(isDone) {
+      <div
+        [ngClass]="{
+          alert: true,
+          'alert-dismissible': true,
+          'alert-success': status === 'success',
+          'alert-danger': status === 'danger'
+        }"
+        role="alert"
+      >
+        <div>{{ message }}</div>
+
+        <button
+          type="button"
+          (click)="turnOffNotify()"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="Close"
+        ></button>
+      </div>
+      } @if(isLoading) {
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      }
+
+      <div class="navigate-table mb-3 d-flex">
+        <h2>Table: {{ chosenTable.name }}</h2>
+
+        <div class="navigate-option">
+          <button
+            routerLink="/database/column"
+            routerLinkActive="active"
+            ariaCurrentWhenActive="page"
+            type="button"
+            class="btn btn-outline-secondary margin-buton"
+          >
+            Cột
+          </button>
+          <button
+            routerLink="/database/column"
+            routerLinkActive="active"
+            type="button"
+            class="btn btn-outline-secondary margin-buton"
+          >
+            Ràng buộc
+          </button>
+          <button type="button" class="btn btn-outline-secondary margin-buton">
+            Index
+          </button>
+          <button type="button" class="btn btn-outline-secondary margin-buton">
+            Trigger
+          </button>
+        </div>
+      </div>
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
