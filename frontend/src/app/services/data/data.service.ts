@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as CryptoJS from 'crypto-js';
-
+import { Subject } from 'rxjs';
+import { Table } from '../../models/table.model';
 @Injectable({
   providedIn: 'root',
 })
@@ -36,5 +37,16 @@ export class DataService {
 
   public clearData() {
     localStorage.clear();
+  }
+
+  //--------------------------------------------------------------
+  private _subject = new Subject<Table>();
+
+  pulishString(event: Table) {
+    this._subject.next(event);
+  }
+
+  get events$() {
+    return this._subject.asObservable();
   }
 }

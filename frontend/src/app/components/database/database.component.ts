@@ -14,6 +14,8 @@ import { TableComponent } from '../table/table.component';
 import { FormsModule } from '@angular/forms'; // Import FormsModule
 import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
+import { Subject } from 'rxjs';
+import { DataService } from '../../services/data/data.service';
 @Component({
   selector: 'app-database',
   standalone: true,
@@ -40,6 +42,12 @@ export class DatabaseComponent {
   status: string = '';
   message: string = '';
 
+  eventsSubject: Subject<void> = new Subject<void>();
+
+  emitEventToChild() {
+    this.eventsSubject.next();
+  }
+
   turnOffNotify() {
     this.isDone = false;
   }
@@ -47,7 +55,8 @@ export class DatabaseComponent {
   constructor(
     private router: Router,
     private schemaService: SchemaService,
-    private tableService: TableService
+    private tableService: TableService,
+    private dataService: DataService
   ) {
     // Chuyển hướng đến trang connection khi khởi động ứng dụng
   }
@@ -59,29 +68,43 @@ export class DatabaseComponent {
         for (let i = 0; i < data.length; i++) {
           this.schemas.push({ id: i, name: data[i] });
         }
+        this.onLoadAllTable(this.schemas[0].name);
+        this.dataService.saveData('schema', this.schemas[0].name);
+
         console.log(data);
       },
       error: (error) => {
         console.error(error);
       },
     });
+    this.router.navigate(['/database/column']);
   }
   onSchemaChange(event: any) {
     const schemaName: string = event.target.value;
-    // Chuyển hướng đến trang column khi chọn schema
+    this.dataService.saveData('schema', schemaName);
+    this.onLoadAllTable(schemaName);
+  }
+
+  onLoadAllTable(schemaName: string) {
     this.tableService.getList(schemaName).subscribe({
       next: (data) => {
         this.tables = data;
         for (let i = 0; i < this.tables.length; i++) {
           this.tables[i].id = i + 1;
         }
+        this.chosenTable = this.tables[0];
+
+        this.dataService.pulishString(this.chosenTable);
       },
+
       error: (error) => {
         console.error(error);
       },
     });
   }
+
   onTableSelect(table: Table) {
     this.chosenTable = table;
+    this.dataService.pulishString(this.chosenTable);
   }
 }

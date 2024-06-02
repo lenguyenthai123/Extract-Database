@@ -50,12 +50,16 @@ export class ColumnService {
     });
   }
 
-  getList(): Observable<Column[]> {
+  getList(
+    type: string,
+    schemaName: string,
+    tableName: string
+  ): Observable<Column[]> {
     return this.http.get<Column[]>(`${this.apiUrl}/column/list`, {
       params: {
-        type: 'mysql',
-        schemaName: 'company',
-        table: 'orders',
+        type: type,
+        schemaName: schemaName,
+        table: tableName,
         usernameId: '121212',
       },
     });

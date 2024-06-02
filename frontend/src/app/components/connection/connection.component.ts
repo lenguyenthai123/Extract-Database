@@ -14,6 +14,7 @@ import { ConnectionService } from '../../services/connection/connection.service'
 import { RouterOutlet, RouterLink, Router } from '@angular/router';
 import { ColumnTableComponent } from '../column-table/column-table.component';
 import { DataService } from '../../services/data/data.service';
+import { Table } from '../../models/table.model';
 
 @Component({
   selector: 'app-connection',
@@ -96,6 +97,7 @@ export class ConnectionComponent implements OnInit {
       password: new FormControl('lenguyenthai123'),
     });
   }
+
   // Phương thức để kiểm tra trạng thái của form control
   isFieldInvalid(fieldName: string): boolean {
     const control = this.connectionForm.get(fieldName);

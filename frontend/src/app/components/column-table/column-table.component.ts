@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { Column } from '../../models/column.model';
 import { ColumnService } from '../../services/column/column.service';
 import { DataService } from '../../services/data/data.service';
+import { Table } from '../../models/table.model';
 @Component({
   selector: 'app-column-table',
   standalone: true,
@@ -36,6 +37,8 @@ export class ColumnTableComponent implements OnInit {
   status: string = '';
   message: string = '';
 
+  table: Table = new Table();
+
   constructor(
     private columnService: ColumnService,
     private dataService: DataService
@@ -49,7 +52,25 @@ export class ColumnTableComponent implements OnInit {
   ngOnInit(): void {
     this.isLoading = true;
 
-    this.columnService.getList().subscribe({
+    this.dataService.events$.subscribe({
+      next: (data) => {
+        this.table = data;
+        this.loadAllColumns();
+        console.log('Data in column component: ', data);
+        //Call api
+      },
+      error: (error) => {
+        console.error(error);
+      },
+    });
+  }
+
+  loadAllColumns() {
+    const type = this.dataService.getData('type');
+    const schema = this.dataService.getData('schema');
+    const table = this.table.name;
+
+    this.columnService.getList(type, schema, table).subscribe({
       next: (data) => {
         this.preRows = data;
         this.rows = data;
@@ -71,6 +92,7 @@ export class ColumnTableComponent implements OnInit {
       },
     });
   }
+
   turnOffNotify() {
     this.isDone = false;
   }
