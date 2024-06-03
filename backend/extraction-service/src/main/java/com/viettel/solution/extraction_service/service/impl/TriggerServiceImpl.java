@@ -41,14 +41,6 @@ public class TriggerServiceImpl implements TriggerService {
     }
 
     @Override
-    public TriggerDto findBySchemaTableTriggerName(String type, String usernameId, String schemaName, String tableName, String triggerName) {
-        SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
-
-        // return new TriggerDto(triggerDao.findBySchemaTableTriggerName(sessionFactory, schemaName, tableName, triggerName));
-        return null;
-    }
-
-    @Override
     public List<TriggerDto> getTriggerListFromTable(String type, String usernameId, String schemaName, String tableName) {
         try {
 
@@ -65,6 +57,22 @@ public class TriggerServiceImpl implements TriggerService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public boolean update(String type, String usernameId, TriggerDto triggerDto) {
+        SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
+
+        Trigger trigger = new Trigger(triggerDto);
+
+        return triggerRepositoryMySql.update(sessionFactory, trigger);
+    }
+
+    @Override
+    public boolean delete(String type, String usernameId, String schemaName, String tableName, String triggerName) {
+        SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
+
+        return triggerRepositoryMySql.delete(sessionFactory, schemaName, tableName, triggerName);
     }
 
 }

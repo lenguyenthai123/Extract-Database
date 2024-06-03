@@ -31,12 +31,39 @@ public class TriggerController {
             return ResponseEntity.ok(triggerDtos);
         }
     }
-    @PostMapping("/save")
+
+    @PostMapping
     public ResponseEntity<Boolean> createNewTrigger(@Valid @RequestBody TriggerDto triggerDto) {
         boolean isSave = triggerService.save(triggerDto.getType(), triggerDto.getUsernameId(), triggerDto);
 
         if (isSave) {
             return ResponseEntity.ok(isSave);
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping
+    public ResponseEntity<Boolean> updateTrigger(@Valid @RequestBody TriggerDto triggerDto) {
+        boolean isUpdate = triggerService.update(triggerDto.getType(), triggerDto.getUsernameId(), triggerDto);
+
+        if (isUpdate) {
+            return ResponseEntity.ok(isUpdate);
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Boolean> deleteTrigger(@RequestParam String usernameId,
+                                                 @RequestParam String type,
+                                                 @RequestParam String schemaName,
+                                                 @RequestParam String tableName,
+                                                 @RequestParam String triggerName) {
+        boolean isDelete = triggerService.delete(type, usernameId, schemaName, tableName, triggerName);
+
+        if (isDelete) {
+            return ResponseEntity.ok(isDelete);
         } else {
             return ResponseEntity.badRequest().build();
         }

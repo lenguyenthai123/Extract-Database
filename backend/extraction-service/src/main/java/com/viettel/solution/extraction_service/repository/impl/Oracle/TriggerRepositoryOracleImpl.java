@@ -73,4 +73,14 @@ public class TriggerRepositoryOracleImpl implements TriggerRepository {
         return false;
     }
 
+    @Override
+    public boolean delete(SessionFactory sessionFactory, String schemaName, String tableName, String triggerName) {
+        return false;
+    }
+
+    @Override
+    public boolean update(SessionFactory sessionFactory, Trigger trigger) {
+        return false;
+    }
+
 }

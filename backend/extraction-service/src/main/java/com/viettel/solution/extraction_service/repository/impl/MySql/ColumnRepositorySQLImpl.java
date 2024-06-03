@@ -3,18 +3,17 @@ package com.viettel.solution.extraction_service.repository.impl.MySql;
 import com.viettel.solution.extraction_service.database.DatabaseConnection;
 import com.viettel.solution.extraction_service.dto.ColumnDto;
 import com.viettel.solution.extraction_service.dto.RequestDto;
-import com.viettel.solution.extraction_service.entity.*;
+import com.viettel.solution.extraction_service.entity.Column;
 import com.viettel.solution.extraction_service.repository.ColumnRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.*;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -28,7 +27,7 @@ import static com.viettel.solution.extraction_service.repository.impl.CommonRepo
 @Qualifier("MySql")
 public class ColumnRepositorySQLImpl implements ColumnRepository {
 
-
+    //https://dev.mysql.com/doc/refman/8.4/en/cannot-roll-back.html#:~:text=Some%20statements%20cannot%20be%20rolled,alter%20tables%20or%20stored%20routines.
     @Override
     public Column getColumn(SessionFactory sessionFactory, RequestDto requestDto) {
         try {
@@ -207,6 +206,7 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
     }
 
 
+    // Transaction is useless is this case.
     private boolean addOrUpdateColumn(SessionFactory sessionFactory, ColumnDto columnDto, String action) {
         Session session = sessionFactory.openSession();
 

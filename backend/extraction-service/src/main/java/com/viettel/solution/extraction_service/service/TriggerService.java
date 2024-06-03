@@ -9,8 +9,9 @@ public interface TriggerService {
 
     public boolean save(String type, String usernameId, TriggerDto triggerDto);
 
-    public TriggerDto findBySchemaTableTriggerName(String type, String usernameId, String schemaName, String tableName, String triggerName);
-
     public List<TriggerDto> getTriggerListFromTable(String type, String usernameId, String schemaName, String tableName);
 
+    public boolean update(String type, String usernameId, TriggerDto triggerDto);
+
+    public boolean delete(String type, String usernameId, String schemaName, String tableName, String triggerName);
 }
