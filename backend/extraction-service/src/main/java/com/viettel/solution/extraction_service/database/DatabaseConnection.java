@@ -37,7 +37,9 @@ public class DatabaseConnection {
                 sessionFactory = sessionFactoryMariaDbMap.get(usernameId);
                 break;
             default:
-                return null;
+        }
+        if (sessionFactory == null) {
+            throw new RuntimeException("Bạn chưa tạo kết nối đến database " + type);
         }
         return sessionFactory;
     }

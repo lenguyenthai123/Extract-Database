@@ -42,7 +42,7 @@ public class TriggerRepositoryOracleImpl implements TriggerRepository {
 
 
     @Override
-    public List<Trigger> getAllTrigger(SessionFactory sessionFactory, String databaseName, String schemaName, String tableName) {
+    public List<Trigger> getTriggerListFromTable(SessionFactory sessionFactory, String databaseName, String schemaName, String tableName) {
         List<Trigger> triggers = null;
 
         try (Session session = sessionFactory.openSession()) {
@@ -65,6 +65,12 @@ public class TriggerRepositoryOracleImpl implements TriggerRepository {
         }
 
         return triggers;
+    }
+
+
+    @Override
+    public boolean save(SessionFactory sessionFactory, Trigger trigger) {
+        return false;
     }
 
 }

@@ -12,5 +12,7 @@ public interface TriggerRepository {
 
     public Trigger getTrigger(SessionFactory sessionFactory, String databaseName, String schemaName, String tableName, String triggerName);
 
-    public List<Trigger> getAllTrigger(SessionFactory sessionFactory, String databaseName, String schemaName, String tableName);
+    public List<Trigger> getTriggerListFromTable(SessionFactory sessionFactory, String databaseName, String schemaName, String tableName);
+
+    public boolean save(SessionFactory sessionFactory, Trigger trigger);
 }

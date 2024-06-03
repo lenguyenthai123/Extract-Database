@@ -56,7 +56,7 @@ public class TableRepositorySQLImpl implements TableRepository {
             }
 
             // Lấy trigger liên quan đến bảng này
-            List<Trigger> triggers = triggerRepository.getAllTrigger(sessionFactory, databaseName, schemaName, tableName);
+            List<Trigger> triggers = triggerRepository.getTriggerListFromTable(sessionFactory, databaseName, schemaName, tableName);
             if (triggers != null) {
                 tableEntity.setTriggers(triggers);
             }

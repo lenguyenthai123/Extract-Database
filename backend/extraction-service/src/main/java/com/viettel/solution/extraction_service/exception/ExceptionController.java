@@ -28,4 +28,10 @@ public class ExceptionController {
         ex.getBindingResult().getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(RuntimeException.class)
+    public String handleRuntimeException(RuntimeException e) {
+        return e.getMessage();
+    }
+
 }
