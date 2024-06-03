@@ -6,7 +6,10 @@ import com.viettel.solution.extraction_service.repository.ConstraintRepository;
 import com.viettel.solution.extraction_service.repository.IndexRepository;
 import com.viettel.solution.extraction_service.repository.TableRepository;
 import com.viettel.solution.extraction_service.repository.TriggerRepository;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.query.NativeQuery;
+import org.hibernate.transform.Transformers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
@@ -126,27 +129,21 @@ public class TableRepositorySQLImpl implements TableRepository {
 
     @Override
     public List<Table> getAllTableName(SessionFactory sessionFactory, String databaseName, String schemaName) {
-        try {
-            List<Table> tables = new ArrayList<>();
-            DatabaseMetaData metaData = DatabaseConnection.getDatabaseMetaData(sessionFactory);
-            if (metaData == null) {
-                return null;
-            }
-            try (ResultSet tablesResultSet = metaData.getTables(databaseName, schemaName, "%", new String[]{"TABLE"})) {
+        try (Session session = sessionFactory.openSession()) {
+            String sql = "select TABLE_NAME as name, TABLE_COMMENT as description " +
+                    "from information_schema.tables " +
+                    "where TABLE_SCHEMA=:schemaName";
 
-                while (tablesResultSet.next()) {
-                    String tableName = tablesResultSet.getString("TABLE_NAME");
-                    String description = tablesResultSet.getString("REMARKS");
-                    if (tableName.equals("sys_config")) {
-                        continue;
-                    }
-                    Table table = Table.builder().name(tableName).description(description).build();
-                    tables.add(table);
-                }
-                return tables;
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            NativeQuery<Table> nativeQuery = session.createNativeQuery(sql, Table.class);
+            nativeQuery.setParameter("schemaName", schemaName);
+            nativeQuery.setResultTransformer(Transformers.aliasToBean(Table.class));
+
+            List<Table> tables = nativeQuery.getResultList();
+
+            return tables;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return null;
     }
 }
