@@ -3,6 +3,7 @@ import { ColumnTableComponent } from './components/column-table/column-table.com
 import { ConnectionComponent } from './components/connection/connection.component';
 import { DatabaseComponent } from './components/database/database.component';
 import { TableComponent } from './components/table/table.component';
+import { ConstraintTableComponent } from './components/constraint-table/constraint-table.component';
 export const routes: Routes = [
   {
     path: 'connection',
@@ -18,6 +19,11 @@ export const routes: Routes = [
         path: 'column',
         title: 'Column',
         component: ColumnTableComponent,
+      },
+      {
+        path: 'constraint',
+        title: 'Constraint',
+        component: ConstraintTableComponent,
       },
     ],
   },

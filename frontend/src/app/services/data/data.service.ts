@@ -6,6 +6,97 @@ import { Table } from '../../models/table.model';
   providedIn: 'root',
 })
 export class DataService {
+  mysqlDataTypes = [
+    'TINYINT',
+    'SMALLINT',
+    'MEDIUMINT',
+    'INT',
+    'BIGINT',
+    'FLOAT',
+    'DOUBLE',
+    'DECIMAL',
+    'DATE',
+    'DATETIME',
+    'TIMESTAMP',
+    'TIME',
+    'YEAR',
+    'CHAR',
+    'VARCHAR',
+    'BINARY',
+    'VARBINARY',
+    'TINYBLOB',
+    'BLOB',
+    'MEDIUMBLOB',
+    'LONGBLOB',
+    'TINYTEXT',
+    'TEXT',
+    'MEDIUMTEXT',
+    'LONGTEXT',
+    'ENUM',
+    'SET',
+    'JSON',
+    'GEOMETRY',
+    'POINT',
+    'LINESTRING',
+    'POLYGON',
+    'MULTIPOINT',
+    'MULTILINESTRING',
+    'MULTIPOLYGON',
+    'GEOMETRYCOLLECTION',
+  ];
+  mysqlNumericDataTypes = [
+    'TINYINT',
+    'SMALLINT',
+    'MEDIUMINT',
+    'INT',
+    'BIGINT',
+    'FLOAT',
+    'DOUBLE',
+    'DECIMAL',
+  ];
+  mysqlDataTypesWithoutAutoIncrement: string[] = [
+    // Numeric Types
+    'FLOAT',
+    'DOUBLE',
+    'DECIMAL',
+
+    // Date and Time Types
+    'DATE',
+    'DATETIME',
+    'TIMESTAMP',
+    'TIME',
+    'YEAR',
+
+    // String Types
+    'CHAR',
+    'VARCHAR',
+    'BINARY',
+    'VARBINARY',
+    'TINYBLOB',
+    'BLOB',
+    'MEDIUMBLOB',
+    'LONGBLOB',
+    'TINYTEXT',
+    'TEXT',
+    'MEDIUMTEXT',
+    'LONGTEXT',
+
+    // Special Types
+    'ENUM',
+    'SET',
+    'JSON',
+
+    // Spatial Types
+    'GEOMETRY',
+    'POINT',
+    'LINESTRING',
+    'POLYGON',
+    'MULTIPOINT',
+    'MULTILINESTRING',
+    'MULTIPOLYGON',
+    'GEOMETRYCOLLECTION',
+  ];
+
   constructor() {}
 
   key = '123456';

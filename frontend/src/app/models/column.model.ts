@@ -8,7 +8,9 @@ export class Column {
   defaultValue: string;
   description: string;
   disabled: boolean;
+  disabledAutoIncrement: boolean;
 
+  defaultValueType: string;
   constructor() {
     this.id = 0;
     this.name = '';
@@ -16,9 +18,11 @@ export class Column {
     this.nullable = false;
     this.autoIncrement = false;
     this.primaryKey = false;
-    this.defaultValue = '';
+    this.defaultValue = '0';
     this.description = '';
     this.disabled = false;
+    this.disabledAutoIncrement = false;
+    this.defaultValueType = 'text';
   }
   set(column: Column): void {
     this.id = column.id;

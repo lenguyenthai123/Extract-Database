@@ -63,6 +63,10 @@ public class ColumnController {
     @PutMapping
     public ResponseEntity<Boolean> updateColumn(@RequestBody @Valid ColumnDto column) {
 
+        if (column.getOldName().isBlank()) {
+            throw new RuntimeException("Column name for identify is required");
+        }
+
         boolean flag = columnService.updateColumn(column);
 
         return ResponseEntity.ok(flag);

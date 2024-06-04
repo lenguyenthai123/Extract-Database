@@ -94,6 +94,13 @@ export class DatabaseComponent {
         }
         this.chosenTable = this.tables[0];
         this.dataService.saveData('tableName', this.tables[0].name);
+        this.dataService.saveData(
+          'tableDescription',
+          this.tables[0].description
+        );
+
+        this.dataService.saveData('table', JSON.stringify(this.chosenTable));
+
         this.dataService.pulishString(this.chosenTable);
       },
 
@@ -106,6 +113,9 @@ export class DatabaseComponent {
   onTableSelect(table: Table) {
     this.chosenTable = table;
     this.dataService.saveData('tableName', this.chosenTable.name);
+    this.dataService.saveData('tableDescription', this.tables[0].description);
+
+    this.dataService.saveData('table', JSON.stringify(this.chosenTable));
     this.dataService.pulishString(this.chosenTable);
   }
 }

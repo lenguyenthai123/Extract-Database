@@ -5,6 +5,7 @@ import {
   ElementRef,
   ViewChild,
 } from '@angular/core';
+
 import { FormsModule } from '@angular/forms'; // Import FormsModule
 import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
@@ -15,13 +16,13 @@ import { Table } from '../../models/table.model';
 import { getUniqueElements } from '../../utils/Utils';
 
 @Component({
-  selector: 'app-column-table',
+  selector: 'app-constraint-table',
   standalone: true,
   imports: [FormsModule, CommonModule],
-  templateUrl: './column-table.component.html',
-  styleUrl: './column-table.component.scss',
+  templateUrl: './constraint-table.component.html',
+  styleUrl: './constraint-table.component.scss',
 })
-export class ColumnTableComponent implements OnInit {
+export class ConstraintTableComponent implements OnInit {
   preRows: Column[] = [];
   rows: Column[] = [];
 
@@ -47,6 +48,8 @@ export class ColumnTableComponent implements OnInit {
   message: string = '';
 
   table: Table = new Table();
+
+  // Danh sách các kiểu dữ liệu trong MySQL
 
   // Danh sách các kiểu dữ liệu trong MySQL
   listDataTypes: string[] = [];
@@ -75,9 +78,7 @@ export class ColumnTableComponent implements OnInit {
 
   ngOnInit(): void {
     this.isLoading = true;
-
     this.table = JSON.parse(this.dataService.getData('table'));
-    console.log('Table in column component: ', this.table);
     this.dataService.events$.subscribe({
       next: (data) => {
         this.table = data;

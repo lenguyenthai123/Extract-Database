@@ -80,6 +80,30 @@ export class ColumnService {
     );
   }
 
+  // Phương thức PUT
+  update(column: Column, identifyName: string): Observable<unknown> {
+    return this.http.put<unknown>(
+      `${this.apiUrl}/column`,
+      {
+        type: this.dataService.getData('type'),
+        schemaName: this.dataService.getData('schemaName'),
+        tableName: this.dataService.getData('tableName'),
+
+        oldName: identifyName,
+        usernameId: '12',
+        name: column.name,
+        dataType: column.dataType,
+        size: '',
+        primaryKey: column.primaryKey,
+        nullable: column.nullable,
+        autoIncrement: column.autoIncrement,
+        defaultValue: column.defaultValue,
+        description: column.description,
+      },
+      this.httpOptionsWithJson
+    );
+  }
+
   getList(tableName: string): Observable<Column[]> {
     let params = this.createParams();
     return this.http.get<Column[]>(`${this.apiUrl}/column/list`, {

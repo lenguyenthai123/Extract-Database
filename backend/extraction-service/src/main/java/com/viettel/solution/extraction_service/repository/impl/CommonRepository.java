@@ -14,7 +14,9 @@ public class CommonRepository {
     }
 
     public static boolean columnExists(Session session, String schema, String tableName, String columnName) {
-        String query = "SELECT 1 FROM information_schema.columns WHERE table_schema = :schema AND table_name = :table AND column_name = :column";
+        String query = "SELECT 1 " +
+                "FROM information_schema.columns " +
+                "WHERE table_schema = :schema AND table_name = :table AND column_name = :column";
         Object result = session.createNativeQuery(query)
                 .setParameter("schema", schema)
                 .setParameter("table", tableName)
@@ -22,5 +24,4 @@ public class CommonRepository {
                 .uniqueResult();
         return result != null;
     }
-
 }

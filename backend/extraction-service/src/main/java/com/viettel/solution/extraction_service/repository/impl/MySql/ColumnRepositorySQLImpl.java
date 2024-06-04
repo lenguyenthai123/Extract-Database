@@ -64,16 +64,7 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
                     // Kiểm tra cột có phải là khóa chính không
                     Boolean isPrimaryKey = primaryKeys.contains(columnName);
 
-                    column = Column.builder()
-                            .name(columnName)
-                            .dataType(dataType)
-                            .size(columnSize)
-                            .isPrimaryKey(isPrimaryKey)
-                            .description(description)
-                            .autoIncrement(isAutoIncrement)
-                            .defaultValue(defaultValue)
-                            .nullable(isNullable)
-                            .build();
+                    column = Column.builder().name(columnName).dataType(dataType).size(columnSize).isPrimaryKey(isPrimaryKey).description(description).autoIncrement(isAutoIncrement).defaultValue(defaultValue).nullable(isNullable).build();
 
                 }
             }
@@ -117,16 +108,7 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
                     // Kiểm tra cột có phải là khóa chính không
                     Boolean isPrimaryKey = primaryKeys.contains(name);
 
-                    Column column = Column.builder()
-                            .name(name)
-                            .dataType(dataType)
-                            .size(columnSize)
-                            .isPrimaryKey(isPrimaryKey)
-                            .description(description)
-                            .autoIncrement(isAutoIncrement)
-                            .defaultValue(defaultValue)
-                            .nullable(isNullable)
-                            .build();
+                    Column column = Column.builder().name(name).dataType(dataType).size(columnSize).isPrimaryKey(isPrimaryKey).description(description).autoIncrement(isAutoIncrement).defaultValue(defaultValue).nullable(isNullable).build();
 
                     columns.add(column);
                 }
@@ -140,38 +122,262 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
 
     @Override
     public boolean addColumn(SessionFactory sessionFactory, ColumnDto columnDto) {
-        Session session = sessionFactory.openSession();
-        try {
+        try (Session session = sessionFactory.openSession()) {
             if (!tableExists(session, columnDto.getSchemaName(), columnDto.getTableName())) {
                 throw new RuntimeException("Table does not exist");
             }
             if (columnExists(session, columnDto.getSchemaName(), columnDto.getTableName(), columnDto.getName())) {
                 throw new RuntimeException("Column already exists");
             }
-            return addOrUpdateColumn(sessionFactory, columnDto, "ADD");
+        }
+        Session session = sessionFactory.openSession();
+
+        Transaction transaction = null;
+
+        boolean checkRollback = false;
+        try {
+            transaction = session.beginTransaction();
+
+            String schema = columnDto.getSchemaName();
+            String tableName = columnDto.getTableName();
+
+            String oldName = columnDto.getOldName();
+            String columnName = columnDto.getName();
+            String columnType = columnDto.getDataType();
+            Integer size = columnDto.getSize();
+            Boolean nullable = columnDto.isNullable();
+            Boolean autoIncrement = columnDto.isAutoIncrement();
+            String defaultValue = columnDto.getDefaultValue();
+            Boolean primaryKey = columnDto.isPrimaryKey();
+            String description = columnDto.getDescription();
+
+            StringBuilder alterTableQuery = new StringBuilder();
+            alterTableQuery.append(String.format("ALTER TABLE %s.%s %s COLUMN %s %s", schema, tableName, "ADD", columnName, columnType));
+
+            if (size != null) {
+                alterTableQuery.append(String.format("(%d)", size));
+            }
+
+            if (nullable != null && !nullable) {
+                alterTableQuery.append(" NOT NULL");
+            }
+
+            if (defaultValue != null) {
+                alterTableQuery.append(String.format(" DEFAULT '%s'", defaultValue));
+            }
+
+
+            // Execute the query to add the column
+            session.createNativeQuery(alterTableQuery.toString()).executeUpdate();
+            checkRollback = true;
+
+            if (autoIncrement != null && autoIncrement) {
+                String autoIncrementQuery = String.format(
+                        "ALTER TABLE %s.%s MODIFY COLUMN %s %s AUTO_INCREMENT",
+                        schema, tableName, columnName, columnType
+                );
+
+                session.createNativeQuery(autoIncrementQuery).executeUpdate();
+            }
+
+
+            // If the column should be a primary key, add it as a primary key
+            if (primaryKey != null && primaryKey) {
+                String primaryKeyQuery = String.format("ALTER TABLE %s.%s ADD PRIMARY KEY (%s)", schema, tableName, columnName);
+                session.createNativeQuery(primaryKeyQuery).executeUpdate();
+            }
+
+
+            // If description is provided, add the comment to the column
+            if (description != null && !description.isEmpty()) {
+                StringBuilder commentQuery = new StringBuilder();
+                commentQuery.append(String.format("ALTER TABLE %s.%s MODIFY %s %s", schema, tableName, columnName, columnType));
+
+                if (size != null) {
+                    commentQuery.append(String.format("(%d)", size));
+                }
+
+                if (nullable != null && !nullable) {
+                    commentQuery.append(" NOT NULL");
+                }
+
+                if (autoIncrement != null && autoIncrement) {
+                    commentQuery.append(" AUTO_INCREMENT");
+                }
+
+                commentQuery.append(String.format(" COMMENT '%s'", description));
+
+                session.createNativeQuery(commentQuery.toString()).executeUpdate();
+            }
+
+            transaction.commit();
+            return true;
         } catch (RuntimeException e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            if (checkRollback) {
+                deleteColumn(sessionFactory, columnDto);
+            }
             throw e;
         } finally {
             session.close();
         }
+
     }
 
     @Override
     public boolean updateColumn(SessionFactory sessionFactory, ColumnDto columnDto) {
-        Session session = sessionFactory.openSession();
-        try {
+
+        try (Session session = sessionFactory.openSession()) {
             if (!tableExists(session, columnDto.getSchemaName(), columnDto.getTableName())) {
                 throw new RuntimeException("Table does not exist");
             }
-            if (!columnExists(session, columnDto.getSchemaName(), columnDto.getTableName(), columnDto.getName())) {
+            if (!columnExists(session, columnDto.getSchemaName(), columnDto.getTableName(), columnDto.getOldName())) {
                 throw new RuntimeException("Column does not exist");
             }
-            return addOrUpdateColumn(sessionFactory, columnDto, "MODIFY");
         } catch (RuntimeException e) {
             throw e;
+        }
+
+        Session session = sessionFactory.openSession();
+
+        Transaction transaction = null;
+
+        boolean checkRollback = false;
+        try {
+            DatabaseMetaData metaData = DatabaseConnection.getDatabaseMetaData(sessionFactory);
+
+            transaction = session.beginTransaction();
+
+            String schema = columnDto.getSchemaName();
+            String tableName = columnDto.getTableName();
+
+            String oldName = columnDto.getOldName();
+            String columnName = columnDto.getName();
+            String columnType = columnDto.getDataType();
+            Integer size = columnDto.getSize();
+            Boolean nullable = columnDto.isNullable();
+            Boolean autoIncrement = columnDto.isAutoIncrement();
+            String defaultValue = columnDto.getDefaultValue();
+            Boolean primaryKey = columnDto.isPrimaryKey();
+            String description = columnDto.getDescription();
+
+
+            //Doi ten
+            String renameColumnQuery = String.format(
+                    "ALTER TABLE %s.%s RENAME COLUMN %s TO %s",
+                    schema, tableName, oldName, columnName
+            );
+            session.createNativeQuery(renameColumnQuery).executeUpdate();
+
+
+            StringBuilder alterColumnQuery = new StringBuilder();
+            alterColumnQuery.append(String.format(
+                    "ALTER TABLE %s.%s MODIFY COLUMN %s %s",
+                    schema, tableName, columnName, columnType
+            ));
+
+            if (size != null) {
+                alterColumnQuery.append(String.format("(%d)", size));
+            }
+
+            if (nullable != null && !nullable) {
+                alterColumnQuery.append(" NOT NULL");
+            } else {
+                alterColumnQuery.append(" NULL");
+            }
+
+            if (defaultValue != null) {
+                alterColumnQuery.append(String.format(" DEFAULT '%s'", defaultValue));
+            }
+
+
+            session.createNativeQuery(alterColumnQuery.toString()).executeUpdate();
+
+            // Lấy thông tin các khóa chính của bảng để xác định cột nào là khóa chính
+            Set<String> primaryKeys = new HashSet<>();
+            try (ResultSet primaryKeysResultSet = metaData.getPrimaryKeys(null, schema, tableName)) {
+                while (primaryKeysResultSet.next()) {
+                    String namePrimaryKey = primaryKeysResultSet.getString("COLUMN_NAME");
+                    primaryKeys.add(namePrimaryKey);
+                }
+            }
+
+            // If the column should be a primary key, add it as a primary key
+            if (primaryKey && !primaryKeys.contains(columnName)) {
+                String primaryKeyQuery2 = String.format("ALTER TABLE %s.%s ADD PRIMARY KEY (%s)", schema, tableName, columnName);
+                session.createNativeQuery(primaryKeyQuery2).executeUpdate();
+            }
+            // Trường hợp nó là primary key nhưng nó muốn bỏ primary key
+
+
+            if (!primaryKey && primaryKeys.contains(columnName)) {
+                String primaryKeyQuery1 = String.format("ALTER TABLE %s.%s DROP PRIMARY KEY", schema, tableName);
+                session.createNativeQuery(primaryKeyQuery1).executeUpdate();
+
+                for (String namePrimaryKey : primaryKeys) {
+                    if (!namePrimaryKey.equals(columnName)) {
+                        String primaryKeyQuery2 = String.format("ALTER TABLE %s.%s ADD PRIMARY KEY (%s)", schema, tableName, namePrimaryKey);
+                        session.createNativeQuery(primaryKeyQuery2).executeUpdate();
+                    }
+                }
+
+            }
+
+
+            if (autoIncrement != null && autoIncrement) {
+                String autoIncrementQuery = String.format(
+                        "ALTER TABLE %s.%s MODIFY COLUMN %s %s AUTO_INCREMENT",
+                        schema, tableName, columnName, columnType
+                );
+
+                session.createNativeQuery(autoIncrementQuery).executeUpdate();
+            }
+
+            checkRollback = true;
+
+
+            // If description is provided, add the comment to the column
+            if (description != null && !description.isEmpty()) {
+                StringBuilder commentQuery = new StringBuilder();
+                commentQuery.append(String.format("ALTER TABLE %s.%s MODIFY %s %s", schema, tableName, columnName, columnType));
+
+                if (size != null) {
+                    commentQuery.append(String.format("(%d)", size));
+                }
+
+                if (nullable != null && !nullable) {
+                    commentQuery.append(" NOT NULL");
+                }
+
+                if (autoIncrement != null && autoIncrement) {
+                    commentQuery.append(" AUTO_INCREMENT");
+                }
+
+                commentQuery.append(String.format(" COMMENT '%s'", description));
+
+                session.createNativeQuery(commentQuery.toString()).executeUpdate();
+
+
+            }
+
+            transaction.commit();
+            return true;
+        } catch (RuntimeException e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            /*if (checkRollback) {
+                deleteColumn(sessionFactory, columnDto);
+            }*/
+            throw e;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         } finally {
             session.close();
         }
+
     }
 
     @Override
@@ -207,98 +413,6 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
 
 
     // Transaction is useless is this case.
-    private boolean addOrUpdateColumn(SessionFactory sessionFactory, ColumnDto columnDto, String action) {
-        Session session = sessionFactory.openSession();
-
-        Transaction transaction = null;
-
-        boolean checkRollback = false;
-        try {
-            transaction = session.beginTransaction();
-
-            String schema = columnDto.getSchemaName();
-            String tableName = columnDto.getTableName();
-            String columnName = columnDto.getName();
-            String columnType = columnDto.getDataType();
-            Integer size = columnDto.getSize();
-            Boolean nullable = columnDto.isNullable();
-            Boolean autoIncrement = columnDto.isAutoIncrement();
-            String defaultValue = columnDto.getDefaultValue();
-            Boolean primaryKey = columnDto.isPrimaryKey();
-            String description = columnDto.getDescription();
-
-            StringBuilder alterTableQuery = new StringBuilder();
-            alterTableQuery.append(String.format("ALTER TABLE %s.%s %s COLUMN %s %s",
-                    schema, tableName, action, columnName, columnType));
-
-            if (size != null) {
-                alterTableQuery.append(String.format("(%d)", size));
-            }
-
-            if (nullable != null && !nullable) {
-                alterTableQuery.append(" NOT NULL");
-            }
-
-            if (defaultValue != null) {
-                alterTableQuery.append(String.format(" DEFAULT '%s'", defaultValue));
-            }
-
-            if (autoIncrement != null && autoIncrement) {
-                alterTableQuery.append(" AUTO_INCREMENT");
-            }
-
-            // Execute the query to add the column
-            session.createNativeQuery(alterTableQuery.toString()).executeUpdate();
-            checkRollback = true;
-
-            // If the column should be a primary key, add it as a primary key
-            if (primaryKey != null && primaryKey) {
-                String primaryKeyQuery = String.format("ALTER TABLE %s.%s ADD PRIMARY KEY (%s)",
-                        schema, tableName, columnName);
-                session.createNativeQuery(primaryKeyQuery).executeUpdate();
-            }
-
-
-            // If description is provided, add the comment to the column
-            if (description != null && !description.isEmpty()) {
-                StringBuilder commentQuery = new StringBuilder();
-                commentQuery.append(String.format("ALTER TABLE %s.%s MODIFY %s %s", schema, tableName, columnName, columnType));
-
-                if (size != null) {
-                    commentQuery.append(String.format("(%d)", size));
-                }
-
-                if (nullable != null && !nullable) {
-                    commentQuery.append(" NOT NULL");
-                }
-
-                if (defaultValue != null) {
-                    commentQuery.append(String.format(" DEFAULT '%s'", defaultValue));
-                }
-
-                if (autoIncrement != null && autoIncrement) {
-                    commentQuery.append(" AUTO_INCREMENT");
-                }
-
-                commentQuery.append(String.format(" COMMENT '%s'", description));
-
-                session.createNativeQuery(commentQuery.toString()).executeUpdate();
-            }
-
-            transaction.commit();
-            return true;
-        } catch (RuntimeException e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            if (checkRollback) {
-                deleteColumn(sessionFactory, columnDto);
-            }
-            throw e;
-        } finally {
-            session.close();
-        }
-    }
 
 
 }

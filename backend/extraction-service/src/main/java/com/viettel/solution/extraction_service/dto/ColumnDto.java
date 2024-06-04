@@ -35,6 +35,8 @@ public class ColumnDto {
     @NotBlank(message = "Type of database is required")
     private String type;
 
+    private String oldName; // Đại diện cho ID;
+
     @NotBlank(message = "Column name is required")
     private String name;
 
