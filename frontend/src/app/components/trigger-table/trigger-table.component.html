@@ -71,11 +71,11 @@
         <thead>
           <tr>
             <th>STT</th>
-            <th>Tên khóa</th>
-            <th>Tên trường</th>
-            <th>Kiểu</th>
-            <th>Bảng tham chiếu</th>
-            <th>Cột tham chiếu</th>
+            <th>Tên trigger</th>
+            <th>Sự kiện</th>
+            <th>Thời điểm</th>
+            <th>Hành động</th>
+            <th>Điều kiện</th>
             <th>Xóa</th>
             <!-- Thêm cột cho nút xóa -->
           </tr>
@@ -97,28 +97,29 @@
             </td>
             <td>
               <select
-                [(ngModel)]="row.fieldName"
+                [(ngModel)]="row.event"
                 [disabled]="row.disabled"
                 (ngModelChange)="onFieldChange($event, row.id, 2)"
               >
-                @for(type of listDataTypes; track type){
+                @for(type of eventList; track type){
                 <option [value]="type">{{ type }}</option>
                 }
               </select>
             </td>
             <td>
               <select
-                [(ngModel)]="row.typeName"
+                [(ngModel)]="row.timing"
                 [disabled]="row.disabled"
                 (ngModelChange)="onFieldChange($event, row.id, 3)"
               >
-                <option [value]="true">true</option>
-                <option [value]="false">false</option>
+                @for(type of timingList; track type){
+                <option [value]="type">{{ type }}</option>
+                }
               </select>
             </td>
             <td>
               <select
-                [(ngModel)]="row.referencedTableName"
+                [(ngModel)]="row.doAction"
                 [disabled]="row.disabled"
                 (ngModelChange)="onFieldChange($event, row.id, 4)"
               >
@@ -128,7 +129,7 @@
             </td>
             <td>
               <select
-                [(ngModel)]="row.referencedColumnName"
+                [(ngModel)]="row.actionCondition"
                 [disabled]="true"
                 [value]="row.disabled"
                 (ngModelChange)="onFieldChange($event, row.id, 5)"

@@ -4,6 +4,7 @@ import { ConnectionComponent } from './components/connection/connection.componen
 import { DatabaseComponent } from './components/database/database.component';
 import { TableComponent } from './components/table/table.component';
 import { ConstraintTableComponent } from './components/constraint-table/constraint-table.component';
+import { TriggerTableComponent } from './components/trigger-table/trigger-table.component';
 export const routes: Routes = [
   {
     path: 'connection',
@@ -24,6 +25,11 @@ export const routes: Routes = [
         path: 'constraint',
         title: 'Constraint',
         component: ConstraintTableComponent,
+      },
+      {
+        path: 'trigger',
+        title: 'Trigger',
+        component: TriggerTableComponent,
       },
     ],
   },

@@ -68,7 +68,7 @@
       }
 
       <div class="navigate-table mb-3 d-flex">
-        <h2>Table: {{ chosenTable.name }}</h2>
+        <h2>Table: {{ chosenTable.name | uppercase }}</h2>
 
         <div class="navigate-option">
           <button
@@ -91,7 +91,12 @@
           <button type="button" class="btn btn-outline-secondary margin-buton">
             Index
           </button>
-          <button type="button" class="btn btn-outline-secondary margin-buton">
+          <button
+            routerLink="/database/trigger"
+            routerLinkActive="active"
+            type="button"
+            class="btn btn-outline-secondary margin-buton"
+          >
             Trigger
           </button>
         </div>

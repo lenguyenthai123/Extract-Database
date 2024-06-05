@@ -9,25 +9,21 @@ import {
 import { FormsModule } from '@angular/forms'; // Import FormsModule
 import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
-import { Column } from '../../models/column.model';
-import { ColumnService } from '../../services/column/column.service';
 import { DataService } from '../../services/data/data.service';
 import { Table } from '../../models/table.model';
 import { getUniqueElements } from '../../utils/Utils';
-import { Constraint } from '../../models/constraint.model';
-
-import { ConstraintService } from '../../services/constraint/constraint.service';
-
+import { Trigger } from '../../models/trigger.model';
+import { TriggerService } from '../../services/trigger/trigger.service';
 @Component({
-  selector: 'app-constraint-table',
+  selector: 'app-trigger-table',
   standalone: true,
   imports: [FormsModule, CommonModule],
-  templateUrl: './constraint-table.component.html',
-  styleUrl: './constraint-table.component.scss',
+  templateUrl: './trigger-table.component.html',
+  styleUrl: './trigger-table.component.scss',
 })
-export class ConstraintTableComponent implements OnInit {
-  preRows: Constraint[] = [];
-  rows: Constraint[] = [];
+export class TriggerTableComponent {
+  preRows: Trigger[] = [];
+  rows: Trigger[] = [];
 
   typeOfDatabase: string = '';
 
@@ -52,25 +48,15 @@ export class ConstraintTableComponent implements OnInit {
 
   table: Table = new Table();
 
-  // Danh sách các kiểu dữ liệu trong MySQL
-  listDataTypes: string[] = [];
-  listNumericDataTypes: string[] = [];
-  listDataTypesWithoutAutoIncrement: string[] = [];
+  // Thiết lập cấu hình riêng của trigger
+
+  eventList: string[] = ['INSERT', 'UPDATE', 'DELETE', 'SELECT', 'ALL'];
+  timingList: string[] = ['BEFORE', 'AFTER'];
 
   constructor(
-    private constraintService: ConstraintService,
+    private triggerService: TriggerService,
     private dataService: DataService
-  ) {
-    if (
-      this.dataService.getData('type') === 'mysql' ||
-      this.dataService.getData('type') === 'mariadb'
-    ) {
-      this.listDataTypes = this.dataService.mysqlDataTypes;
-      this.listNumericDataTypes = this.dataService.mysqlNumericDataTypes;
-      this.listDataTypesWithoutAutoIncrement =
-        this.dataService.mysqlDataTypesWithoutAutoIncrement;
-    }
-  }
+  ) {}
 
   ngAfterViewInit() {
     this.alertPlaceholder = document.getElementById('liveAlertPlaceholder');
@@ -83,7 +69,7 @@ export class ConstraintTableComponent implements OnInit {
     this.dataService.events$.subscribe({
       next: (data) => {
         this.table = data;
-        this.loadAllConstraint();
+        this.loadAllTrigger();
         console.log('Data in column component: ', data);
         //Call api
       },
@@ -91,24 +77,25 @@ export class ConstraintTableComponent implements OnInit {
         console.error(error);
       },
     });
-    this.loadAllConstraint();
+    this.loadAllTrigger();
   }
 
-  loadAllConstraint() {
-    this.constraintService.getList(this.table.name).subscribe({
+  loadAllTrigger() {
+    this.triggerService.getList(this.table.name).subscribe({
       next: (data) => {
+        console.log('Trigger ' + data);
         this.rows = [];
         this.preRows = [];
 
         for (let i = 0; i < data.length; i++) {
-          let constraint1: Constraint = new Constraint();
-          let constraint2: Constraint = new Constraint();
+          let trigger1: Trigger = new Trigger();
+          let trigger2: Trigger = new Trigger();
 
-          constraint1.set(data[i]);
-          constraint2.set(data[i]);
+          trigger1.set(data[i]);
+          trigger2.set(data[i]);
 
-          this.rows.push(constraint1);
-          this.preRows.push(constraint2);
+          this.rows.push(trigger1);
+          this.preRows.push(trigger2);
         }
 
         // Cập nhật lại id cho từng hàng
@@ -144,7 +131,7 @@ export class ConstraintTableComponent implements OnInit {
     // Xử lý validation
     for (let i = 0; i < this.rows.length; i++) {
       const { status, message }: { status: boolean; message: string } =
-        this.constraintService.isValid(this.rows[i]);
+        this.triggerService.isValid(this.rows[i]);
 
       if (!status) {
         this.raiseAlert(message, 'danger');
@@ -279,9 +266,9 @@ export class ConstraintTableComponent implements OnInit {
     this.actionInsert = true;
 
     // Create new column
-    let constraint: Constraint = new Constraint();
-    constraint.id = this.rows.length + 1;
-    this.rows.unshift(constraint);
+    let trigger: Trigger = new Trigger();
+    trigger.id = this.rows.length + 1;
+    this.rows.unshift(trigger);
 
     // Disable all rows except the first row
     this.disableAllRowsExcept();
