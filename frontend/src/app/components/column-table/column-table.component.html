@@ -189,7 +189,7 @@
               <td>
                 <button
                   [disabled]="row.disabled || actionInsert || actionUpdate"
-                  (click)="deleteRow(rows.indexOf(row))"
+                  (click)="openModal(rows.indexOf(row))"
                   class="btn btn-danger"
                 >
                   X

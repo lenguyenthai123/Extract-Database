@@ -5,30 +5,6 @@
     <div class="col-lg-4">
       <div id="liveAlertPlaceholder"></div>
 
-      @if(isDone) {
-      <div
-        [ngClass]="{
-          alert: true,
-          'alert-dismissible': true,
-          'alert-success': status === 'success',
-          'alert-danger': status === 'danger'
-        }"
-        role="alert"
-      >
-        <div>{{ message }}</div>
-
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="alert"
-          aria-label="Close"
-        ></button>
-      </div>
-      } @if(isLoading) {
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-      }
       <h2>Database Information Form</h2>
       <form [formGroup]="connectionForm" (ngSubmit)="handleSubmit()">
         <div class="form-group">
@@ -113,6 +89,31 @@
         </button>
       </form>
     </div>
-    <div class="col-lg-4"></div>
+    <div class="col-lg-4">
+      @if(isDone) {
+      <div
+        [ngClass]="{
+          alert: true,
+          'alert-dismissible': true,
+          'alert-success': status === 'success',
+          'alert-danger': status === 'danger'
+        }"
+        role="alert"
+      >
+        <div>{{ message }}</div>
+
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="Close"
+        ></button>
+      </div>
+      } @if(isLoading) {
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      }
+    </div>
   </div>
 </div>

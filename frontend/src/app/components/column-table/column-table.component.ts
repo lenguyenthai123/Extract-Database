@@ -15,11 +15,17 @@ import { Table } from '../../models/table.model';
 import { getUniqueElements } from '../../utils/Utils';
 import { Toast } from 'bootstrap';
 import { Notification } from '../../models/notification.model';
+import {
+  MdbModalRef,
+  MdbModalService,
+  MdbModalModule,
+} from 'mdb-angular-ui-kit/modal';
+import { ModalComponent } from '../modal-delete/modal.component';
 
 @Component({
   selector: 'app-column-table',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, MdbModalModule],
   templateUrl: './column-table.component.html',
   styleUrl: './column-table.component.scss',
 })
@@ -81,9 +87,14 @@ export class ColumnTableComponent implements OnInit {
   failInformation: Notification = new Notification();
   successInformation: Notification = new Notification();
 
+  // Modal to confirm delete hoặc làm các thứ khác bla bla
+
+  modalRef: MdbModalRef<ModalComponent> | null = null;
+
   constructor(
     private columnService: ColumnService,
-    private dataService: DataService
+    private dataService: DataService,
+    private modalService: MdbModalService
   ) {
     if (
       this.dataService.getData('type') === 'mysql' ||
@@ -100,9 +111,6 @@ export class ColumnTableComponent implements OnInit {
   ngAfterViewInit() {
     this.alertPlaceholder = document.getElementById('liveAlertPlaceholder');
     this.alertTrigger = document.getElementById('liveAlertBtn');
-  }
-  isClosed() {
-    return !this.toastFailEl.nativeElement.classList.contains('show');
   }
 
   ngOnInit(): void {
@@ -128,6 +136,29 @@ export class ColumnTableComponent implements OnInit {
       },
     });
     this.loadAllColumns();
+  }
+
+  // Hàm để mở modal
+  openModal(indexRow: number) {
+    this.modalRef = this.modalService.open(ModalComponent, {
+      data: {
+        title: 'Xác nhận',
+        content: `Bạn có chắc chắn muốn xóa cột <b>${this.rows[indexRow].name}</b> này không?`,
+      },
+    });
+
+    this.modalRef.onClose.subscribe((message: any) => {
+      console.log(message);
+
+      if (message === 'yes') {
+        this.deleteRow(indexRow);
+      }
+    });
+  }
+
+  // For toast
+  isClosed() {
+    return !this.toastFailEl.nativeElement.classList.contains('show');
   }
 
   loadAllColumns() {
@@ -384,18 +415,29 @@ export class ColumnTableComponent implements OnInit {
   }
 
   deleteRow(index: number) {
+    this.isLoading = true;
+    let check: boolean = false;
+    let name: string = '';
     this.columnService.detele(this.rows[index]).subscribe({
       next: (data) => {
-        alert(data);
-        console.log(data);
-
-        this.rows.splice(index, 1);
-        for (let i = 0; i < this.rows.length; i++) {
-          this.rows[i].id = i + 1;
+        if (data === true) {
+          check = true;
+          name = this.rows[index].name;
+          this.rows.splice(index, 1);
+          this.updateIdAllRow();
+          this.updateForPreRows();
         }
       },
-      error: (error) => {
-        console.log(error);
+      error: (error) => {},
+      complete: () => {
+        this.isLoading = false;
+        if (check) {
+          this.successInformation.message = `Xóa cột <b>${name}</b> thành công!`;
+          this.toastSuccess.show();
+        } else {
+          this.failInformation.message = `Xóa cột <b>${name}</b> thất bại!`;
+          this.toastFail.show();
+        }
       },
     });
   }
@@ -533,7 +575,10 @@ export class ColumnTableComponent implements OnInit {
     }
   }
 
+  // Hàm xử lý khi có muốn hủy bỏ các thay đổi TẠM THỜI
+
   discardChanged() {
+    console.log('vo day');
     this.rows.splice(
       this.preRows.length,
       this.rows.length - this.preRows.length
@@ -619,6 +664,14 @@ export class ColumnTableComponent implements OnInit {
   updateIdAllRow() {
     for (let i = 0; i < this.rows.length; i++) {
       this.rows[i].id = i + 1;
+    }
+  }
+  updateForPreRows() {
+    this.preRows = [];
+    for (let i = 0; i < this.rows.length; i++) {
+      let column: Column = new Column();
+      column.set(this.rows[i]);
+      this.preRows.push(column);
     }
   }
 }
