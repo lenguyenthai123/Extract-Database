@@ -68,144 +68,149 @@
         }
       </div>
     </div>
-    <div class="table-responsive table-style">
-      <table class="table table-bordered">
-        <thead>
-          <tr>
-            <th>STT</th>
-            <th>Tên trường</th>
-            <th>Kiểu dữ liệu</th>
-            <th>Size</th>
-            <th>Nullable</th>
-            <th>Auto Increment</th>
-            <th>P/K Key</th>
-            <th>Mặc định</th>
-            <th>Mô tả</th>
-            <th>Xóa</th>
-            <!-- Thêm cột cho nút xóa -->
-          </tr>
-        </thead>
-        <tbody>
-          @for(row of rows; track row.id){
-          <tr>
-            <td>
-              <input type="text" [(ngModel)]="row.id" [disabled]="true" />
-            </td>
-            <td>
-              <input
-                type="text"
-                (focus)="onFocus('Tên trường', row.id, 1, row.name)"
-                [(ngModel)]="row.name"
-                [disabled]="row['disabled']"
-                (ngModelChange)="onFieldChange('Tên trường', $event, row.id, 1)"
-                required
-              />
-            </td>
-            <td>
-              <select
-                [(ngModel)]="row.dataType"
-                [disabled]="row.disabled"
-                (ngModelChange)="
-                  onFieldChange('Kiểu dữ liệu', $event, row.id, 2)
-                "
-              >
-                @for(type of listDataTypes; track type){
-                <option [value]="type">{{ type }}</option>
-                }
-              </select>
-            </td>
-            <td>
-              <input
-                (focus)="onFocus('Size', row.id, 8, row.size)"
-                type="number"
-                [(ngModel)]="row.size"
-                [disabled]="row.disabled || !row.isDataTypeNeedSize"
-                (ngModelChange)="onFieldChange('Size', $event, row.id, 8)"
-              />
-            </td>
 
-            <td>
-              <select
-                [(ngModel)]="row.nullable"
-                [disabled]="row.disabled"
-                (ngModelChange)="onFieldChange('Nullable', $event, row.id, 3)"
-              >
-                <option [value]="true">true</option>
-                <option [value]="false">false</option>
-              </select>
-            </td>
-            <td>
-              <select
-                [(ngModel)]="row.autoIncrement"
-                [disabled]="
-                  row.disabled ||
-                  !(row.primaryKey && !row.disabledAutoIncrement)
-                "
-                (ngModelChange)="
-                  onFieldChange('Auto Increment', $event, row.id, 4)
-                "
-              >
-                <option [value]="true">true</option>
-                <option [value]="false">false</option>
-              </select>
-            </td>
-            <td>
-              <select
-                [(ngModel)]="row.primaryKey"
-                [disabled]="true"
-                [value]="row.primaryKey"
-                (ngModelChange)="onFieldChange('P/K Key', $event, row.id, 5)"
-              >
-                <option [value]="true">true</option>
-                <option [value]="false">false</option>
-              </select>
-            </td>
-            <td>
-              <input
-                (focus)="
-                  onFocus('Giá trị mặc định', row.id, 6, row.defaultValue)
-                "
-                [type]="row.defaultValueType"
-                [(ngModel)]="row.defaultValue"
-                [disabled]="row['disabled']"
-                (ngModelChange)="
-                  onFieldChange('Giá trị mặc định', $event, row.id, 6)
-                "
-              />
-            </td>
-            <td>
-              <input
-                (focus)="onFocus('Mô tả', row.id, 7, row.description)"
-                type="text"
-                [(ngModel)]="row.description"
-                [disabled]="row['disabled']"
-                (ngModelChange)="onFieldChange('Mô tả', $event, row.id, 7)"
-              />
-            </td>
-            <td>
-              <button
-                [disabled]="row.disabled || actionInsert || actionUpdate"
-                (click)="deleteRow(rows.indexOf(row))"
-                class="btn btn-danger"
-              >
-                X
-              </button>
-            </td>
-          </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-    <div class="form-floating">
-      <textarea
-        class="form-control"
-        placeholder="Leave a comment here"
-        id="floatingTextarea2"
-        [value]="contentText"
-        (input)="onTextAreaInput($event)"
-        style="height: 150px"
-      ></textarea>
-      <label for="floatingTextarea2">{{ modifyingField }}</label>
+    <div class="container">
+      <div class="table-responsive table-style">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>STT</th>
+              <th>Tên trường</th>
+              <th>Kiểu dữ liệu</th>
+              <th>Size</th>
+              <th>Nullable</th>
+              <th>Auto Increment</th>
+              <th>P/K Key</th>
+              <th>Mặc định</th>
+              <th>Mô tả</th>
+              <th>Xóa</th>
+              <!-- Thêm cột cho nút xóa -->
+            </tr>
+          </thead>
+          <tbody>
+            @for(row of rows; track row.id){
+            <tr>
+              <td>
+                <input type="text" [(ngModel)]="row.id" [disabled]="true" />
+              </td>
+              <td>
+                <input
+                  type="text"
+                  (focus)="onFocus('Tên trường', row.id, 1, row.name)"
+                  [(ngModel)]="row.name"
+                  [disabled]="row['disabled']"
+                  (ngModelChange)="
+                    onFieldChange('Tên trường', $event, row.id, 1)
+                  "
+                  required
+                />
+              </td>
+              <td>
+                <select
+                  [(ngModel)]="row.dataType"
+                  [disabled]="row.disabled"
+                  (ngModelChange)="
+                    onFieldChange('Kiểu dữ liệu', $event, row.id, 2)
+                  "
+                >
+                  @for(type of listDataTypes; track type){
+                  <option [value]="type">{{ type }}</option>
+                  }
+                </select>
+              </td>
+              <td>
+                <input
+                  (focus)="onFocus('Size', row.id, 8, row.size)"
+                  type="number"
+                  [(ngModel)]="row.size"
+                  [disabled]="row.disabled || !row.isDataTypeNeedSize"
+                  (ngModelChange)="onFieldChange('Size', $event, row.id, 8)"
+                />
+              </td>
+
+              <td>
+                <select
+                  [(ngModel)]="row.nullable"
+                  [disabled]="row.disabled"
+                  (ngModelChange)="onFieldChange('Nullable', $event, row.id, 3)"
+                >
+                  <option [value]="true">true</option>
+                  <option [value]="false">false</option>
+                </select>
+              </td>
+              <td>
+                <select
+                  [(ngModel)]="row.autoIncrement"
+                  [disabled]="
+                    row.disabled ||
+                    !(row.primaryKey && !row.disabledAutoIncrement)
+                  "
+                  (ngModelChange)="
+                    onFieldChange('Auto Increment', $event, row.id, 4)
+                  "
+                >
+                  <option [value]="true">true</option>
+                  <option [value]="false">false</option>
+                </select>
+              </td>
+              <td>
+                <select
+                  [(ngModel)]="row.primaryKey"
+                  [disabled]="true"
+                  [value]="row.primaryKey"
+                  (ngModelChange)="onFieldChange('P/K Key', $event, row.id, 5)"
+                >
+                  <option [value]="true">true</option>
+                  <option [value]="false">false</option>
+                </select>
+              </td>
+              <td>
+                <input
+                  (focus)="
+                    onFocus('Giá trị mặc định', row.id, 6, row.defaultValue)
+                  "
+                  [type]="row.defaultValueType"
+                  [(ngModel)]="row.defaultValue"
+                  [disabled]="row['disabled']"
+                  (ngModelChange)="
+                    onFieldChange('Giá trị mặc định', $event, row.id, 6)
+                  "
+                />
+              </td>
+              <td>
+                <input
+                  (focus)="onFocus('Mô tả', row.id, 7, row.description)"
+                  type="text"
+                  [(ngModel)]="row.description"
+                  [disabled]="row['disabled']"
+                  (ngModelChange)="onFieldChange('Mô tả', $event, row.id, 7)"
+                />
+              </td>
+              <td>
+                <button
+                  [disabled]="row.disabled || actionInsert || actionUpdate"
+                  (click)="deleteRow(rows.indexOf(row))"
+                  class="btn btn-danger"
+                >
+                  X
+                </button>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="form-floating box2">
+        <textarea
+          class="form-control"
+          placeholder="Leave a comment here"
+          id="floatingTextarea2"
+          [value]="contentText"
+          (input)="onTextAreaInput($event)"
+          style="height: 100%"
+        ></textarea>
+        <label for="floatingTextarea2">{{ modifyingField }}</label>
+      </div>
     </div>
 
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
