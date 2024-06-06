@@ -31,6 +31,10 @@ export class TriggerService {
       const message = 'Field name must not contain spaces!';
       return { status: false, message: message };
     }
+    if (trigger.doAction == '') {
+      const message = 'Do action must not be empty!';
+      return { status: false, message: message };
+    }
 
     return { status: true, message: '' };
   }
@@ -53,5 +57,26 @@ export class TriggerService {
     return this.http.get<Trigger[]>(`${this.apiUrl}/trigger/list-from-table`, {
       params: params,
     });
+  }
+
+  add(trigger: Trigger): Observable<unknown> {
+    return this.http.post<Trigger>(
+      `${this.apiUrl}/trigger/add`,
+      trigger,
+      this.httpOptionsWithJson
+    );
+  }
+  update(trigger: Trigger, identifyName: string): Observable<unknown> {
+    return this.http.put<Trigger>(
+      `${this.apiUrl}/trigger/update`,
+      trigger,
+      this.httpOptionsWithJson
+    );
+  }
+
+  delete(trigger: Trigger): Observable<unknown> {
+    return this.http.delete<Trigger>(
+      `${this.apiUrl}/trigger/delete/${trigger.id}`
+    );
   }
 }

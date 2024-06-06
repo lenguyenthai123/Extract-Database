@@ -12,8 +12,8 @@ export class Trigger {
   constructor() {
     this.id = 0;
     this.name = '';
-    this.event = '';
-    this.timing = '';
+    this.event = 'INSERT';
+    this.timing = 'BEFORE';
     this.doAction = '';
     this.actionCondition = '';
     this.disabled = false;

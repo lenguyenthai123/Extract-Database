@@ -418,7 +418,7 @@ export class ColumnTableComponent implements OnInit {
     this.isLoading = true;
     let check: boolean = false;
     let name: string = '';
-    this.columnService.detele(this.rows[index]).subscribe({
+    this.columnService.delete(this.rows[index]).subscribe({
       next: (data) => {
         if (data === true) {
           check = true;
@@ -428,7 +428,9 @@ export class ColumnTableComponent implements OnInit {
           this.updateForPreRows();
         }
       },
-      error: (error) => {},
+      error: (error) => {
+        console.log(error.error);
+      },
       complete: () => {
         this.isLoading = false;
         if (check) {
@@ -652,7 +654,9 @@ export class ColumnTableComponent implements OnInit {
     // Check xem thử lượt focus này khác không
     console.log(content);
 
-    this.modifyingField = fieldName + ' dòng ' + rowId;
+    this.modifyingField = `${fieldName} của cột <b>${
+      this.rows[rowId - 1].name
+    }</b> `;
     this.fieldChange.rowId = rowId;
     this.fieldChange.fieldName = fieldName;
     this.fieldChange.fieldId = fieldId;

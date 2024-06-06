@@ -130,7 +130,7 @@ export class ColumnService {
     });
   }
 
-  detele(column: Column): Observable<unknown> {
+  delete(column: Column): Observable<unknown> {
     let params = this.createParams();
     console.log(params);
     params = params.set('name', column.name);
