@@ -6,7 +6,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms'; // Import FormsModule
-import { BrowserModule } from '@angular/platform-browser';
+import { BrowserModule, Title } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { Column } from '../../models/column.model';
 import { ColumnService } from '../../services/column/column.service';
@@ -106,6 +106,9 @@ export class ColumnTableComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.successInformation.title = 'Thành công';
+    this.failInformation.title = 'Thất bại';
+
     this.toastFail = new Toast(this.toastFailEl.nativeElement, {});
     this.toastSuccess = new Toast(this.toastSuccessEl.nativeElement, {});
 
@@ -216,46 +219,79 @@ export class ColumnTableComponent implements OnInit {
     let checkInsert: boolean = true;
     let checkUpdate: boolean = true;
 
+    // Chứa thông báo
+    let successMessage: string = '';
+    let failedMessage: string = '';
+
     // Xử lý trường hợp Insert
     if (this.actionInsert) {
       checkInsert = true;
       // Call API.
       console.log(this.rows[0]);
 
+      this.isLoading = true;
       this.columnService.add(this.rows[0]).subscribe({
         next: (data) => {
           if (data === true) {
             console.log(data);
+            successMessage += `- Thêm cột <b> ${this.rows[0].name} </b> thành công!<br>`;
 
             // Xóa hàng mẫu và thêm vào cuối.
+            let newColumn = new Column();
+            newColumn.set(this.rows[0]);
+
+            this.preRows.push(newColumn);
+
             this.rows.push(this.rows[0]);
             this.rows.splice(0, 1);
 
-            // Enable toàn bộ row.
-            this.enableAllRows();
-
-            this.raiseAlert('Thêm cột thành công!', 'success');
             this.actionInsert = false;
 
             // Bật chức năng thêm và tắt chức năng save
             checkInsert = true;
 
-            // Update old row
-            this.preRows.unshift(this.rows[0]);
+            // Enable toàn bộ row.
+            this.enableAllRows();
+
+            // Thêm thông báo thành công
+            this.updateIdAllRow();
+
+            // Cập nhật UI
+            this.enableSaveAndDiscardBtn(false);
+            this.numberChanged = 0;
+            this.changedList = [];
+            console.log('toi đây ');
           } else {
-            this.raiseAlert('Thêm cột thất bại', 'danger');
+            failedMessage += '- Thêm cột thất bại!<br>';
           }
         },
         error: (error) => {
           console.log(error.error);
-          this.raiseAlert('Thêm cột thất bại', 'danger');
+          failedMessage += '- Thêm cột thất bại!<br>';
+        },
+        complete: () => {
+          this.isLoading = false;
+
+          // Thông báo
+          if (successMessage.length > 0) {
+            this.successInformation.message = successMessage;
+            this.toastSuccess.show();
+          }
+          if (failedMessage.length > 0) {
+            this.failInformation.message = failedMessage;
+            this.toastFail.show();
+          }
         },
       });
+      this.actionUpdate = false;
+      return;
     }
 
     //---------------------------------------------------------
 
     //Xử lý trường hợp Update
+    let successList: number[] = [];
+    let failedList: number[] = [];
     if (this.actionUpdate) {
       let changedRow: number[] = [];
       for (let i = 0; i < this.changedList.length; i++) {
@@ -267,8 +303,11 @@ export class ColumnTableComponent implements OnInit {
       changedRow = getUniqueElements(changedRow);
 
       // Call api cho từng hàng
-      let successList: number[] = [];
-      let failedList: number[] = [];
+      // Loading
+      this.isLoading = true;
+
+      // Số lượng hoàn thành
+      let count = 0;
 
       for (let i = 0; i < changedRow.length; i++) {
         console.log('Old name: ' + this.preRows[changedRow[i] - 1].name);
@@ -281,54 +320,52 @@ export class ColumnTableComponent implements OnInit {
           .subscribe({
             next: (data) => {
               if (data === true) {
-                this.raiseAlert('Cập nhật cột thành công!', 'success');
+                successMessage += `- Cập nhật cột ${changedRow[i]} thành công!<br>`;
 
-                successList.push(changedRow[i]);
+                // Update old row
+                this.preRows[changedRow[i] - 1].set(
+                  this.rows[changedRow[i] - 1]
+                );
+
+                this.updateChanged(changedRow[i]);
               } else {
-                this.raiseAlert('Cập nhật cột thất bại', 'danger');
+                failedMessage += `- Cập nhật cột ${changedRow[i]} thất bại!<br>`;
                 failedList.push(changedRow[i]);
                 console.log();
               }
             },
             error: (error) => {
               console.log(error.error);
-              this.raiseAlert('Cập nhật cột thất bại', 'danger');
+              failedMessage += `- Cập nhật cột ${changedRow[i]} thất bại!<br>`;
 
               //this.raiseAlert('Cập nhật cột thất bại', 'danger');
               failedList.push(changedRow[i]);
             },
-          });
-      }
-      console.log('ra day');
-      let message: string = '';
-      // Xử lý thông báo
-      if (successList.length > 0) {
-        message += 'Cập nhật cột thành công: ';
-        for (let i = 0; i < successList.length; i++) {
-          message += successList[i] + ', ';
-        }
-        message = message.slice(0, -2);
-        this.raiseAlert(message, 'success');
-      }
+            complete: () => {
+              count++;
+              if (count === changedRow.length) {
+                this.isLoading = false;
 
-      message = '';
-      if (failedList.length > 0) {
-        message += 'Cập nhật cột thất bại: ';
-        for (let i = 0; i < failedList.length; i++) {
-          message += failedList[i] + ', ';
-        }
-        message = message.slice(0, -2);
-        this.raiseAlert(message, 'danger');
+                this.actionUpdate = false;
+
+                // Thông báo
+                if (successMessage.length > 0) {
+                  this.successInformation.message = successMessage;
+                  this.toastSuccess.show();
+                }
+                if (failedMessage.length > 0) {
+                  this.failInformation.message = failedMessage;
+                  this.toastFail.show();
+
+                  this.actionUpdate = true;
+                }
+              }
+            },
+          });
       }
     }
 
     //reset numberChanged
-
-    if (checkInsert && checkUpdate) {
-      this.enableSaveAndDiscardBtn(false);
-      this.numberChanged = 0;
-      this.changedList = [];
-    }
   }
 
   addRow() {
@@ -337,12 +374,13 @@ export class ColumnTableComponent implements OnInit {
 
     // Create new column
     let column: Column = new Column();
-    column.id = this.rows.length + 1;
     this.rows.unshift(column);
+    this.updateIdAllRow();
 
     // Disable all rows except the first row
     this.disableAllRowsExcept();
     this.enableSaveAndDiscardBtn(true);
+    this.rows[0].disabled = false;
   }
 
   deleteRow(index: number) {
@@ -434,6 +472,8 @@ export class ColumnTableComponent implements OnInit {
       // Chuyển đổi giá trị mặc định thành số => phù hợp với kiểu dữ liệu
       let check: boolean = false;
       console.log('Datatype: ' + event);
+      console.log('Disable: ' + this.rows[rowId - 1].disabled);
+      console.log('Row id: ' + rowId);
       this.listDataTypesNeedSize.forEach((type) => {
         if (event === type) {
           console.log(type);
@@ -506,6 +546,12 @@ export class ColumnTableComponent implements OnInit {
     this.enableSaveAndDiscardBtn(false);
     this.numberChanged = 0;
     this.changedList = [];
+    this.actionInsert = this.actionUpdate = false;
+
+    for (let i = 0; i < this.rows.length; i++) {
+      this.activateCondition('', this.rows[i].primaryKey.toString(), i + 1, 5);
+      this.activateCondition('', this.rows[i].dataType, i + 1, 2);
+    }
   }
 
   enableSaveAndDiscardBtn(flag: boolean) {
@@ -568,5 +614,11 @@ export class ColumnTableComponent implements OnInit {
 
     this.contentText = '';
     this.contentText = content;
+  }
+
+  updateIdAllRow() {
+    for (let i = 0; i < this.rows.length; i++) {
+      this.rows[i].id = i + 1;
+    }
   }
 }

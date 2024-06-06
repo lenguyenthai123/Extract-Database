@@ -23,6 +23,11 @@ export class ColumnService {
       const message = 'Field name must not be empty!';
       return { status: false, message: message };
     }
+    // Khoo
+    if (/^[0-9]$/.test(column.name.charAt(0))) {
+      const message = 'Field name must not start with a number!';
+      return { status: false, message: message };
+    }
     if (column.name.length > 255) {
       const message = 'Field name must not exceed 255 characters!';
       return { status: false, message: message };
@@ -38,6 +43,10 @@ export class ColumnService {
     }
     if (column.dataType.length > 255) {
       const message = 'Data type must not exceed 255 characters!';
+      return { status: false, message: message };
+    }
+    if (column.isDataTypeNeedSize && Number(column.size) <= 0) {
+      const message = 'Size must be greater than 0!';
       return { status: false, message: message };
     }
 
@@ -59,6 +68,11 @@ export class ColumnService {
   };
   // Phương thức POST
   add(column: Column): Observable<unknown> {
+    let dataType = column.dataType;
+    if (column.isDataTypeNeedSize === true) {
+      dataType = column.dataType.toUpperCase() + '(' + column.size + ')';
+    }
+
     return this.http.post<unknown>(
       `${this.apiUrl}/column`,
       {
@@ -68,7 +82,7 @@ export class ColumnService {
 
         usernameId: '12',
         name: column.name,
-        dataType: column.dataType,
+        dataType: dataType,
         size: '',
         primaryKey: column.primaryKey,
         nullable: column.nullable,

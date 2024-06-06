@@ -16,14 +16,14 @@ export class Column {
   constructor() {
     this.id = 0;
     this.name = '';
-    this.dataType = '';
+    this.dataType = 'INT';
     this.nullable = false;
     this.autoIncrement = false;
     this.primaryKey = false;
     this.defaultValue = '0';
     this.description = '';
-    this.size = '0';
-    this.isDataTypeNeedSize = false;
+    this.size = '10';
+    this.isDataTypeNeedSize = true;
     this.disabled = false;
     this.disabledAutoIncrement = false;
     this.defaultValueType = 'text';
