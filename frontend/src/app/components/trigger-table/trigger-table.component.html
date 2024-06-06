@@ -118,25 +118,22 @@
               </select>
             </td>
             <td>
-              <select
+              <input
+                type="text"
                 [(ngModel)]="row.doAction"
-                [disabled]="row.disabled"
+                [disabled]="row['disabled']"
                 (ngModelChange)="onFieldChange($event, row.id, 4)"
-              >
-                <option [value]="true">true</option>
-                <option [value]="false">false</option>
-              </select>
+                required
+              />
             </td>
             <td>
-              <select
+              <input
+                type="text"
                 [(ngModel)]="row.actionCondition"
-                [disabled]="true"
-                [value]="row.disabled"
+                [disabled]="row['disabled']"
                 (ngModelChange)="onFieldChange($event, row.id, 5)"
-              >
-                <option [value]="true">true</option>
-                <option [value]="false">false</option>
-              </select>
+                required
+              />
             </td>
             <td>
               <button

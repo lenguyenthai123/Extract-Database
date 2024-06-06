@@ -13,6 +13,8 @@ import { ColumnService } from '../../services/column/column.service';
 import { DataService } from '../../services/data/data.service';
 import { Table } from '../../models/table.model';
 import { getUniqueElements } from '../../utils/Utils';
+import { Toast } from 'bootstrap';
+import { Notification } from '../../models/notification.model';
 
 @Component({
   selector: 'app-column-table',
@@ -46,12 +48,38 @@ export class ColumnTableComponent implements OnInit {
   status: string = '';
   message: string = '';
 
+  contentText: string = '';
+
   table: Table = new Table();
+
+  modifyingField: string = '';
+  preFieldChange: { rowId: number; fieldId: number; fieldName: string } = {
+    rowId: -1,
+    fieldName: '0',
+    fieldId: 0,
+  };
+  fieldChange: { rowId: number; fieldId: number; fieldName: string } = {
+    rowId: 0,
+    fieldName: '0',
+    fieldId: 0,
+  };
 
   // Danh sách các kiểu dữ liệu trong MySQL
   listDataTypes: string[] = [];
   listNumericDataTypes: string[] = [];
   listDataTypesWithoutAutoIncrement: string[] = [];
+  listDataTypesNeedSize: string[] = [];
+
+  // Notification
+
+  @ViewChild('toastFail', { static: true }) toastFailEl: any;
+  @ViewChild('toastSuccess', { static: true }) toastSuccessEl: any;
+
+  toastFail: any;
+  toastSuccess: any;
+
+  failInformation: Notification = new Notification();
+  successInformation: Notification = new Notification();
 
   constructor(
     private columnService: ColumnService,
@@ -65,6 +93,7 @@ export class ColumnTableComponent implements OnInit {
       this.listNumericDataTypes = this.dataService.mysqlNumericDataTypes;
       this.listDataTypesWithoutAutoIncrement =
         this.dataService.mysqlDataTypesWithoutAutoIncrement;
+      this.listDataTypesNeedSize = this.dataService.mysqlDataTypesNeedSize;
     }
   }
 
@@ -72,8 +101,14 @@ export class ColumnTableComponent implements OnInit {
     this.alertPlaceholder = document.getElementById('liveAlertPlaceholder');
     this.alertTrigger = document.getElementById('liveAlertBtn');
   }
+  isClosed() {
+    return !this.toastFailEl.nativeElement.classList.contains('show');
+  }
 
   ngOnInit(): void {
+    this.toastFail = new Toast(this.toastFailEl.nativeElement, {});
+    this.toastSuccess = new Toast(this.toastSuccessEl.nativeElement, {});
+
     this.isLoading = true;
 
     this.table = JSON.parse(this.dataService.getData('table'));
@@ -123,6 +158,10 @@ export class ColumnTableComponent implements OnInit {
 
           this.rows.push(column1);
           this.preRows.push(column2);
+
+          this.activateCondition('', column1.primaryKey.toString(), i + 1, 5);
+          this.activateCondition('', column1.dataType, i + 1, 2);
+          this.rows[i].size = column2.size;
         }
 
         // Cập nhật lại id cho từng hàng
@@ -149,9 +188,16 @@ export class ColumnTableComponent implements OnInit {
   }
 
   raiseAlert(message: string, type: string): void {
-    this.message = message;
-    this.status = type;
-    this.isDone = true;
+    console.log('Goi alert');
+    if (type === 'danger') {
+      console.log('Goi fail');
+      this.failInformation.message = message;
+      this.toastFail.show();
+    }
+    if (type === 'success') {
+      this.successInformation.message = message;
+      this.toastSuccess.show();
+    }
   }
 
   save() {
@@ -235,18 +281,19 @@ export class ColumnTableComponent implements OnInit {
           .subscribe({
             next: (data) => {
               if (data === true) {
-                console.log('Update ngon');
-                //this.raiseAlert('Cập nhật cột thành công!', 'success');
+                this.raiseAlert('Cập nhật cột thành công!', 'success');
 
                 successList.push(changedRow[i]);
               } else {
-                //this.raiseAlert('Cập nhật cột thất bại', 'danger');
+                this.raiseAlert('Cập nhật cột thất bại', 'danger');
                 failedList.push(changedRow[i]);
-                console.log('ngu ngu');
+                console.log();
               }
             },
             error: (error) => {
               console.log(error.error);
+              this.raiseAlert('Cập nhật cột thất bại', 'danger');
+
               //this.raiseAlert('Cập nhật cột thất bại', 'danger');
               failedList.push(changedRow[i]);
             },
@@ -325,7 +372,12 @@ export class ColumnTableComponent implements OnInit {
     });
   }
 
-  onFieldChange(event: string, rowId: number, fieldId: number) {
+  activateCondition(
+    nameField: string,
+    event: string,
+    rowId: number,
+    fieldId: number
+  ) {
     let check: boolean = false;
 
     if (fieldId === 5) {
@@ -377,6 +429,34 @@ export class ColumnTableComponent implements OnInit {
         this.rows[rowId - 1].disabledAutoIncrement = false;
       }
     }
+    // Check field need size
+    if (fieldId === 2) {
+      // Chuyển đổi giá trị mặc định thành số => phù hợp với kiểu dữ liệu
+      let check: boolean = false;
+      console.log('Datatype: ' + event);
+      this.listDataTypesNeedSize.forEach((type) => {
+        if (event === type) {
+          console.log(type);
+          this.rows[rowId - 1].isDataTypeNeedSize = true;
+          this.rows[rowId - 1].size = '10';
+          check = true;
+        }
+      });
+      if (!check) {
+        this.rows[rowId - 1].isDataTypeNeedSize = false;
+        this.rows[rowId - 1].size = '';
+      }
+    }
+  }
+
+  onFieldChange(
+    nameField: string,
+    event: string,
+    rowId: number,
+    fieldId: number
+  ) {
+    let check = false;
+    this.activateCondition(nameField, event, rowId, fieldId);
 
     for (let i = 0; i < this.changedList.length; i++) {
       {
@@ -414,8 +494,14 @@ export class ColumnTableComponent implements OnInit {
   }
 
   discardChanged() {
+    this.rows.splice(
+      this.preRows.length,
+      this.rows.length - this.preRows.length
+    );
+
     for (let i = 0; i < this.preRows.length; i++) {
       this.rows[i].set(this.preRows[i]);
+      this.rows[i].id = i + 1;
     }
     this.enableSaveAndDiscardBtn(false);
     this.numberChanged = 0;
@@ -442,5 +528,45 @@ export class ColumnTableComponent implements OnInit {
       return true;
     }
     return false;
+  }
+
+  // Hanlde textarea
+
+  onTextAreaInput(event: Event): void {
+    this.onFieldChange(
+      '',
+      '',
+      this.fieldChange.rowId,
+      this.fieldChange.fieldId
+    );
+
+    const newContent = event.target as HTMLTextAreaElement;
+    this.contentText = newContent.value;
+
+    if (this.fieldChange.fieldId === 1) {
+      this.rows[this.fieldChange.rowId - 1].name = this.contentText;
+    }
+    if (this.fieldChange.fieldId === 6) {
+      this.rows[this.fieldChange.rowId - 1].defaultValue = this.contentText;
+    }
+    if (this.fieldChange.fieldId === 7) {
+      this.rows[this.fieldChange.rowId - 1].description = this.contentText;
+    }
+    if (this.fieldChange.fieldId === 8) {
+      this.rows[this.fieldChange.rowId - 1].size = this.contentText;
+    }
+  }
+
+  onFocus(fieldName: string, rowId: number, fieldId: number, content: string) {
+    // Check xem thử lượt focus này khác không
+    console.log(content);
+
+    this.modifyingField = fieldName + ' dòng ' + rowId;
+    this.fieldChange.rowId = rowId;
+    this.fieldChange.fieldName = fieldName;
+    this.fieldChange.fieldId = fieldId;
+
+    this.contentText = '';
+    this.contentText = content;
   }
 }

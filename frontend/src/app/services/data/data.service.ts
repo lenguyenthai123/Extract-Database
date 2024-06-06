@@ -96,7 +96,19 @@ export class DataService {
     'MULTIPOLYGON',
     'GEOMETRYCOLLECTION',
   ];
-
+  mysqlDataTypesNeedSize: string[] = [
+    'CHAR',
+    'VARCHAR',
+    'BINARY',
+    'VARBINARY',
+    'DECIMAL',
+    'NUMERIC',
+    'BIT',
+    'FLOAT', // Khi dùng với độ chính xác
+    'DOUBLE', // Khi dùng với độ chính xác
+    'ENUM', // Cần liệt kê các giá trị
+    'SET', // Cần liệt kê các giá trị]
+  ];
   constructor() {}
 
   key = '123456';

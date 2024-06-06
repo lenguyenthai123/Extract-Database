@@ -7,6 +7,8 @@ export class Column {
   primaryKey: boolean;
   defaultValue: string;
   description: string;
+  size: string;
+  isDataTypeNeedSize: boolean;
   disabled: boolean;
   disabledAutoIncrement: boolean;
 
@@ -20,6 +22,8 @@ export class Column {
     this.primaryKey = false;
     this.defaultValue = '0';
     this.description = '';
+    this.size = '0';
+    this.isDataTypeNeedSize = false;
     this.disabled = false;
     this.disabledAutoIncrement = false;
     this.defaultValueType = 'text';
@@ -31,6 +35,8 @@ export class Column {
     this.nullable = column.nullable;
     this.autoIncrement = column.autoIncrement;
     this.primaryKey = column.primaryKey;
+    this.size = column.size;
+    this.isDataTypeNeedSize = column.isDataTypeNeedSize;
     this.defaultValue = column.defaultValue;
     this.description = column.description;
     this.disabled = column.disabled;

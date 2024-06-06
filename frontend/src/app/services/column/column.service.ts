@@ -82,6 +82,11 @@ export class ColumnService {
 
   // Phương thức PUT
   update(column: Column, identifyName: string): Observable<unknown> {
+    let dataType = column.dataType;
+    if (column.isDataTypeNeedSize === true) {
+      dataType = column.dataType.toUpperCase() + '(' + column.size + ')';
+    }
+    console.log('Service: ' + column.dataType);
     return this.http.put<unknown>(
       `${this.apiUrl}/column`,
       {
@@ -92,7 +97,7 @@ export class ColumnService {
         oldName: identifyName,
         usernameId: '12',
         name: column.name,
-        dataType: column.dataType,
+        dataType: dataType,
         size: '',
         primaryKey: column.primaryKey,
         nullable: column.nullable,
