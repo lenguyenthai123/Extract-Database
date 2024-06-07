@@ -131,7 +131,7 @@
               <td>
                 <select
                   [(ngModel)]="row.nullable"
-                  [disabled]="row.disabled"
+                  [disabled]="row.disabled || row.primaryKey"
                   (ngModelChange)="onFieldChange('Nullable', $event, row.id, 3)"
                 >
                   <option [value]="true">true</option>

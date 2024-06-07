@@ -263,7 +263,9 @@ export class ColumnTableComponent implements OnInit {
       this.isLoading = true;
       this.columnService.add(this.rows[0]).subscribe({
         next: (data) => {
-          if (data === true) {
+          console.log(data);
+
+          if (data.ok === true) {
             console.log(data);
             successMessage += `- Thêm cột <b> ${this.rows[0].name} </b> thành công!<br>`;
 
@@ -305,27 +307,22 @@ export class ColumnTableComponent implements OnInit {
             this.enableSaveAndDiscardBtn(false);
             this.numberChanged = 0;
             this.changedList = [];
-            console.log('toi đây ');
+
+            //notify
+            this.successInformation.message = successMessage;
+            this.toastSuccess.show();
+            this.isLoading = false;
           } else {
             failedMessage += '- Thêm cột thất bại!<br>';
           }
         },
         error: (error) => {
           console.log(error.error);
-          failedMessage += '- Thêm cột thất bại!<br>';
-        },
-        complete: () => {
-          this.isLoading = false;
+          failedMessage += `- Thêm cột thất bại!<br> + Nguyên nhân: ${error.error.cause} <br>`;
 
-          // Thông báo
-          if (successMessage.length > 0) {
-            this.successInformation.message = successMessage;
-            this.toastSuccess.show();
-          }
-          if (failedMessage.length > 0) {
-            this.failInformation.message = failedMessage;
-            this.toastFail.show();
-          }
+          this.failInformation.message = failedMessage;
+          this.toastFail.show();
+          this.isLoading = false;
         },
       });
       this.actionUpdate = false;
@@ -364,7 +361,7 @@ export class ColumnTableComponent implements OnInit {
           )
           .subscribe({
             next: (data) => {
-              if (data === true) {
+              if (data.ok === true) {
                 successMessage += `- Cập nhật cột ${changedRow[i]} thành công!<br>`;
 
                 // Update old row
@@ -378,39 +375,50 @@ export class ColumnTableComponent implements OnInit {
                 failedList.push(changedRow[i]);
                 console.log();
               }
+
+              count++;
+              this.onComplete(count, changedRow, successMessage, failedMessage);
             },
             error: (error) => {
               console.log(error.error);
-              failedMessage += `- Cập nhật cột ${changedRow[i]} thất bại!<br>`;
+              failedMessage += `- Cập nhật cột ${changedRow[i]} thất bại!<br> + Nguyên nhân: ${error.error.cause} <br>`;
 
               //this.raiseAlert('Cập nhật cột thất bại', 'danger');
               failedList.push(changedRow[i]);
-            },
-            complete: () => {
+
               count++;
-              if (count === changedRow.length) {
-                this.isLoading = false;
-
-                this.actionUpdate = false;
-
-                // Thông báo
-                if (successMessage.length > 0) {
-                  this.successInformation.message = successMessage;
-                  this.toastSuccess.show();
-                }
-                if (failedMessage.length > 0) {
-                  this.failInformation.message = failedMessage;
-                  this.toastFail.show();
-
-                  this.actionUpdate = true;
-                }
-              }
+              this.onComplete(count, changedRow, successMessage, failedMessage);
             },
           });
       }
     }
 
     //reset numberChanged
+  }
+
+  onComplete(
+    count: number,
+    changedRow: number[],
+    successMessage: string,
+    failedMessage: string
+  ) {
+    if (count === changedRow.length) {
+      this.isLoading = false;
+
+      this.actionUpdate = false;
+
+      // Thông báo
+      if (successMessage.length > 0) {
+        this.successInformation.message = successMessage;
+        this.toastSuccess.show();
+      }
+      if (failedMessage.length > 0) {
+        this.failInformation.message = failedMessage;
+        this.toastFail.show();
+
+        this.actionUpdate = true;
+      }
+    }
   }
 
   addRow() {
@@ -434,26 +442,26 @@ export class ColumnTableComponent implements OnInit {
     let name: string = '';
     this.columnService.delete(this.rows[index]).subscribe({
       next: (data) => {
-        if (data === true) {
+        if (data.ok === true) {
           check = true;
           name = this.rows[index].name;
           this.rows.splice(index, 1);
           this.updateIdAllRow();
           this.updateForPreRows();
+
+          this.successInformation.message = `Xóa trigger <b>${name}</b> thành công!`;
+          this.toastSuccess.show();
         }
+        this.isLoading = false;
       },
       error: (error) => {
         console.log(error.error);
-      },
-      complete: () => {
+
+        console.log('Detele - Error');
+
+        this.failInformation.message = `Xóa cột <b>${name}</b> thất bại!<br> + Nguyên nhân: ${error.error.cause} <br>`;
+        this.toastFail.show();
         this.isLoading = false;
-        if (check) {
-          this.successInformation.message = `Xóa cột <b>${name}</b> thành công!`;
-          this.toastSuccess.show();
-        } else {
-          this.failInformation.message = `Xóa cột <b>${name}</b> thất bại!`;
-          this.toastFail.show();
-        }
       },
     });
   }

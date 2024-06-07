@@ -67,20 +67,20 @@ export class ColumnService {
     }),
   };
   // Phương thức POST
-  add(column: Column): Observable<unknown> {
+  add(column: Column) {
     let dataType = column.dataType;
     if (column.isDataTypeNeedSize === true) {
       dataType = column.dataType.toUpperCase() + '(' + column.size + ')';
     }
 
-    return this.http.post<unknown>(
+    return this.http.post(
       `${this.apiUrl}/column`,
       {
         type: this.dataService.getData('type'),
         schemaName: this.dataService.getData('schemaName'),
         tableName: this.dataService.getData('tableName'),
-
         usernameId: '12',
+
         name: column.name,
         dataType: dataType,
         size: '',
@@ -90,18 +90,20 @@ export class ColumnService {
         defaultValue: column.defaultValue,
         description: column.description,
       },
-      this.httpOptionsWithJson
+      {
+        observe: 'response',
+      }
     );
   }
 
   // Phương thức PUT
-  update(column: Column, identifyName: string): Observable<unknown> {
+  update(column: Column, identifyName: string) {
     let dataType = column.dataType;
     if (column.isDataTypeNeedSize === true) {
       dataType = column.dataType.toUpperCase() + '(' + column.size + ')';
     }
     console.log('Service: ' + column.dataType);
-    return this.http.put<unknown>(
+    return this.http.put(
       `${this.apiUrl}/column`,
       {
         type: this.dataService.getData('type'),
@@ -119,7 +121,9 @@ export class ColumnService {
         defaultValue: column.defaultValue,
         description: column.description,
       },
-      this.httpOptionsWithJson
+      {
+        observe: 'response',
+      }
     );
   }
 
@@ -130,12 +134,13 @@ export class ColumnService {
     });
   }
 
-  delete(column: Column): Observable<unknown> {
+  delete(column: Column) {
     let params = this.createParams();
     console.log(params);
     params = params.set('name', column.name);
     return this.http.delete<unknown>(`${this.apiUrl}/column`, {
       params: params,
+      observe: 'response',
     });
   }
 
