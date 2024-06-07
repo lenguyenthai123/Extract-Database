@@ -42,6 +42,7 @@ export class TriggerService {
   httpOptionsWithJson = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json',
+      observe: 'response',
     }),
   };
   createParams(): HttpParams {
@@ -59,24 +60,64 @@ export class TriggerService {
     });
   }
 
-  add(trigger: Trigger): Observable<unknown> {
-    return this.http.post<Trigger>(
-      `${this.apiUrl}/trigger/add`,
-      trigger,
-      this.httpOptionsWithJson
+  add(trigger: Trigger) {
+    console.log(trigger);
+    return this.http.post(
+      `${this.apiUrl}/trigger`,
+      {
+        type: this.dataService.getData('type'),
+        schemaName: this.dataService.getData('schemaName'),
+        tableName: this.dataService.getData('tableName'),
+        usernameId: '12',
+
+        name: trigger.name,
+        event: trigger.event,
+        timing: trigger.timing,
+        doAction: trigger.doAction,
+        actionCondition: trigger.actionCondition,
+      },
+      {
+        observe: 'response',
+      }
     );
   }
-  update(trigger: Trigger, identifyName: string): Observable<unknown> {
-    return this.http.put<Trigger>(
-      `${this.apiUrl}/trigger/update`,
-      trigger,
-      this.httpOptionsWithJson
+  update(trigger: Trigger, identifyName: string) {
+    return this.http.put(
+      `${this.apiUrl}/trigger`,
+      {
+        type: this.dataService.getData('type'),
+        schemaName: this.dataService.getData('schemaName'),
+        tableName: this.dataService.getData('tableName'),
+        usernameId: '12',
+
+        oldName: identifyName,
+        name: trigger.name,
+        event: trigger.event,
+        timing: trigger.timing,
+        doAction: trigger.doAction,
+        actionCondition: trigger.actionCondition,
+      },
+      {
+        observe: 'response',
+      }
     );
   }
 
-  delete(trigger: Trigger): Observable<unknown> {
-    return this.http.delete<Trigger>(
-      `${this.apiUrl}/trigger/delete/${trigger.id}`
-    );
+  delete(trigger: Trigger) {
+    let params = this.createParams();
+    console.log(params);
+    params = params.set('triggerName', trigger.name);
+
+    const httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+      params: params,
+      observe: 'response',
+    };
+
+    return this.http.delete(`${this.apiUrl}/trigger`, {
+      headers: httpOptions.headers,
+      params: httpOptions.params,
+      observe: 'response',
+    });
   }
 }

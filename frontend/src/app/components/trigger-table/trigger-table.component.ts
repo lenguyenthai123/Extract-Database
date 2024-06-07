@@ -249,55 +249,48 @@ export class TriggerTableComponent {
       this.isLoading = true;
       this.triggerService.add(this.rows[0]).subscribe({
         next: (data) => {
-          if (data === true) {
-            console.log(data);
-            successMessage += `- Thêm trigger <b> ${this.rows[0].name} </b> thành công!<br>`;
+          console.log(data);
 
-            // Xóa hàng mẫu và thêm vào cuối.
-            let newTrigger = new Trigger();
-            newTrigger.set(this.rows[0]);
+          successMessage += `- Thêm trigger <b> ${this.rows[0].name} </b> thành công!<br>`;
 
-            this.preRows.push(newTrigger);
+          // Xóa hàng mẫu và thêm vào cuối.
+          let newTrigger = new Trigger();
+          newTrigger.set(this.rows[0]);
 
-            this.rows.push(this.rows[0]);
-            this.rows.splice(0, 1);
+          this.preRows.push(newTrigger);
 
-            this.actionInsert = false;
+          this.rows.push(this.rows[0]);
+          this.rows.splice(0, 1);
 
-            // Bật chức năng thêm và tắt chức năng save
-            checkInsert = true;
+          this.actionInsert = false;
 
-            // Enable toàn bộ row.
-            this.enableAllRows();
+          // Bật chức năng thêm và tắt chức năng save
+          checkInsert = true;
 
-            // Thêm thông báo thành công
-            this.updateIdAllRow();
+          // Enable toàn bộ row.
+          this.enableAllRows();
 
-            // Cập nhật UI
-            this.enableSaveAndDiscardBtn(false);
-            this.numberChanged = 0;
-            this.changedList = [];
-            console.log('toi đây ');
-          } else {
-            failedMessage += '- Thêm trigger thất bại!<br>';
-          }
+          // Thêm thông báo thành công
+          this.updateIdAllRow();
+
+          // Cập nhật UI
+          this.enableSaveAndDiscardBtn(false);
+          this.numberChanged = 0;
+          this.changedList = [];
+          console.log('toi đây ');
+
+          // Show thông báo
+          this.successInformation.message = successMessage;
+          this.toastSuccess.show();
+          this.isLoading = false;
         },
         error: (error) => {
           console.log(error.error);
-          failedMessage += '- Thêm trigger thất bại!<br>';
-        },
-        complete: () => {
-          this.isLoading = false;
 
-          // Thông báo
-          if (successMessage.length > 0) {
-            this.successInformation.message = successMessage;
-            this.toastSuccess.show();
-          }
-          if (failedMessage.length > 0) {
-            this.failInformation.message = failedMessage;
-            this.toastFail.show();
-          }
+          failedMessage += `- Thêm trigger thất bại!<br>  + Nguyên nhân: ${error.error.cause} <br>`;
+          this.failInformation.message = failedMessage;
+          this.toastFail.show();
+          this.isLoading = false;
         },
       });
       this.actionUpdate = false;
@@ -336,7 +329,11 @@ export class TriggerTableComponent {
           )
           .subscribe({
             next: (data) => {
-              if (data === true) {
+              console.log(data);
+              console.log('UPDATE');
+              console.log(data.status);
+              console.log(data);
+              if (data.ok === true) {
                 successMessage += `- Cập nhật trigger ${changedRow[i]} thành công!<br>`;
 
                 // Update old row
@@ -350,39 +347,52 @@ export class TriggerTableComponent {
                 failedList.push(changedRow[i]);
                 console.log();
               }
+
+              count++;
+              this.onComplete(count, changedRow, successMessage, failedMessage);
             },
             error: (error) => {
+              console.log(error);
               console.log(error.error);
-              failedMessage += `- Cập nhật trigger ${changedRow[i]} thất bại!<br>`;
+              console.log('Cause:  ' + error.error.cause);
+              failedMessage += `- Cập nhật trigger ${changedRow[i]} thất bại!<br> + Nguyên nhân: ${error.error.cause} <br>`;
 
               //this.raiseAlert('Cập nhật cột thất bại', 'danger');
               failedList.push(changedRow[i]);
-            },
-            complete: () => {
+
               count++;
-              if (count === changedRow.length) {
-                this.isLoading = false;
-
-                this.actionUpdate = false;
-
-                // Thông báo
-                if (successMessage.length > 0) {
-                  this.successInformation.message = successMessage;
-                  this.toastSuccess.show();
-                }
-                if (failedMessage.length > 0) {
-                  this.failInformation.message = failedMessage;
-                  this.toastFail.show();
-
-                  this.actionUpdate = true;
-                }
-              }
+              this.onComplete(count, changedRow, successMessage, failedMessage);
             },
           });
       }
     }
 
     //reset numberChanged
+  }
+
+  onComplete(
+    count: number,
+    changedRow: number[],
+    successMessage: string,
+    failedMessage: string
+  ) {
+    if (count === changedRow.length) {
+      this.isLoading = false;
+
+      this.actionUpdate = false;
+
+      // Thông báo
+      if (successMessage.length > 0) {
+        this.successInformation.message = successMessage;
+        this.toastSuccess.show();
+      }
+      if (failedMessage.length > 0) {
+        this.failInformation.message = failedMessage;
+        this.toastFail.show();
+
+        this.actionUpdate = true;
+      }
+    }
   }
 
   addRow() {
@@ -403,27 +413,26 @@ export class TriggerTableComponent {
   deleteRow(index: number) {
     this.isLoading = true;
     let check: boolean = false;
-    let name: string = '';
+    let name: string = this.rows[index].name;
     this.triggerService.delete(this.rows[index]).subscribe({
       next: (data) => {
-        if (data === true) {
+        if (data.ok === true) {
           check = true;
-          name = this.rows[index].name;
           this.rows.splice(index, 1);
           this.updateIdAllRow();
           this.updateForPreRows();
-        }
-      },
-      error: (error) => {},
-      complete: () => {
-        this.isLoading = false;
-        if (check) {
+
           this.successInformation.message = `Xóa trigger <b>${name}</b> thành công!`;
           this.toastSuccess.show();
-        } else {
-          this.failInformation.message = `Xóa trigger <b>${name}</b> thất bại!`;
-          this.toastFail.show();
         }
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.log('Detele - Error');
+
+        this.failInformation.message = `Xóa trigger <b>${name}</b> thất bại!<br> + Nguyên nhân: ${error.error.cause} <br>`;
+        this.toastFail.show();
+        this.isLoading = false;
       },
     });
   }
@@ -484,6 +493,8 @@ export class TriggerTableComponent {
   // Hàm xử lý khi có muốn hủy bỏ các thay đổi TẠM THỜI
 
   discardChanged() {
+    this.isLoading = false;
+
     console.log('vo day');
     this.rows.splice(
       this.preRows.length,

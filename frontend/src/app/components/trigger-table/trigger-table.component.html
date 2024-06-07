@@ -152,7 +152,7 @@
               </td>
               <td>
                 <button
-                  [disabled]="row.disabled"
+                  [disabled]="row.disabled || actionInsert || actionUpdate"
                   (click)="openModal(rows.indexOf(row))"
                   class="btn btn-danger"
                 >

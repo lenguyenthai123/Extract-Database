@@ -281,6 +281,20 @@ export class ColumnTableComponent implements OnInit {
             // Bật chức năng thêm và tắt chức năng save
             checkInsert = true;
 
+            //Kiểm tra condition cho các field
+            this.activateCondition(
+              '',
+              this.rows[this.rows.length - 1].primaryKey.toString(),
+              this.rows.length,
+              5
+            );
+            this.activateCondition(
+              '',
+              this.rows[this.rows.length - 1].dataType,
+              this.rows.length,
+              2
+            );
+
             // Enable toàn bộ row.
             this.enableAllRows();
 
@@ -580,6 +594,7 @@ export class ColumnTableComponent implements OnInit {
   // Hàm xử lý khi có muốn hủy bỏ các thay đổi TẠM THỜI
 
   discardChanged() {
+    this.isLoading = false;
     console.log('vo day');
     this.rows.splice(
       this.preRows.length,
