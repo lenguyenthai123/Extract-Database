@@ -5,23 +5,28 @@ import {
   ElementRef,
   ViewChild,
 } from '@angular/core';
-
 import { FormsModule } from '@angular/forms'; // Import FormsModule
-import { BrowserModule } from '@angular/platform-browser';
+import { BrowserModule, Title } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
-import { Column } from '../../models/column.model';
-import { ColumnService } from '../../services/column/column.service';
 import { DataService } from '../../services/data/data.service';
+import { ConstraintService } from '../../services/constraint/constraint.service';
 import { Table } from '../../models/table.model';
 import { getUniqueElements } from '../../utils/Utils';
-import { Constraint } from '../../models/constraint.model';
+import { Toast } from 'bootstrap';
+import { Notification } from '../../models/notification.model';
+import {
+  MdbModalRef,
+  MdbModalService,
+  MdbModalModule,
+} from 'mdb-angular-ui-kit/modal';
+import { ModalComponent } from '../modal-delete/modal.component';
 
-import { ConstraintService } from '../../services/constraint/constraint.service';
+import { Constraint } from '../../models/constraint.model';
 
 @Component({
   selector: 'app-constraint-table',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, MdbModalModule],
   templateUrl: './constraint-table.component.html',
   styleUrl: './constraint-table.component.scss',
 })
@@ -50,16 +55,50 @@ export class ConstraintTableComponent implements OnInit {
   status: string = '';
   message: string = '';
 
+  contentText: string = '';
+
   table: Table = new Table();
+
+  modifyingField: string = '';
+  preFieldChange: { rowId: number; fieldId: number; fieldName: string } = {
+    rowId: -1,
+    fieldName: '0',
+    fieldId: 0,
+  };
+  fieldChange: { rowId: number; fieldId: number; fieldName: string } = {
+    rowId: 0,
+    fieldName: '0',
+    fieldId: 0,
+  };
 
   // Danh sách các kiểu dữ liệu trong MySQL
   listDataTypes: string[] = [];
   listNumericDataTypes: string[] = [];
   listDataTypesWithoutAutoIncrement: string[] = [];
+  listDataTypesNeedSize: string[] = [];
+
+  // Notification
+
+  @ViewChild('toastFail', { static: true }) toastFailEl: any;
+  @ViewChild('toastSuccess', { static: true }) toastSuccessEl: any;
+
+  toastFail: any;
+  toastSuccess: any;
+
+  failInformation: Notification = new Notification();
+  successInformation: Notification = new Notification();
+
+  // Modal to confirm delete hoặc làm các thứ khác bla bla
+
+  modalRef: MdbModalRef<ModalComponent> | null = null;
+
+  // List of types constaint
+  listTypes: string[] = ['PRIMARY KEY', 'FOREIGN KEY', 'UNIQUE', 'CHECK'];
 
   constructor(
     private constraintService: ConstraintService,
-    private dataService: DataService
+    private dataService: DataService,
+    private modalService: MdbModalService
   ) {
     if (
       this.dataService.getData('type') === 'mysql' ||
@@ -69,6 +108,7 @@ export class ConstraintTableComponent implements OnInit {
       this.listNumericDataTypes = this.dataService.mysqlNumericDataTypes;
       this.listDataTypesWithoutAutoIncrement =
         this.dataService.mysqlDataTypesWithoutAutoIncrement;
+      this.listDataTypesNeedSize = this.dataService.mysqlDataTypesNeedSize;
     }
   }
 
@@ -78,12 +118,20 @@ export class ConstraintTableComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.successInformation.title = 'Thành công';
+    this.failInformation.title = 'Thất bại';
+
+    this.toastFail = new Toast(this.toastFailEl.nativeElement, {});
+    this.toastSuccess = new Toast(this.toastSuccessEl.nativeElement, {});
+
     this.isLoading = true;
+
     this.table = JSON.parse(this.dataService.getData('table'));
+    console.log('Table in column component: ', this.table);
     this.dataService.events$.subscribe({
       next: (data) => {
         this.table = data;
-        this.loadAllConstraint();
+        this.loadAllTrigger();
         console.log('Data in column component: ', data);
         //Call api
       },
@@ -91,10 +139,10 @@ export class ConstraintTableComponent implements OnInit {
         console.error(error);
       },
     });
-    this.loadAllConstraint();
+    this.loadAllTrigger();
   }
 
-  loadAllConstraint() {
+  loadAllTrigger() {
     this.constraintService.getList(this.table.name).subscribe({
       next: (data) => {
         this.rows = [];
@@ -116,18 +164,42 @@ export class ConstraintTableComponent implements OnInit {
           this.rows[i].id = i + 1;
         }
 
-        this.isLoading = false;
-
         console.log('Data: ', data);
       },
       error: (error) => {
-        this.isLoading = false;
-
         this.raiseAlert('Lỗi kết nối đến server', 'danger');
 
         console.error('There was an error!', error);
       },
+      complete: () => {
+        this.isLoading = false;
+      },
     });
+  }
+
+  // Hàm để mở modal
+  openModal(indexRow: number) {
+    this.modalRef = this.modalService.open(ModalComponent, {
+      data: {
+        title: 'Xác nhận',
+        content: `Bạn có chắc chắn muốn xóa ràng buộc <b>${this.rows[indexRow].name}</b> này không?`,
+      },
+    });
+
+    this.modalRef.onClose.subscribe((message: any) => {
+      console.log(message);
+
+      if (message === 'yes') {
+        this.deleteRow(indexRow);
+      }
+    });
+  }
+
+  // Đang ở đây
+
+  // For toast
+  isClosed() {
+    return !this.toastFailEl.nativeElement.classList.contains('show');
   }
 
   turnOffNotify() {
@@ -135,9 +207,16 @@ export class ConstraintTableComponent implements OnInit {
   }
 
   raiseAlert(message: string, type: string): void {
-    this.message = message;
-    this.status = type;
-    this.isDone = true;
+    console.log('Goi alert');
+    if (type === 'danger') {
+      console.log('Goi fail');
+      this.failInformation.message = message;
+      this.toastFail.show();
+    }
+    if (type === 'success') {
+      this.successInformation.message = message;
+      this.toastSuccess.show();
+    }
   }
 
   save() {
@@ -156,50 +235,72 @@ export class ConstraintTableComponent implements OnInit {
     let checkInsert: boolean = true;
     let checkUpdate: boolean = true;
 
-    // Xử lý trường hợp Insert
+    // Chứa thông báo
+    let successMessage: string = '';
+    let failedMessage: string = '';
 
-    /*  if (this.actionInsert) {
+    // Xử lý trường hợp Insert
+    if (this.actionInsert) {
       checkInsert = true;
       // Call API.
       console.log(this.rows[0]);
 
-      this.columnService.add(this.rows[0]).subscribe({
+      this.isLoading = true;
+      this.constraintService.add(this.rows[0]).subscribe({
         next: (data) => {
-          if (data === true) {
-            console.log(data);
+          console.log(data);
 
-            // Xóa hàng mẫu và thêm vào cuối.
-            this.rows.push(this.rows[0]);
-            this.rows.splice(0, 1);
+          successMessage += `- Thêm constraint <b> ${this.rows[0].name} </b> thành công!<br>`;
 
-            // Enable toàn bộ row.
-            this.enableAllRows();
+          // Xóa hàng mẫu và thêm vào cuối.
+          let newConstraint = new Constraint();
+          newConstraint.set(this.rows[0]);
 
-            this.raiseAlert('Thêm cột thành công!', 'success');
-            this.actionInsert = false;
+          this.preRows.push(newConstraint);
 
-            // Bật chức năng thêm và tắt chức năng save
-            checkInsert = true;
+          this.rows.push(this.rows[0]);
+          this.rows.splice(0, 1);
 
-            // Update old row
-            this.preRows.unshift(this.rows[0]);
-          } else {
-            this.raiseAlert('Thêm cột thất bại', 'danger');
-          }
+          this.actionInsert = false;
+
+          // Bật chức năng thêm và tắt chức năng save
+          checkInsert = true;
+
+          // Enable toàn bộ row.
+          this.enableAllRows();
+
+          // Thêm thông báo thành công
+          this.updateIdAllRow();
+
+          // Cập nhật UI
+          this.enableSaveAndDiscardBtn(false);
+          this.numberChanged = 0;
+          this.changedList = [];
+          console.log('toi đây ');
+
+          // Show thông báo
+          this.successInformation.message = successMessage;
+          this.toastSuccess.show();
+          this.isLoading = false;
         },
         error: (error) => {
           console.log(error.error);
-          this.raiseAlert('Thêm cột thất bại', 'danger');
+
+          failedMessage += `- Thêm ràng buộc thất bại!<br>  + Nguyên nhân: ${error.error.cause} <br>`;
+          this.failInformation.message = failedMessage;
+          this.toastFail.show();
+          this.isLoading = false;
         },
       });
+      this.actionUpdate = false;
+      return;
     }
-    */
 
     //---------------------------------------------------------
 
     //Xử lý trường hợp Update
-
-    /*    
+    let successList: number[] = [];
+    let failedList: number[] = [];
     if (this.actionUpdate) {
       let changedRow: number[] = [];
       for (let i = 0; i < this.changedList.length; i++) {
@@ -211,66 +312,85 @@ export class ConstraintTableComponent implements OnInit {
       changedRow = getUniqueElements(changedRow);
 
       // Call api cho từng hàng
-      let successList: number[] = [];
-      let failedList: number[] = [];
+      // Loading
+      this.isLoading = true;
+
+      // Số lượng hoàn thành
+      let count = 0;
 
       for (let i = 0; i < changedRow.length; i++) {
         console.log('Old name: ' + this.preRows[changedRow[i] - 1].name);
         console.log(this.rows[changedRow[i] - 1]);
-        this.columnService
+        this.constraintService
           .update(
             this.rows[changedRow[i] - 1],
             this.preRows[changedRow[i] - 1].name
           )
           .subscribe({
             next: (data) => {
-              if (data === true) {
-                console.log('Update ngon');
-                //this.raiseAlert('Cập nhật cột thành công!', 'success');
+              console.log(data);
+              console.log('UPDATE');
+              console.log(data.status);
+              console.log(data);
+              if (data.ok === true) {
+                successMessage += `- Cập nhật constraint ${changedRow[i]} thành công!<br>`;
 
-                successList.push(changedRow[i]);
+                // Update old row
+                this.preRows[changedRow[i] - 1].set(
+                  this.rows[changedRow[i] - 1]
+                );
+
+                this.updateChanged(changedRow[i]);
               } else {
-                //this.raiseAlert('Cập nhật cột thất bại', 'danger');
+                failedMessage += `- Cập nhật constraint ${changedRow[i]} thất bại!<br>`;
                 failedList.push(changedRow[i]);
-                console.log('ngu ngu');
+                console.log();
               }
+
+              count++;
+              this.onComplete(count, changedRow, successMessage, failedMessage);
             },
             error: (error) => {
+              console.log(error);
               console.log(error.error);
+              console.log('Cause:  ' + error.error.cause);
+              failedMessage += `- Cập nhật constraint ${changedRow[i]} thất bại!<br> + Nguyên nhân: ${error.error.cause} <br>`;
+
               //this.raiseAlert('Cập nhật cột thất bại', 'danger');
               failedList.push(changedRow[i]);
+
+              count++;
+              this.onComplete(count, changedRow, successMessage, failedMessage);
             },
           });
       }
-      console.log('ra day');
-      let message: string = '';
-      // Xử lý thông báo
-      if (successList.length > 0) {
-        message += 'Cập nhật cột thành công: ';
-        for (let i = 0; i < successList.length; i++) {
-          message += successList[i] + ', ';
-        }
-        message = message.slice(0, -2);
-        this.raiseAlert(message, 'success');
-      }
-
-      message = '';
-      if (failedList.length > 0) {
-        message += 'Cập nhật cột thất bại: ';
-        for (let i = 0; i < failedList.length; i++) {
-          message += failedList[i] + ', ';
-        }
-        message = message.slice(0, -2);
-        this.raiseAlert(message, 'danger');
-      }
     }
-*/
-    //reset numberChanged
 
-    if (checkInsert && checkUpdate) {
-      this.enableSaveAndDiscardBtn(false);
-      this.numberChanged = 0;
-      this.changedList = [];
+    //reset numberChanged
+  }
+
+  onComplete(
+    count: number,
+    changedRow: number[],
+    successMessage: string,
+    failedMessage: string
+  ) {
+    if (count === changedRow.length) {
+      this.isLoading = false;
+
+      this.actionUpdate = false;
+
+      // Thông báo
+      if (successMessage.length > 0) {
+        this.successInformation.message = successMessage;
+        this.toastSuccess.show();
+      }
+      if (failedMessage.length > 0) {
+        this.failInformation.message = failedMessage;
+        this.toastFail.show();
+
+        this.actionUpdate = true;
+      }
     }
   }
 
@@ -280,33 +400,41 @@ export class ConstraintTableComponent implements OnInit {
 
     // Create new column
     let constraint: Constraint = new Constraint();
-    constraint.id = this.rows.length + 1;
     this.rows.unshift(constraint);
+    this.updateIdAllRow();
 
     // Disable all rows except the first row
     this.disableAllRowsExcept();
     this.enableSaveAndDiscardBtn(true);
+    this.rows[0].disabled = false;
   }
 
   deleteRow(index: number) {
-    alert('Delete row ' + index);
-    /*this.constraintService.detele(this.rows[index]).subscribe({
+    this.isLoading = true;
+    let check: boolean = false;
+    let name: string = this.rows[index].name;
+    this.constraintService.delete(this.rows[index]).subscribe({
       next: (data) => {
-        alert(data);
-        console.log(data);
+        if (data.ok === true) {
+          check = true;
+          this.rows.splice(index, 1);
+          this.updateIdAllRow();
+          this.updateForPreRows();
 
-        this.rows.splice(index, 1);
-        for (let i = 0; i < this.rows.length; i++) {
-          this.rows[i].id = i + 1;
+          this.successInformation.message = `Xóa constraint <b>${name}</b> thành công!`;
+          this.toastSuccess.show();
         }
+        this.isLoading = false;
       },
       error: (error) => {
-        console.log(error);
+        console.log('Detele - Error');
+
+        this.failInformation.message = `Xóa constraint <b>${name}</b> thất bại!<br> + Nguyên nhân: ${error.error.cause} <br>`;
+        this.toastFail.show();
+        this.isLoading = false;
       },
     });
-    */
   }
-
   disableAllRowsExcept() {
     for (let i = 1; i < this.rows.length; i++) {
       this.rows[i]['disabled'] = true;
@@ -318,8 +446,13 @@ export class ConstraintTableComponent implements OnInit {
     });
   }
 
-  onFieldChange(event: string, rowId: number, fieldId: number) {
-    let check: boolean = false;
+  onFieldChange(
+    nameField: string,
+    event: string,
+    rowId: number,
+    fieldId: number
+  ) {
+    let check = false;
 
     for (let i = 0; i < this.changedList.length; i++) {
       {
@@ -356,17 +489,88 @@ export class ConstraintTableComponent implements OnInit {
     }
   }
 
+  // Hàm xử lý khi có muốn hủy bỏ các thay đổi TẠM THỜI
+
   discardChanged() {
+    this.isLoading = false;
+
+    console.log('vo day');
+    this.rows.splice(
+      this.preRows.length,
+      this.rows.length - this.preRows.length
+    );
+
     for (let i = 0; i < this.preRows.length; i++) {
       this.rows[i].set(this.preRows[i]);
+      this.rows[i].id = i + 1;
     }
     this.enableSaveAndDiscardBtn(false);
     this.numberChanged = 0;
     this.changedList = [];
+    this.actionInsert = this.actionUpdate = false;
   }
 
   enableSaveAndDiscardBtn(flag: boolean) {
     this.btnSaveStatus = !flag;
     this.btnAddStatus = flag;
+  }
+
+  // Hanlde textarea
+
+  onTextAreaInput(event: Event): void {
+    this.onFieldChange(
+      '',
+      '',
+      this.fieldChange.rowId,
+      this.fieldChange.fieldId
+    );
+
+    const newContent = event.target as HTMLTextAreaElement;
+    this.contentText = newContent.value;
+
+    if (this.fieldChange.fieldId === 1) {
+      this.rows[this.fieldChange.rowId - 1].name = this.contentText;
+    }
+    if (this.fieldChange.fieldId === 2) {
+      this.rows[this.fieldChange.rowId - 1].fieldName = this.contentText;
+    }
+
+    if (this.fieldChange.fieldId === 4) {
+      this.rows[this.fieldChange.rowId - 1].referencedTableName =
+        this.contentText;
+    }
+    if (this.fieldChange.fieldId === 5) {
+      this.rows[this.fieldChange.rowId - 1].referencedColumnName =
+        this.contentText;
+    }
+  }
+
+  onFocus(fieldName: string, rowId: number, fieldId: number, content: string) {
+    // Check xem thử lượt focus này khác không
+    console.log(content);
+
+    this.modifyingField = `${fieldName} của constraint <b>${
+      this.rows[rowId - 1].name
+    }</b> `;
+    this.fieldChange.rowId = rowId;
+    this.fieldChange.fieldName = fieldName;
+    this.fieldChange.fieldId = fieldId;
+
+    this.contentText = '';
+    this.contentText = content;
+  }
+
+  updateIdAllRow() {
+    for (let i = 0; i < this.rows.length; i++) {
+      this.rows[i].id = i + 1;
+    }
+  }
+  updateForPreRows() {
+    this.preRows = [];
+    for (let i = 0; i < this.rows.length; i++) {
+      let constraint: Constraint = new Constraint();
+      constraint.set(this.rows[i]);
+      this.preRows.push(constraint);
+    }
   }
 }

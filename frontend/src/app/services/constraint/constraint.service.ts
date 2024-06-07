@@ -50,8 +50,72 @@ export class ConstraintService {
 
   getList(tableName: string): Observable<Constraint[]> {
     let params = this.createParams();
-    return this.http.get<Constraint[]>(`${this.apiUrl}/constraint/list`, {
+    return this.http.get<Constraint[]>(
+      `${this.apiUrl}/constraint/list-from-table`,
+      {
+        params: params,
+      }
+    );
+  }
+
+  add(constraint: Constraint) {
+    console.log(constraint);
+    return this.http.post(
+      `${this.apiUrl}/constraint`,
+      {
+        type: this.dataService.getData('type'),
+        schemaName: this.dataService.getData('schemaName'),
+        tableName: this.dataService.getData('tableName'),
+        usernameId: '12',
+
+        name: constraint.name,
+        fieldName: constraint.fieldName,
+        typeName: constraint.typeName,
+        referencedTableName: constraint.referencedTableName,
+        referencedColumnName: constraint.referencedColumnName,
+      },
+      {
+        observe: 'response',
+      }
+    );
+  }
+  update(constraint: Constraint, identifyName: string) {
+    return this.http.put(
+      `${this.apiUrl}/constraint`,
+      {
+        type: this.dataService.getData('type'),
+        schemaName: this.dataService.getData('schemaName'),
+        tableName: this.dataService.getData('tableName'),
+        usernameId: '12',
+
+        oldName: identifyName,
+        name: constraint.name,
+        fieldName: constraint.fieldName,
+        typeName: constraint.typeName,
+        referencedTableName: constraint.referencedTableName,
+        referencedColumnName: constraint.referencedColumnName,
+      },
+      {
+        observe: 'response',
+      }
+    );
+  }
+
+  delete(constraint: Constraint) {
+    let params = this.createParams();
+    console.log(params);
+    params = params.set('constraintName', constraint.name);
+
+    const httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
       params: params,
+      observe: 'response',
+    };
+
+    return this.http.delete(`${this.apiUrl}/constraint`, {
+      headers: httpOptions.headers,
+      params: httpOptions.params,
+      observe: 'response',
     });
   }
 }
