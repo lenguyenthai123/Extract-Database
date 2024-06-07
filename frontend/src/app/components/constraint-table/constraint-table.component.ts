@@ -131,7 +131,7 @@ export class ConstraintTableComponent implements OnInit {
     this.dataService.events$.subscribe({
       next: (data) => {
         this.table = data;
-        this.loadAllTrigger();
+        this.loadAllConstraint();
         console.log('Data in column component: ', data);
         //Call api
       },
@@ -139,10 +139,10 @@ export class ConstraintTableComponent implements OnInit {
         console.error(error);
       },
     });
-    this.loadAllTrigger();
+    this.loadAllConstraint();
   }
 
-  loadAllTrigger() {
+  loadAllConstraint() {
     this.constraintService.getList(this.table.name).subscribe({
       next: (data) => {
         this.rows = [];

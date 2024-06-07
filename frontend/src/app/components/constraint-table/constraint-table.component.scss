@@ -106,3 +106,26 @@ select {
 .save-button {
   background-color: rgb(0, 178, 125);
 }
+.table-style {
+  height: 50vh;
+  margin-bottom: 5px;
+}
+.notify {
+  margin-left: auto;
+}
+.icon-img {
+  height: 20px;
+  width: 20px;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 75vh;
+  width: 100%;
+  margin-right: 0px;
+  margin-left: 0px;
+}
+
+.box2 {
+  flex-grow: 1; /* Chiếm phần còn lại của chiều cao */
+}
