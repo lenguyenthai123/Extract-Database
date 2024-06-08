@@ -46,7 +46,12 @@ public class ConstraintRepositoryImpl implements ConstraintRepository {
                 while (foreignKeysResultSet.next()) {
                     String foreignKey = foreignKeysResultSet.getString("FKCOLUMN_NAME");
                     if (foreignKey.equals(constraintName)) {
-                        Constraint constraint = Constraint.builder().name(foreignKeysResultSet.getString("FK_NAME")).tableName(tableName).columnName(foreignKey).refTableName(foreignKeysResultSet.getString("PKTABLE_NAME")).refColumnName(foreignKeysResultSet.getString("PKCOLUMN_NAME")).constraintType("FOREIGN KEY").build();
+                        Constraint constraint = Constraint.builder().name(foreignKeysResultSet.getString("FK_NAME"))
+                                .tableName(tableName)
+                                .columnName(foreignKey)
+                                .refTableName(foreignKeysResultSet.getString("PKTABLE_NAME"))
+                                .refColumnName(foreignKeysResultSet.getString("PKCOLUMN_NAME"))
+                                .constraintType("FOREIGN KEY").build();
                         return constraint;
                     }
                 }

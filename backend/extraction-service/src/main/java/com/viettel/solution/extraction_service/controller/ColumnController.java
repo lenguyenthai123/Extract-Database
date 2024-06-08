@@ -55,6 +55,7 @@ public class ColumnController {
     @PostMapping
     public ResponseEntity<Boolean> addColumn(@RequestBody @Valid ColumnDto column) {
 
+
         boolean flag = columnService.addColumn(column);
 
         return ResponseEntity.ok(flag);

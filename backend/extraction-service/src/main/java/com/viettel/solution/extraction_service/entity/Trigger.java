@@ -25,7 +25,9 @@ public class Trigger {
     //@Column(name = "TRIGGER_SCHEMA")
     private String schemaName;
 
-    //@Column(name = "TRIGGER_NAME")
+    private String oldName;
+
+    //@Column(name = "TRIGGER_NAME"
     private String name;
 
     //@Column(name = "EVENT_MANIPULATION")
@@ -48,6 +50,7 @@ public class Trigger {
 
     public Trigger(TriggerDto triggerDto) {
         this.schemaName = triggerDto.getSchemaName();
+        this.oldName = triggerDto.getOldName();
         this.name = triggerDto.getName();
         this.event = triggerDto.getEvent();
         this.tableName = triggerDto.getTableName();

@@ -1,5 +1,6 @@
-package com.viettel.solution.extraction_service.exception;
+package com.viettel.solution.extraction_service.controller;
 
+import com.viettel.solution.extraction_service.exception.CustomException;
 import org.hibernate.exception.GenericJDBCException;
 import org.hibernate.exception.SQLGrammarException;
 import org.springframework.dao.DataAccessException;
@@ -27,12 +28,6 @@ public class ExceptionController {
         ex.getBindingResult().getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
-
-    @ExceptionHandler(RuntimeException.class)
-    public String handleRuntimeException(RuntimeException e) {
-        return e.getMessage();
-    }
-
 
     @ExceptionHandler(GenericJDBCException.class)
     public ResponseEntity<Map<String, Object>> handleGenericJDBCException(GenericJDBCException ex) {
@@ -102,8 +97,9 @@ public class ExceptionController {
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public
-
+    public ResponseEntity<String> handleInvalidOrderException(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
 
     // Xử lý ngoại lệ chung
     @ExceptionHandler(Exception.class)

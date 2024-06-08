@@ -16,6 +16,8 @@ public class TriggerDto {
     @NotBlank(message = "Table name is required")
     private String tableName;
 
+    private String oldName;
+
     private String name;
 
     private String event;
@@ -30,6 +32,7 @@ public class TriggerDto {
     }
 
     public TriggerDto(Trigger trigger) {
+        this.oldName = trigger.getOldName();
         this.name = trigger.getName();
         this.event = trigger.getEvent();
         this.timing = trigger.getTiming();

@@ -8,6 +8,8 @@ import com.viettel.solution.extraction_service.repository.ColumnRepository;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.exception.GenericJDBCException;
+import org.hibernate.exception.SQLGrammarException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
@@ -122,14 +124,7 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
 
     @Override
     public boolean addColumn(SessionFactory sessionFactory, ColumnDto columnDto) {
-        try (Session session = sessionFactory.openSession()) {
-            if (!tableExists(session, columnDto.getSchemaName(), columnDto.getTableName())) {
-                throw new RuntimeException("Table does not exist");
-            }
-            if (columnExists(session, columnDto.getSchemaName(), columnDto.getTableName(), columnDto.getName())) {
-                throw new RuntimeException("Column already exists");
-            }
-        }
+
         Session session = sessionFactory.openSession();
 
         Transaction transaction = null;
@@ -158,14 +153,15 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
                 alterTableQuery.append(String.format("(%d)", size));
             }
 
-            if (nullable != null && !nullable) {
-                alterTableQuery.append(" NOT NULL");
-            }
-
             if (defaultValue != null) {
                 alterTableQuery.append(String.format(" DEFAULT '%s'", defaultValue));
             }
 
+            if (nullable != null && !nullable) {
+                alterTableQuery.append(" NOT NULL");
+            } else {
+                alterTableQuery.append(" NULL");
+            }
 
             // Execute the query to add the column
             session.createNativeQuery(alterTableQuery.toString()).executeUpdate();
@@ -212,10 +208,8 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
 
             transaction.commit();
             return true;
-        } catch (RuntimeException e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
+        } catch (GenericJDBCException | SQLGrammarException e) {
+            session.getTransaction().rollback();
             if (checkRollback) {
                 deleteColumn(sessionFactory, columnDto);
             }
@@ -229,23 +223,14 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
     @Override
     public boolean updateColumn(SessionFactory sessionFactory, ColumnDto columnDto) {
 
-        try (Session session = sessionFactory.openSession()) {
-            if (!tableExists(session, columnDto.getSchemaName(), columnDto.getTableName())) {
-                throw new RuntimeException("Table does not exist");
-            }
-            if (!columnExists(session, columnDto.getSchemaName(), columnDto.getTableName(), columnDto.getOldName())) {
-                throw new RuntimeException("Column does not exist");
-            }
-        } catch (RuntimeException e) {
-            throw e;
-        }
 
-        Session session = sessionFactory.openSession();
-
+        Session session = null;
         Transaction transaction = null;
-
         boolean checkRollback = false;
+        boolean afterAdd = false;
+        boolean afterDelete = false;
         try {
+            session = sessionFactory.openSession();
             DatabaseMetaData metaData = DatabaseConnection.getDatabaseMetaData(sessionFactory);
 
             transaction = session.beginTransaction();
@@ -364,16 +349,18 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
 
             transaction.commit();
             return true;
-        } catch (RuntimeException e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            /*if (checkRollback) {
+        } catch (GenericJDBCException | SQLGrammarException e) {
+
+            if (checkRollback) {
                 deleteColumn(sessionFactory, columnDto);
-            }*/
+            }
             throw e;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            if (checkRollback) {
+                deleteColumn(sessionFactory, columnDto);
+            }
+            e.printStackTrace();
+            return false;
         } finally {
             session.close();
         }
@@ -391,19 +378,14 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
             String tableName = columnDto.getTableName();
             String columnName = columnDto.getName();
 
-            // Kiểm tra cột có tồn tại không
-            if (!columnExists(session, schema, tableName, columnName)) {
-                throw new RuntimeException("Column does not exist");
-            }
-
             // Xóa cột
             String deleteColumnQuery = String.format("ALTER TABLE %s.%s DROP COLUMN %s", schema, tableName, columnName);
             session.createNativeQuery(deleteColumnQuery).executeUpdate();
 
             transaction.commit();
             return true;
-        } catch (RuntimeException e) {
-            transaction.rollback();
+        } catch (GenericJDBCException | SQLGrammarException e) {
+            session.getTransaction().rollback();
             throw e;
         } finally {
             session.close();

@@ -7,6 +7,8 @@ import com.viettel.solution.extraction_service.entity.Trigger;
 import com.viettel.solution.extraction_service.repository.TriggerRepository;
 import com.viettel.solution.extraction_service.service.TriggerService;
 import org.hibernate.SessionFactory;
+import org.hibernate.exception.GenericJDBCException;
+import org.hibernate.exception.SQLGrammarException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -53,7 +55,13 @@ public class TriggerServiceImpl implements TriggerService {
                 triggerDtos.add(new TriggerDto(triggers.get(i)));
             }
             return triggerDtos;
-        } catch (Exception e) {
+        } catch (GenericJDBCException | SQLGrammarException e) {
+            throw e;
+        } catch (RuntimeException e)
+        {
+            throw e;
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
         return null;

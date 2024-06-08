@@ -53,7 +53,7 @@ public class TableRepositoryOracleImpl implements TableRepository {
             }
 
             // Lấy toàn bộ các index trong bảng.
-            List<Index> indexs = indexRepository.getAllIndex(sessionFactory, databaseName, schemaName, tableName);
+            List<Index> indexs = indexRepository.getAllIndexFromTable(sessionFactory, databaseName, schemaName, tableName);
             if (indexs != null) {
                 tableEntity.setIndexs(indexs);
             }

@@ -4,6 +4,7 @@ import com.viettel.solution.extraction_service.database.DatabaseConnection;
 import com.viettel.solution.extraction_service.entity.Index;
 import com.viettel.solution.extraction_service.repository.IndexRepository;
 import org.hibernate.SessionFactory;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
@@ -15,10 +16,11 @@ import java.util.List;
 
 
 @Repository
+@Primary
 public class IndexRepositoryImpl implements IndexRepository {
 
-    @Override
-    public Index getIndex(SessionFactory sessionFactory, String databaseName, String schemaName, String tableName, String indexName) {
+/*    @Override
+    public Index getAllIndexFromTable(SessionFactory sessionFactory, String databaseName, String schemaName, String tableName, String indexName) {
         Index index = null;
 
         try {
@@ -46,10 +48,15 @@ public class IndexRepositoryImpl implements IndexRepository {
         }
 
         return index;
+    }*/
+
+    @Override
+    public Index get(SessionFactory sessionFactory, String schemaName, String tableName, String indexName) {
+        return null;
     }
 
     @Override
-    public List<Index> getAllIndex(SessionFactory sessionFactory, String databaseName, String schemaName, String tableName) {
+    public List<Index> getAllIndexFromTable(SessionFactory sessionFactory, String databaseName, String schemaName, String tableName) {
         List<Index> indexes = new ArrayList<>();
 
         try {
@@ -86,6 +93,22 @@ public class IndexRepositoryImpl implements IndexRepository {
 
         return indexes;
     }
+
+    @Override
+    public boolean save(SessionFactory sessionFactory, Index index) {
+        return false;
+    }
+
+    @Override
+    public boolean delete(SessionFactory sessionFactory, String schemaName, String tableName, String indexName) {
+        return false;
+    }
+
+    @Override
+    public boolean update(SessionFactory sessionFactory, Index index, String oldIndexName) {
+        return false;
+    }
+
 
     private Index findIndexByName(List<Index> indexes, String indexName) {
         for (Index index : indexes) {

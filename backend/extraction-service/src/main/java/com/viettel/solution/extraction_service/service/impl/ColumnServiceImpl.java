@@ -9,6 +9,8 @@ import com.viettel.solution.extraction_service.entity.Database;
 import com.viettel.solution.extraction_service.repository.ColumnRepository;
 import com.viettel.solution.extraction_service.service.ColumnService;
 import org.hibernate.SessionFactory;
+import org.hibernate.exception.GenericJDBCException;
+import org.hibernate.exception.SQLGrammarException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -48,6 +50,9 @@ public class ColumnServiceImpl implements ColumnService {
                 return null;
             }
 
+        } catch (GenericJDBCException | SQLGrammarException e) {
+
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -74,6 +79,9 @@ public class ColumnServiceImpl implements ColumnService {
                 return null;
             }
 
+        } catch (GenericJDBCException | SQLGrammarException e) {
+
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -99,6 +107,9 @@ public class ColumnServiceImpl implements ColumnService {
             } else {
                 return false;
             }
+        } catch (GenericJDBCException | SQLGrammarException e) {
+
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -125,6 +136,9 @@ public class ColumnServiceImpl implements ColumnService {
                 return false;
             }
 
+        } catch (GenericJDBCException | SQLGrammarException e) {
+
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -150,6 +164,8 @@ public class ColumnServiceImpl implements ColumnService {
                 return false;
             }
 
+        } catch (GenericJDBCException | SQLGrammarException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
             return false;

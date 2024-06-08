@@ -6,6 +6,8 @@ import com.viettel.solution.extraction_service.repository.TriggerRepository;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.exception.GenericJDBCException;
+import org.hibernate.exception.SQLGrammarException;
 import org.hibernate.query.NativeQuery;
 import org.hibernate.transform.Transformers;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -42,8 +44,11 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
             nativeQuery.setResultTransformer(Transformers.aliasToBean(Trigger.class));
 
             trigger = (Trigger) nativeQuery.uniqueResult();
+        } catch (GenericJDBCException | SQLGrammarException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
         return trigger;
     }
@@ -66,6 +71,8 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
             nativeQuery.setResultTransformer(Transformers.aliasToBean(Trigger.class));
 
             triggers = nativeQuery.list();
+        } catch (GenericJDBCException | SQLGrammarException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -99,11 +106,18 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
 
             session.getTransaction().commit();
             success = true;
+            return success;
+
+        } catch (GenericJDBCException | SQLGrammarException e) {
+            session.getTransaction().rollback();
+            throw e;
         } catch (Exception e) {
             session.getTransaction().rollback();
             System.out.println(e.getLocalizedMessage());
             System.out.println(e.getMessage());
-            //e.printStackTrace();
+
+            return success;
+
         } finally {
             try {
                 session.close();
@@ -111,7 +125,6 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
                 e.printStackTrace();
             }
 
-            return success;
         }
 
     }
@@ -133,6 +146,7 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
             session.beginTransaction();
 
             String schemaName = trigger.getSchemaName();
+            String oldName = trigger.getOldName();
             String triggerName = trigger.getName();
             String tableName = trigger.getTableName();
             String event = trigger.getEvent();
@@ -140,11 +154,11 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
             String actionStatement = trigger.getDoAction();
 
             // Lưu lại backup trước khi xóa
-            triggerBackUp = this.getTrigger(sessionFactory, null, schemaName, tableName, triggerName);
+            triggerBackUp = this.getTrigger(sessionFactory, null, schemaName, tableName, oldName);
 
             // Xóa trigger cũ
 
-            String dropQuery = String.format("DROP TRIGGER IF EXISTS %s.%s", schemaName, triggerName);
+            String dropQuery = String.format("DROP TRIGGER IF EXISTS %s.%s", schemaName, oldName);
             NativeQuery<?> dropNativeQuery = session.createNativeQuery(dropQuery);
             dropNativeQuery.executeUpdate();
 
@@ -168,13 +182,20 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
             success = true;
             return success;
 
+        } catch (GenericJDBCException | SQLGrammarException e) {
+            if (afterDelete && !afterAdd) {
+                boolean flag = save(sessionFactory, triggerBackUp);
+                if (flag) System.out.println("Make backup successfull");
+                else System.out.println("Make backup successfully!");
+            }
+            throw e;
         } catch (Exception e) {
             session.getTransaction().rollback();
 
             // This is a real ROLLBACK.
             if (afterDelete && !afterAdd) {
                 boolean flag = save(sessionFactory, triggerBackUp);
-                if(flag) System.out.println("Make backup successfull");
+                if (flag) System.out.println("Make backup successfull");
                 else System.out.println("Make backup successfully!");
             }
 
@@ -200,6 +221,10 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
 
             transaction.commit();
             success = true;
+        } catch (GenericJDBCException | SQLGrammarException e) {
+            transaction.rollback();
+
+            throw e;
         } catch (Exception e) {
             if (transaction != null) {
                 transaction.rollback();
