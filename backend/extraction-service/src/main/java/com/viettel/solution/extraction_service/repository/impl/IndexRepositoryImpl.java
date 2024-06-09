@@ -1,6 +1,7 @@
 package com.viettel.solution.extraction_service.repository.impl;
 
 import com.viettel.solution.extraction_service.database.DatabaseConnection;
+import com.viettel.solution.extraction_service.dto.IndexDto;
 import com.viettel.solution.extraction_service.entity.Index;
 import com.viettel.solution.extraction_service.repository.IndexRepository;
 import org.hibernate.SessionFactory;
@@ -100,7 +101,7 @@ public class IndexRepositoryImpl implements IndexRepository {
     }
 
     @Override
-    public boolean delete(SessionFactory sessionFactory, String schemaName, String tableName, String indexName) {
+    public boolean delete(SessionFactory sessionFactory, Index index) {
         return false;
     }
 

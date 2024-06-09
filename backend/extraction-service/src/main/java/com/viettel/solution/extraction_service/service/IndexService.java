@@ -13,5 +13,5 @@ public interface IndexService {
 
     public boolean update(String type, String usernameId, IndexDto indexDto);
 
-    public boolean delete(String type, String usernameId, String schemaName, String tableName, String indexName);
+    public boolean delete(String type, String usernameId, IndexDto indexDto);
 }

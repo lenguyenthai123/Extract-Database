@@ -82,11 +82,12 @@ public class IndexServiceImpl implements IndexService {
         return false;
     }
 
+
     @Override
-    public boolean delete(String type, String usernameId, String schemaName, String tableName, String indexName) {
+    public boolean delete(String type, String usernameId, IndexDto indexDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
-            return indexRepositoryMySQL.delete(sessionFactory, schemaName, tableName, indexName);
+            return indexRepositoryMySQL.delete(sessionFactory, new Index(indexDto));
         } catch (GenericJDBCException | SQLGrammarException e) {
             throw e;
         } catch (RuntimeException e) {

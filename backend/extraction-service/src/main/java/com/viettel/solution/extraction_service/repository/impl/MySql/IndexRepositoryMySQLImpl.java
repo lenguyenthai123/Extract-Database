@@ -1,5 +1,6 @@
 package com.viettel.solution.extraction_service.repository.impl.MySql;
 
+import com.viettel.solution.extraction_service.dto.IndexDto;
 import com.viettel.solution.extraction_service.entity.Index;
 import com.viettel.solution.extraction_service.entity.Trigger;
 import com.viettel.solution.extraction_service.repository.IndexRepository;
@@ -25,9 +26,7 @@ public class IndexRepositoryMySQLImpl implements IndexRepository {
         List<Object[]> rows = null;
 
         try (Session session = sessionFactory.openSession()) {
-            String query = "SELECT INDEX_NAME as name, TABLE_NAME as tableName, INDEX_SCHEMA as schemaName, COLUMN_NAME as columnName "
-                    + "FROM INFORMATION_SCHEMA.STATISTICS "
-                    + "WHERE INDEX_SCHEMA = :schemaName AND TABLE_NAME = :tableName AND INDEX_NAME = :indexName";
+            String query = "SELECT INDEX_NAME as name, TABLE_NAME as tableName, INDEX_SCHEMA as schemaName, COLUMN_NAME as columnName " + "FROM INFORMATION_SCHEMA.STATISTICS " + "WHERE INDEX_SCHEMA = :schemaName AND TABLE_NAME = :tableName AND INDEX_NAME = :indexName";
 
             NativeQuery<Object[]> nativeQuery = session.createNativeQuery(query, Object[].class);
             nativeQuery.setParameter("schemaName", schemaName);
@@ -65,9 +64,7 @@ public class IndexRepositoryMySQLImpl implements IndexRepository {
         List<Object[]> rows = null;
 
         try (Session session = sessionFactory.openSession()) {
-            String query = "SELECT INDEX_NAME as name, TABLE_NAME as tableName, INDEX_SCHEMA as schemaName, COLUMN_NAME as columnName "
-                    + "FROM INFORMATION_SCHEMA.STATISTICS "
-                    + "WHERE INDEX_SCHEMA = :schemaName AND TABLE_NAME = :tableName";
+            String query = "SELECT INDEX_NAME as name, TABLE_NAME as tableName, INDEX_SCHEMA as schemaName, COLUMN_NAME as columnName " + "FROM INFORMATION_SCHEMA.STATISTICS " + "WHERE INDEX_SCHEMA = :schemaName AND TABLE_NAME = :tableName";
 
             NativeQuery<Object[]> nativeQuery = session.createNativeQuery(query, Object[].class);
             nativeQuery.setParameter("schemaName", schemaName);
@@ -121,10 +118,7 @@ public class IndexRepositoryMySQLImpl implements IndexRepository {
             System.out.println(columns);
 
             // Tạo câu lệnh CREATE TRIGGER
-            String createQuery = String.format(
-                    "CREATE INDEX %s ON %s.%s (%s)",
-                    triggerName, schemaName, tableName, columns
-            );
+            String createQuery = String.format("CREATE INDEX %s ON %s.%s (%s)", triggerName, schemaName, tableName, columns);
 
             NativeQuery<?> createNativeQuery = session.createNativeQuery(createQuery);
 
@@ -157,16 +151,45 @@ public class IndexRepositoryMySQLImpl implements IndexRepository {
     }
 
     @Override
-    public boolean delete(SessionFactory sessionFactory, String schemaName, String tableName, String indexName) {
+    public boolean delete(SessionFactory sessionFactory, Index index) {
         boolean success = false;
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
 
+            String schemaName = index.getSchemaName();
+            String tableName = index.getTableName();
+            String indexName = index.getName();
+            String[] columnList = index.getColumns().toArray(new String[0]);
+
+
+            Index oldIndex = get(sessionFactory, schemaName, tableName, indexName);
+
             // Xóa trigger cũ
             String dropQuery = String.format("ALTER TABLE %s.%s DROP INDEX %s", schemaName, tableName, indexName);
             NativeQuery<?> dropNativeQuery = session.createNativeQuery(dropQuery);
             dropNativeQuery.executeUpdate();
+
+            List<String> oldColumnList = oldIndex.getColumns();
+            for(String column : columnList){
+                oldColumnList.remove(column);
+            }
+            if(!oldColumnList.isEmpty()){
+                String columnsAfterDelete = "";
+                if (oldColumnList.size() == 1) {
+                    columnsAfterDelete = oldColumnList.get(0);
+                } else {
+                    for (int i = 0; i < oldColumnList.size(); i++) {
+                        columnsAfterDelete += oldColumnList.get(i);
+                        if (i < oldColumnList.size() - 1) {
+                            columnsAfterDelete += ", ";
+                        }
+                    }
+                }
+                String createQuery = String.format("CREATE INDEX %s ON %s.%s (%s)", indexName, schemaName, tableName, columnsAfterDelete);
+                NativeQuery<?> createNativeQuery = session.createNativeQuery(createQuery);
+                createNativeQuery.executeUpdate();
+            }
 
             transaction.commit();
             success = true;
@@ -188,25 +211,54 @@ public class IndexRepositoryMySQLImpl implements IndexRepository {
         boolean afterDelete = false;
         boolean afterAdd = false;
         Index oldIndex = null;
+
+        Transaction transaction = null;
+        Session session = null;
         try {
+            session = sessionFactory.openSession();
+            transaction = session.beginTransaction();
 
             String schemaName = index.getSchemaName();
             String tableName = index.getTableName();
             String indexName = index.getName();
             String oldIndexname = oldIndexName;
+            String[] columnList = index.getColumns().toArray(new String[0]);
+
+            String columns = "";
+
+            if (columnList.length == 1) {
+                columns = columnList[0];
+            } else {
+                for (int i = 0; i < columnList.length; i++) {
+                    columns += columnList[i];
+                    if (i < columnList.length - 1) {
+                        columns += ", ";
+                    }
+                }
+            }
+
 
             // Lấy lại index cu
             oldIndex = get(sessionFactory, schemaName, tableName, oldIndexname);
 
             // Xóa index cũ
-            delete(sessionFactory, schemaName, tableName, oldIndexname);
+            String dropQuery = String.format("ALTER TABLE %s.%s DROP INDEX %s", schemaName, tableName, oldIndexname);
+            NativeQuery<?> dropNativeQuery = session.createNativeQuery(dropQuery);
+
+
+            dropNativeQuery.executeUpdate();
+
             afterDelete = true;
 
             // Tạo index mới
-            save(sessionFactory, index);
+            String createQuery = String.format("CREATE INDEX %s ON %s.%s (%s)", indexName, schemaName, tableName, columns);
+
+            NativeQuery<?> createNativeQuery = session.createNativeQuery(createQuery);
+            createNativeQuery.executeUpdate();
+
             afterAdd = true;
 
-
+            transaction.commit();
             return true;
         } catch (GenericJDBCException | SQLGrammarException e) {
             if (afterDelete && !afterAdd) {
@@ -214,7 +266,7 @@ public class IndexRepositoryMySQLImpl implements IndexRepository {
                 if (flag) System.out.println("Make backup successfull");
                 else System.out.println("Make backup successfully!");
             }
-
+            transaction.rollback();
             throw e;
         } catch (Exception e) {
             if (afterDelete && !afterAdd) {
@@ -222,8 +274,13 @@ public class IndexRepositoryMySQLImpl implements IndexRepository {
                 if (flag) System.out.println("Make backup successfull");
                 else System.out.println("Make backup successfully!");
             }
+            transaction.rollback();
 
             e.printStackTrace();
+        } finally {
+            if (session != null) {
+                session.close();
+            }
         }
         return false;
     }

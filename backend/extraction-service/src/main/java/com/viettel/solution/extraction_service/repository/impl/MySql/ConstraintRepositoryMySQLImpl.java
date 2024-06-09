@@ -77,7 +77,7 @@ public class ConstraintRepositoryMySQLImpl implements ConstraintRepository {
             constraints = nativeQuery.getResultList();
 
             for (Constraint constraint : constraints) {
-                System.out.println(constraint.toString());
+                constraint.getColumnList().add(constraint.getColumnName());
             }
 
             return constraints;

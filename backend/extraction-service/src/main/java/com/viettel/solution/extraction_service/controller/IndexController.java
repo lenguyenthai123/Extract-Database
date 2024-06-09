@@ -44,12 +44,8 @@ public class IndexController {
     }
 
     @DeleteMapping
-    public ResponseEntity<Boolean> delete(@RequestParam String type,
-                                          @RequestParam String usernameId,
-                                          @RequestParam String schemaName,
-                                          @RequestParam String tableName,
-                                          @RequestParam String indexName) {
-        boolean flag = indexService.delete(type, usernameId, schemaName, tableName, indexName);
+    public ResponseEntity<Boolean> delete(@ModelAttribute IndexDto indexDto) {
+        boolean flag = indexService.delete(indexDto.getType(), indexDto.getUsernameId(), indexDto);
 
         return ResponseEntity.ok(flag);
     }
