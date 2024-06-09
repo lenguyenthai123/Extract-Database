@@ -1,7 +1,6 @@
-package com.viettel.solution.extraction_service.entity;
+package com.viettel.solution.extraction_service.dto;
 
-
-import com.viettel.solution.extraction_service.dto.ConstraintDto;
+import com.viettel.solution.extraction_service.entity.Constraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,8 +15,12 @@ import java.util.List;
 @AllArgsConstructor // Tạo constructor với tất cả các tham số
 @NoArgsConstructor
 @Builder
-public class Constraint {
+public class ConstraintDto {
 
+    String type;
+    String usernameId;
+
+    String oldName;
     String name;
     String tableName;
     String schemaName;
@@ -26,26 +29,10 @@ public class Constraint {
     String refColumnName;
     String constraintType;
     List<String> columnList;
-
     String expression;
 
 
-    public Constraint(ConstraintDto constraintDto) {
-        this.name = constraintDto.getName();
-        this.tableName = constraintDto.getTableName();
-        this.schemaName = constraintDto.getSchemaName();
-        this.columnName = constraintDto.getColumnName();
-        this.refTableName = constraintDto.getRefTableName();
-        this.refColumnName = constraintDto.getRefColumnName();
-        this.constraintType = constraintDto.getConstraintType();
-        this.columnList = new ArrayList<>();
-        if (constraintDto.getColumnList() != null) {
-            this.columnList.addAll(constraintDto.getColumnList());
-        }
-        this.expression = constraintDto.getExpression();
-    }
-
-    public Constraint(Constraint constraint) {
+    public ConstraintDto(Constraint constraint) {
         this.name = constraint.getName();
         this.tableName = constraint.getTableName();
         this.schemaName = constraint.getSchemaName();
@@ -54,10 +41,9 @@ public class Constraint {
         this.refColumnName = constraint.getRefColumnName();
         this.constraintType = constraint.getConstraintType();
         this.columnList = new ArrayList<>();
+        this.expression = constraint.getExpression();
         if (constraint.getColumnList() != null) {
             this.columnList.addAll(constraint.getColumnList());
         }
-        this.expression = constraint.getExpression();
-
     }
 }

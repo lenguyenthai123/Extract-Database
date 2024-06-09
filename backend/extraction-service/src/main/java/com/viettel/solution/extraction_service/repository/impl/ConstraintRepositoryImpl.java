@@ -2,9 +2,11 @@ package com.viettel.solution.extraction_service.repository.impl;
 
 import com.viettel.solution.extraction_service.database.DatabaseConnection;
 import com.viettel.solution.extraction_service.entity.Constraint;
+import com.viettel.solution.extraction_service.entity.Index;
 import com.viettel.solution.extraction_service.repository.ConstraintRepository;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 @Repository
+@Primary
 public class ConstraintRepositoryImpl implements ConstraintRepository {
 
     @Override
@@ -46,12 +49,7 @@ public class ConstraintRepositoryImpl implements ConstraintRepository {
                 while (foreignKeysResultSet.next()) {
                     String foreignKey = foreignKeysResultSet.getString("FKCOLUMN_NAME");
                     if (foreignKey.equals(constraintName)) {
-                        Constraint constraint = Constraint.builder().name(foreignKeysResultSet.getString("FK_NAME"))
-                                .tableName(tableName)
-                                .columnName(foreignKey)
-                                .refTableName(foreignKeysResultSet.getString("PKTABLE_NAME"))
-                                .refColumnName(foreignKeysResultSet.getString("PKCOLUMN_NAME"))
-                                .constraintType("FOREIGN KEY").build();
+                        Constraint constraint = Constraint.builder().name(foreignKeysResultSet.getString("FK_NAME")).tableName(tableName).columnName(foreignKey).refTableName(foreignKeysResultSet.getString("PKTABLE_NAME")).refColumnName(foreignKeysResultSet.getString("PKCOLUMN_NAME")).constraintType("FOREIGN KEY").build();
                         return constraint;
                     }
                 }
@@ -77,8 +75,14 @@ public class ConstraintRepositoryImpl implements ConstraintRepository {
         return null;
     }
 
+
     @Override
-    public List<Constraint> getAllConstraint(SessionFactory sessionFactory, String databaseName, String schemaName, String tableName) {
+    public boolean update(SessionFactory sessionFactory, Constraint constraint, String oldIndexName) {
+        return false;
+    }
+
+    @Override
+    public List<Constraint> getAllConstraintFromTable(SessionFactory sessionFactory, String databaseName, String schemaName, String tableName) {
         try {
             List<Constraint> constraints = new ArrayList<>();
             DatabaseMetaData metaData = DatabaseConnection.getDatabaseMetaData(sessionFactory);
@@ -123,5 +127,15 @@ public class ConstraintRepositoryImpl implements ConstraintRepository {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public boolean save(SessionFactory sessionFactory, Constraint constraint) {
+        return false;
+    }
+
+    @Override
+    public boolean delete(SessionFactory sessionFactory, Constraint constraint) {
+        return false;
     }
 }

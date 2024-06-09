@@ -47,7 +47,7 @@ public class TableRepositoryOracleImpl implements TableRepository {
             tableEntity.setName(tableName);
 
             // Lấy toàn bộ các constraint trong bảng.
-            List<Constraint> constraints = constraintRepository.getAllConstraint(sessionFactory, databaseName, schemaName, tableName);
+            List<Constraint> constraints = constraintRepository.getAllConstraintFromTable(sessionFactory, databaseName, schemaName, tableName);
             if (constraints != null) {
                 tableEntity.setConstraints(constraints);
             }
