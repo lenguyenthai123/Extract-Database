@@ -13,7 +13,6 @@ import java.util.List;
 @Component
 @Data               // Bao gồm @Getter, @Setter, @ToString, @EqualsAndHashCode, và @RequiredArgsConstructor
 @AllArgsConstructor // Tạo constructor với tất cả các tham số
-@NoArgsConstructor
 @Builder
 public class ConstraintDto {
 
@@ -28,9 +27,13 @@ public class ConstraintDto {
     String refTableName;
     String refColumnName;
     String constraintType;
-    List<String> columnList;
+    List<String> columnList ;
     String expression;
 
+    public ConstraintDto()
+    {
+        this.columnList = new ArrayList<>();
+    }
 
     public ConstraintDto(Constraint constraint) {
         this.name = constraint.getName();

@@ -24,6 +24,8 @@ import java.util.Objects;
 @Repository
 @Qualifier("Mysql")
 public class ConstraintRepositoryMySQLImpl implements ConstraintRepository {
+
+
     @Override
     public Constraint getConstraint(SessionFactory sessionFactory, String databaseName, String schemaName, String tableName, String constraintName) {
         List<Constraint> constraints = null;
@@ -189,6 +191,10 @@ public class ConstraintRepositoryMySQLImpl implements ConstraintRepository {
     public boolean delete(SessionFactory sessionFactory, Constraint constraint) {
         boolean success = false;
         Session session = null;
+
+        boolean afterDelete = false;
+        boolean afterAdd = false;
+
         try {
             session = sessionFactory.openSession();
             //Open transaction
@@ -201,25 +207,69 @@ public class ConstraintRepositoryMySQLImpl implements ConstraintRepository {
 
 
             String createQuery = "";
+            String updateQuery = "";
+
+            NativeQuery<?> createNativeQuery;
+            NativeQuery<?> updateNativeQuery;
 
             boolean check = true;
 
             switch (constraintType) {
                 case "PRIMARY KEY":
-                    // Tạo câu lệnh CREATE PRIMARY KEY
-                    createQuery = String.format("ALTER TABLE %s.%s DROP PRIMARY KEY", schemaName, tableName);
+                    // Tao backup
+
+                    String[] columnList = constraint.getColumnList().toArray(new String[0]);
+
+
+                    Constraint backupConstraint = getConstraint(sessionFactory, null, schemaName, tableName, constraintName);
+                    List<String> oldColumnList = backupConstraint.getColumnList();
+
+                    for (String column : columnList) {
+                        oldColumnList.remove(column);
+                    }
+
+                    String columns = "";
+                    if (!oldColumnList.isEmpty()) {
+                        if (oldColumnList.size() == 1) {
+                            columns = oldColumnList.get(0);
+                        } else {
+                            for (int i = 0; i < oldColumnList.size(); i++) {
+                                columns += oldColumnList.get(i);
+                                if (i < oldColumnList.size() - 1) {
+                                    columns += ", ";
+                                }
+                            }
+                        }
+                        updateQuery = String.format("ALTER TABLE %s.%s DROP PRIMARY KEY, ADD PRIMARY KEY(%s)", schemaName, tableName, columns);
+
+                        updateNativeQuery = session.createNativeQuery(updateQuery);
+                        updateNativeQuery.executeUpdate();
+
+                    } else {
+                        // Tạo câu lệnh CREATE PRIMARY KEY
+                        createQuery = String.format("ALTER TABLE %s.%s DROP PRIMARY KEY", schemaName, tableName);
+                        createNativeQuery = session.createNativeQuery(createQuery);
+                        createNativeQuery.executeUpdate();
+                    }
+
                     break;
                 case "FOREIGN KEY":
                     // Tạo câu lệnh CREATE FOREIGN KEY
                     createQuery = String.format("ALTER TABLE %s.%s DROP FOREIGN KEY %s", schemaName, tableName, constraintName);
+                    createNativeQuery = session.createNativeQuery(createQuery);
+                    createNativeQuery.executeUpdate();
                     break;
                 case "UNIQUE":
                     // Tạo câu lệnh DROP UNIQUE
                     createQuery = String.format("ALTER TABLE %s.%s DROP INDEX %s", schemaName, tableName, constraintName);
+                    createNativeQuery = session.createNativeQuery(createQuery);
+                    createNativeQuery.executeUpdate();
                     break;
                 case "CHECK":
                     // Tạo câu lệnh CREATE CHECK
                     createQuery = String.format("ALTER TABLE %s.%s DROP CHECK %s", schemaName, tableName, constraintName);
+                    createNativeQuery = session.createNativeQuery(createQuery);
+                    createNativeQuery.executeUpdate();
                     break;
                 default:
                     check = false;
@@ -228,10 +278,6 @@ public class ConstraintRepositoryMySQLImpl implements ConstraintRepository {
             if (!check) {
                 return false;
             }
-
-            NativeQuery<?> createNativeQuery = session.createNativeQuery(createQuery);
-
-            createNativeQuery.executeUpdate();
 
             session.getTransaction().commit();
             success = true;

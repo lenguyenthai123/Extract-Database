@@ -51,6 +51,8 @@ public class IndexServiceImpl implements IndexService {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
             List<Index> indexs = indexRepositoryMySQL.getAllIndexFromTable(sessionFactory, null, schemaName, tableName);
 
+            if (indexs == null) return null;
+
             List<IndexDto> indexDtos = new ArrayList<>();
             for (int i = 0; i < indexs.size(); i++) {
                 Index index = indexs.get(i);

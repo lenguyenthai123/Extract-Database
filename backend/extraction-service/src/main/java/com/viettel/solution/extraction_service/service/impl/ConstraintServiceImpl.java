@@ -53,6 +53,8 @@ public class ConstraintServiceImpl implements ConstraintService {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
             List<Constraint> constraints = constraintRepositoryMySql.getAllConstraintFromTable(sessionFactory, null, schemaName, tableName);
 
+            if (constraints == null) return null;
+
             List<ConstraintDto> constraintDtos = new ArrayList<>();
 
             for (int i = 0; i < constraints.size(); i++) {

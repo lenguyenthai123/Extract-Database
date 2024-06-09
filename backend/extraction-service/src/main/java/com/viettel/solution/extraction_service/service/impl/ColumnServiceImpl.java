@@ -73,6 +73,8 @@ public class ColumnServiceImpl implements ColumnService {
             if (type.equalsIgnoreCase("mysql") || type.equalsIgnoreCase("mariadb")) {
                 List<Column> columns = columnRepositorySQL.getAllColumn(sessionFactory, requestDto);
 
+                if (columns == null) return null;
+
                 return ColumnDto.convertList(columns);
             } else {
 
