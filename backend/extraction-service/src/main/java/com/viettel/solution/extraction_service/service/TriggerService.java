@@ -7,11 +7,11 @@ import java.util.List;
 
 public interface TriggerService {
 
-    public boolean save(String type, String usernameId, TriggerDto triggerDto);
+    public TriggerDto save(String type, String usernameId, TriggerDto triggerDto);
 
     public List<TriggerDto> getTriggerListFromTable(String type, String usernameId, String schemaName, String tableName);
 
-    public boolean update(String type, String usernameId, TriggerDto triggerDto);
+    public TriggerDto update(String type, String usernameId, TriggerDto triggerDto);
 
     public boolean delete(String type, String usernameId, String schemaName, String tableName, String triggerName);
 }

@@ -7,11 +7,11 @@ import java.util.List;
 
 public interface IndexService {
 
-    public boolean save(String type, String usernameId, IndexDto indexDto);
+    public IndexDto save(String type, String usernameId, IndexDto indexDto);
 
     public List<IndexDto> getListFromTable(String type, String usernameId, String schemaName, String tableName);
 
-    public boolean update(String type, String usernameId, IndexDto indexDto);
+    public IndexDto update(String type, String usernameId, IndexDto indexDto);
 
     public boolean delete(String type, String usernameId, IndexDto indexDto);
 }

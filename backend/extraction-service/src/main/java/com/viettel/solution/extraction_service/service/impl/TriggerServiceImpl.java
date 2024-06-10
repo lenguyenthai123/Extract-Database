@@ -11,6 +11,9 @@ import org.hibernate.exception.GenericJDBCException;
 import org.hibernate.exception.SQLGrammarException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.viettel.solution.extraction_service.service.TriggerService;
@@ -33,16 +36,26 @@ public class TriggerServiceImpl implements TriggerService {
     }
 
     @Override
-    public boolean save(String type, String usernameId, TriggerDto triggerDto) {
-        SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
+    @CacheEvict(value = "trigger", key = "#triggerDto.getTableId()")
+    public TriggerDto save(String type, String usernameId, TriggerDto triggerDto) {
+        try {
+            SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
 
-        Trigger trigger = new Trigger(triggerDto);
+            Trigger trigger = new Trigger(triggerDto);
 
-        return triggerRepositoryMySql.save(sessionFactory, trigger);
-
+            return new TriggerDto(triggerRepositoryMySql.save(sessionFactory, trigger));
+        } catch (GenericJDBCException | SQLGrammarException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
+    @Cacheable(value = "trigger", key = "#usernameId + #type + #schemaName + #tableName")
     public List<TriggerDto> getTriggerListFromTable(String type, String usernameId, String schemaName, String tableName) {
         try {
 
@@ -57,26 +70,35 @@ public class TriggerServiceImpl implements TriggerService {
             return triggerDtos;
         } catch (GenericJDBCException | SQLGrammarException e) {
             throw e;
-        } catch (RuntimeException e)
-        {
+        } catch (RuntimeException e) {
             throw e;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
 
     @Override
-    public boolean update(String type, String usernameId, TriggerDto triggerDto) {
-        SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
+    @CacheEvict(value = "trigger", key = "#triggerDto.getTableId()")
+    public TriggerDto update(String type, String usernameId, TriggerDto triggerDto) {
+        try {
+            SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
 
-        Trigger trigger = new Trigger(triggerDto);
+            Trigger trigger = new Trigger(triggerDto);
 
-        return triggerRepositoryMySql.update(sessionFactory, trigger);
+            return new TriggerDto(triggerRepositoryMySql.update(sessionFactory, trigger));
+        } catch (GenericJDBCException | SQLGrammarException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
+    @CacheEvict(value = "trigger", key = "#usernameId + #type + #schemaName + #tableName")
     public boolean delete(String type, String usernameId, String schemaName, String tableName, String triggerName) {
         SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
 

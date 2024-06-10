@@ -12,9 +12,9 @@ public interface ConstraintRepository {
 
     public List<Constraint> getAllConstraintFromTable(SessionFactory sessionFactory, String databaseName, String schemaName, String tableName);
 
-    public boolean save(SessionFactory sessionFactory, Constraint constraint);
+    public Constraint save(SessionFactory sessionFactory, Constraint constraint);
 
     public boolean delete(SessionFactory sessionFactory, Constraint constraint);
 
-    public boolean update(SessionFactory sessionFactory, Constraint constraint, String oldConstraintxName);
+    public Constraint update(SessionFactory sessionFactory, Constraint constraint, String oldConstraintxName);
 }

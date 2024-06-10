@@ -12,6 +12,9 @@ import org.hibernate.exception.GenericJDBCException;
 import org.hibernate.exception.SQLGrammarException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -29,10 +32,11 @@ public class IndexServiceImpl implements IndexService {
     }
 
     @Override
-    public boolean save(String type, String usernameId, IndexDto indexDto) {
+    @CacheEvict(value = "index", key = "#indexDto.getTableId()")
+    public IndexDto save(String type, String usernameId, IndexDto indexDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
-            return indexRepositoryMySQL.save(sessionFactory, new Index(indexDto));
+            return new IndexDto(indexRepositoryMySQL.save(sessionFactory, new Index(indexDto)));
 
         } catch (GenericJDBCException | SQLGrammarException e) {
             throw e;
@@ -41,10 +45,11 @@ public class IndexServiceImpl implements IndexService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
+        return null;
     }
 
     @Override
+    @Cacheable(value = "index", key = "#usernameId + #type + #schemaName + #tableName")
     public List<IndexDto> getListFromTable(String type, String usernameId, String schemaName, String tableName) {
         try {
 
@@ -70,10 +75,11 @@ public class IndexServiceImpl implements IndexService {
     }
 
     @Override
-    public boolean update(String type, String usernameId, IndexDto indexDto) {
+    @CacheEvict(value = "index", key = "#indexDto.getTableId()")
+    public IndexDto update(String type, String usernameId, IndexDto indexDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
-            return indexRepositoryMySQL.update(sessionFactory, new Index(indexDto), indexDto.getOldName());
+            return new IndexDto(indexRepositoryMySQL.update(sessionFactory, new Index(indexDto), indexDto.getOldName()));
         } catch (GenericJDBCException | SQLGrammarException e) {
             throw e;
         } catch (RuntimeException e) {
@@ -81,11 +87,12 @@ public class IndexServiceImpl implements IndexService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
+        return null;
     }
 
 
     @Override
+    @CacheEvict(value = "index", key = "#indexDto.getTableId()")
     public boolean delete(String type, String usernameId, IndexDto indexDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);

@@ -11,9 +11,9 @@ public interface ColumnService {
 
     List<ColumnDto> getAllColumn(RequestDto requestDto);
 
-    boolean updateColumn(ColumnDto column);
+    ColumnDto updateColumn(ColumnDto column);
 
     boolean deleteColumn(ColumnDto column);
 
-    boolean addColumn(ColumnDto column);
+    ColumnDto addColumn(ColumnDto column);
 }

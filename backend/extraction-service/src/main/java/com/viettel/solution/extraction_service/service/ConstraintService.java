@@ -10,11 +10,11 @@ import java.util.List;
 
 public interface ConstraintService {
 
-    public boolean save(String type, String usernameId, ConstraintDto constraintDto);
+    public ConstraintDto save(String type, String usernameId, ConstraintDto constraintDto);
 
     public List<ConstraintDto> getListFromTable(String type, String usernameId, String schemaName, String tableName);
 
-    public boolean update(String type, String usernameId, ConstraintDto constraintDto);
+    public ConstraintDto update(String type, String usernameId, ConstraintDto constraintDto);
 
     public boolean delete(String type, String usernameId, ConstraintDto constraintDto);
 }

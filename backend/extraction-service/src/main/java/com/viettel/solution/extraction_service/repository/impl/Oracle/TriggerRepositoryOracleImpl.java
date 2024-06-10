@@ -67,11 +67,11 @@ public class TriggerRepositoryOracleImpl implements TriggerRepository {
         return triggers;
     }
 
-
     @Override
-    public boolean save(SessionFactory sessionFactory, Trigger trigger) {
-        return false;
+    public Trigger save(SessionFactory sessionFactory, Trigger trigger) {
+        return null;
     }
+
 
     @Override
     public boolean delete(SessionFactory sessionFactory, String schemaName, String tableName, String triggerName) {
@@ -79,8 +79,9 @@ public class TriggerRepositoryOracleImpl implements TriggerRepository {
     }
 
     @Override
-    public boolean update(SessionFactory sessionFactory, Trigger trigger) {
-        return false;
+    public Trigger update(SessionFactory sessionFactory, Trigger trigger) {
+        return null;
     }
+
 
 }

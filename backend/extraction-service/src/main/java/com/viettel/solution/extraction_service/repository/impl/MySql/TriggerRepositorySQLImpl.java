@@ -30,12 +30,7 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
         Trigger trigger = null;
 
         try (Session session = sessionFactory.openSession()) {
-            String query = "SELECT TRIGGER_NAME as name, EVENT_MANIPULATION as event, "
-                    + "EVENT_OBJECT_TABLE as tableName, ACTION_TIMING as timing, "
-                    + "ACTION_CONDITION as actionCondition, ACTION_STATEMENT as doAction,"
-                    + "TRIGGER_SCHEMA as schemaName "
-                    + "FROM INFORMATION_SCHEMA.TRIGGERS "
-                    + "WHERE TRIGGER_SCHEMA = :schemaName AND EVENT_OBJECT_TABLE = :tableName AND TRIGGER_NAME = :triggerName";
+            String query = "SELECT TRIGGER_NAME as name, EVENT_MANIPULATION as event, " + "EVENT_OBJECT_TABLE as tableName, ACTION_TIMING as timing, " + "ACTION_CONDITION as actionCondition, ACTION_STATEMENT as doAction," + "TRIGGER_SCHEMA as schemaName " + "FROM INFORMATION_SCHEMA.TRIGGERS " + "WHERE TRIGGER_SCHEMA = :schemaName AND EVENT_OBJECT_TABLE = :tableName AND TRIGGER_NAME = :triggerName";
 
             NativeQuery<Trigger> nativeQuery = session.createNativeQuery(query);
             nativeQuery.setParameter("schemaName", schemaName);
@@ -59,11 +54,7 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
         List<Trigger> triggers = null;
 
         try (Session session = sessionFactory.openSession()) {
-            String query = "SELECT TRIGGER_NAME as name, EVENT_MANIPULATION as event, "
-                    + "EVENT_OBJECT_TABLE as tableName, ACTION_TIMING as timing, "
-                    + "ACTION_CONDITION as actionCondition, ACTION_STATEMENT as doAction "
-                    + "FROM INFORMATION_SCHEMA.TRIGGERS "
-                    + "WHERE TRIGGER_SCHEMA = :schemaName AND EVENT_OBJECT_TABLE = :tableName";
+            String query = "SELECT TRIGGER_NAME as name, EVENT_MANIPULATION as event, " + "EVENT_OBJECT_TABLE as tableName, ACTION_TIMING as timing, " + "ACTION_CONDITION as actionCondition, ACTION_STATEMENT as doAction " + "FROM INFORMATION_SCHEMA.TRIGGERS " + "WHERE TRIGGER_SCHEMA = :schemaName AND EVENT_OBJECT_TABLE = :tableName";
 
             NativeQuery<Trigger> nativeQuery = session.createNativeQuery(query);
             nativeQuery.setParameter("schemaName", schemaName);
@@ -81,7 +72,7 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
     }
 
     @Override
-    public boolean save(SessionFactory sessionFactory, Trigger trigger) {
+    public Trigger save(SessionFactory sessionFactory, Trigger trigger) {
         boolean success = false;
         Session session = sessionFactory.openSession();
         try {
@@ -95,10 +86,7 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
             String actionStatement = trigger.getDoAction();
 
             // Tạo câu lệnh CREATE TRIGGER
-            String createQuery = String.format(
-                    "CREATE TRIGGER %s.%s %s %s ON %s.%s FOR EACH ROW %s",
-                    schemaName, triggerName, timing, event, schemaName, tableName, actionStatement
-            );
+            String createQuery = String.format("CREATE TRIGGER %s.%s %s %s ON %s.%s FOR EACH ROW %s", schemaName, triggerName, timing, event, schemaName, tableName, actionStatement);
 
             NativeQuery<?> createNativeQuery = session.createNativeQuery(createQuery);
             session.beginTransaction();
@@ -106,7 +94,7 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
 
             session.getTransaction().commit();
             success = true;
-            return success;
+            return trigger;
 
         } catch (GenericJDBCException | SQLGrammarException e) {
             session.getTransaction().rollback();
@@ -116,7 +104,7 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
             System.out.println(e.getLocalizedMessage());
             System.out.println(e.getMessage());
 
-            return success;
+            return null;
 
         } finally {
             try {
@@ -135,7 +123,7 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
     // Can not rollback with DDL so we have to take the backup.
     // => Transaction is useless!!!!!!!!! So painfull and lots of time to found out
     @Override
-    public boolean update(SessionFactory sessionFactory, Trigger trigger) {
+    public Trigger update(SessionFactory sessionFactory, Trigger trigger) {
         boolean success = false;
         Trigger triggerBackUp = null;
         Session session = sessionFactory.openSession();
@@ -168,10 +156,7 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
 
             System.out.println("Transaction is live: " + session.getTransaction().isActive());
             // Tạo trigger mới với các thuộc tính cập nhật
-            String createQuery = String.format(
-                    "CREATE TRIGGER %s.%s %s %s ON %s.%s FOR EACH ROW %s",
-                    schemaName, triggerName, timing, event, schemaName, tableName, actionStatement
-            );
+            String createQuery = String.format("CREATE TRIGGER %s.%s %s %s ON %s.%s FOR EACH ROW %s", schemaName, triggerName, timing, event, schemaName, tableName, actionStatement);
             NativeQuery<?> createNativeQuery = session.createNativeQuery(createQuery);
             createNativeQuery.executeUpdate();
 
@@ -180,12 +165,12 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
 
             session.getTransaction().commit();
             success = true;
-            return success;
+            return trigger;
 
         } catch (GenericJDBCException | SQLGrammarException e) {
             if (afterDelete && !afterAdd) {
-                boolean flag = save(sessionFactory, triggerBackUp);
-                if (flag) System.out.println("Make backup successfull");
+                Trigger flag = save(sessionFactory, triggerBackUp);
+                if (flag != null) System.out.println("Make backup successfull");
                 else System.out.println("Make backup successfully!");
             }
             throw e;
@@ -194,13 +179,13 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
 
             // This is a real ROLLBACK.
             if (afterDelete && !afterAdd) {
-                boolean flag = save(sessionFactory, triggerBackUp);
-                if (flag) System.out.println("Make backup successfull");
+                Trigger flag = save(sessionFactory, triggerBackUp);
+                if (flag != null) System.out.println("Make backup successfull");
                 else System.out.println("Make backup successfully!");
             }
 
             e.printStackTrace();
-            return false;
+            return null;
         } finally {
             session.close();
         }

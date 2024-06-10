@@ -30,8 +30,12 @@ public class ConstraintController {
 
     @PostMapping
     public ResponseEntity<Boolean> save(@RequestBody @Valid ConstraintDto constraintDto) {
-        boolean flag = constraintService.save(constraintDto.getType(), constraintDto.getUsernameId(), constraintDto);
-        return ResponseEntity.ok(flag);
+        ConstraintDto savedConstraint = constraintService.save(constraintDto.getType(), constraintDto.getUsernameId(), constraintDto);
+
+        if (savedConstraint == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(true);
     }
 
     @PutMapping
@@ -40,8 +44,11 @@ public class ConstraintController {
         if (constraintDto.getOldName().isBlank()) {
             throw new RuntimeException("Old name is required");
         }
-        boolean flag = constraintService.update(constraintDto.getType(), constraintDto.getUsernameId(), constraintDto);
-        return ResponseEntity.ok(flag);
+        ConstraintDto updatedConstraint = constraintService.update(constraintDto.getType(), constraintDto.getUsernameId(), constraintDto);
+        if (updatedConstraint == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(true);
     }
 
     @DeleteMapping

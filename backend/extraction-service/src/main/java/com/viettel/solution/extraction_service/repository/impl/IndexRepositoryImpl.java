@@ -96,9 +96,10 @@ public class IndexRepositoryImpl implements IndexRepository {
     }
 
     @Override
-    public boolean save(SessionFactory sessionFactory, Index index) {
-        return false;
+    public Index save(SessionFactory sessionFactory, Index index) {
+        return null;
     }
+
 
     @Override
     public boolean delete(SessionFactory sessionFactory, Index index) {
@@ -106,8 +107,8 @@ public class IndexRepositoryImpl implements IndexRepository {
     }
 
     @Override
-    public boolean update(SessionFactory sessionFactory, Index index, String oldIndexName) {
-        return false;
+    public Index update(SessionFactory sessionFactory, Index index, String oldIndexName) {
+        return null;
     }
 
 

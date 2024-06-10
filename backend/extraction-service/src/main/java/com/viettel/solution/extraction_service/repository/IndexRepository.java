@@ -15,9 +15,9 @@ public interface IndexRepository {
 
     public List<Index> getAllIndexFromTable(SessionFactory sessionFactory, String databaseName, String schemaName, String tableName);
 
-    public boolean save(SessionFactory sessionFactory, Index index);
+    public Index save(SessionFactory sessionFactory, Index index);
 
     public boolean delete(SessionFactory sessionFactory, Index index);
 
-    public boolean update(SessionFactory sessionFactory, Index index, String oldIndexName);
+    public Index update(SessionFactory sessionFactory, Index index, String oldIndexName);
 }

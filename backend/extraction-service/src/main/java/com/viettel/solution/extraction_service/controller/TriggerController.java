@@ -33,11 +33,11 @@ public class TriggerController {
     }
 
     @PostMapping
-    public ResponseEntity<Boolean> createNewTrigger(@Valid @RequestBody TriggerDto triggerDto) {
-        boolean isSave = triggerService.save(triggerDto.getType(), triggerDto.getUsernameId(), triggerDto);
+    public ResponseEntity<Boolean> save(@Valid @RequestBody TriggerDto triggerDto) {
+        TriggerDto savedTrigger = triggerService.save(triggerDto.getType(), triggerDto.getUsernameId(), triggerDto);
 
-        if (isSave) {
-            return ResponseEntity.ok(isSave);
+        if (savedTrigger != null) {
+            return ResponseEntity.ok(true);
         } else {
             return ResponseEntity.badRequest().build();
         }
@@ -45,10 +45,10 @@ public class TriggerController {
 
     @PutMapping
     public ResponseEntity<Boolean> updateTrigger(@Valid @RequestBody TriggerDto triggerDto) {
-        boolean isUpdate = triggerService.update(triggerDto.getType(), triggerDto.getUsernameId(), triggerDto);
+        TriggerDto updatedTrigger = triggerService.update(triggerDto.getType(), triggerDto.getUsernameId(), triggerDto);
 
-        if (isUpdate) {
-            return ResponseEntity.ok(isUpdate);
+        if (updatedTrigger != null) {
+            return ResponseEntity.ok(true);
         } else {
             return ResponseEntity.badRequest().build();
         }

@@ -44,21 +44,30 @@ public class ColumnController {
             return ResponseEntity.badRequest().body("Table name is required");
         }
 
-        List<ColumnDto> columns = columnService.getAllColumn(requestDto);
-
-        if (columns == null) {
-            return ResponseEntity.notFound().build();
+        try {
+            List<ColumnDto> columns = columnService.getAllColumn(requestDto);
+            if (columns == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(columns);
         }
-        return ResponseEntity.ok(columns);
+        catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error");
+
+        }
+
     }
 
     @PostMapping
     public ResponseEntity<Boolean> addColumn(@RequestBody @Valid ColumnDto column) {
 
+        ColumnDto addedColumn = columnService.addColumn(column);
 
-        boolean flag = columnService.addColumn(column);
-
-        return ResponseEntity.ok(flag);
+        if (addedColumn == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(true);
     }
 
     @PutMapping
@@ -68,9 +77,12 @@ public class ColumnController {
             throw new RuntimeException("Column name for identify is required");
         }
 
-        boolean flag = columnService.updateColumn(column);
+        ColumnDto updatedColumn = columnService.updateColumn(column);
 
-        return ResponseEntity.ok(flag);
+        if (updatedColumn == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(true);
     }
 
     @DeleteMapping

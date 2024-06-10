@@ -13,6 +13,9 @@ import org.hibernate.exception.GenericJDBCException;
 import org.hibernate.exception.SQLGrammarException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -53,6 +56,8 @@ public class ColumnServiceImpl implements ColumnService {
         } catch (GenericJDBCException | SQLGrammarException e) {
 
             throw e;
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -60,8 +65,10 @@ public class ColumnServiceImpl implements ColumnService {
     }
 
     @Override
+    @Cacheable(value = "column", key = "#requestDto.getTableId()")
     public List<ColumnDto> getAllColumn(RequestDto requestDto) {
         try {
+            System.out.println("Get all column" + requestDto.toString());
             String usernameId = requestDto.getUsernameId();
             String type = requestDto.getType();
 
@@ -84,6 +91,8 @@ public class ColumnServiceImpl implements ColumnService {
         } catch (GenericJDBCException | SQLGrammarException e) {
 
             throw e;
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -92,7 +101,8 @@ public class ColumnServiceImpl implements ColumnService {
 
 
     @Override
-    public boolean addColumn(ColumnDto column) {
+    @CacheEvict(value = "column", key = "#column.getTableId()")
+    public ColumnDto addColumn(ColumnDto column) {
         try {
 
             String usernameId = column.getUsernameId();
@@ -100,27 +110,30 @@ public class ColumnServiceImpl implements ColumnService {
 
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
             if (sessionFactory == null) {
-                return false;
+                return null;
             }
 
             if (type.equalsIgnoreCase("mysql") || type.equalsIgnoreCase("mariadb")) {
-                return columnRepositorySQL.addColumn(sessionFactory, column);
+                return new ColumnDto(columnRepositorySQL.addColumn(sessionFactory, column));
 
             } else {
-                return false;
+                return null;
             }
         } catch (GenericJDBCException | SQLGrammarException e) {
 
             throw e;
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            return null;
         }
     }
 
 
     @Override
-    public boolean updateColumn(ColumnDto column) {
+    @CacheEvict(value = "column", key = "#column.getTableId()")
+    public ColumnDto updateColumn(ColumnDto column) {
         try {
 
             String usernameId = column.getUsernameId();
@@ -128,26 +141,29 @@ public class ColumnServiceImpl implements ColumnService {
 
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
             if (sessionFactory == null) {
-                return false;
+                return null;
             }
 
             if (type.equalsIgnoreCase("mysql") || type.equalsIgnoreCase("mariadb")) {
-                return columnRepositorySQL.updateColumn(sessionFactory, column);
+                return new ColumnDto(columnRepositorySQL.updateColumn(sessionFactory, column));
 
             } else {
-                return false;
+                return null;
             }
 
         } catch (GenericJDBCException | SQLGrammarException e) {
 
             throw e;
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            return null;
         }
     }
 
     @Override
+    @CacheEvict(value = "column", key = "#column.getTableId()")
     public boolean deleteColumn(ColumnDto column) {
         try {
 
@@ -167,6 +183,8 @@ public class ColumnServiceImpl implements ColumnService {
             }
 
         } catch (GenericJDBCException | SQLGrammarException e) {
+            throw e;
+        } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
             e.printStackTrace();

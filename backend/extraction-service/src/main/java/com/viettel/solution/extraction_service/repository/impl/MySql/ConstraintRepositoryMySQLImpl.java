@@ -94,7 +94,7 @@ public class ConstraintRepositoryMySQLImpl implements ConstraintRepository {
     }
 
     @Override
-    public boolean save(SessionFactory sessionFactory, Constraint constraint) {
+    public Constraint save(SessionFactory sessionFactory, Constraint constraint) {
         boolean success = false;
         Session session = null;
         try {
@@ -152,7 +152,7 @@ public class ConstraintRepositoryMySQLImpl implements ConstraintRepository {
                     break;
             }
             if (!check) {
-                return false;
+                throw new RuntimeException("Constraint type is not valid");
             }
 
             NativeQuery<?> createNativeQuery = session.createNativeQuery(createQuery);
@@ -161,7 +161,7 @@ public class ConstraintRepositoryMySQLImpl implements ConstraintRepository {
 
             session.getTransaction().commit();
             success = true;
-            return success;
+            return constraint;
 
         } catch (GenericJDBCException | SQLGrammarException e) {
             session.getTransaction().rollback();
@@ -171,7 +171,7 @@ public class ConstraintRepositoryMySQLImpl implements ConstraintRepository {
             System.out.println(e.getLocalizedMessage());
             System.out.println(e.getMessage());
 
-            return success;
+            return null;
 
         } finally {
             try {
@@ -306,7 +306,7 @@ public class ConstraintRepositoryMySQLImpl implements ConstraintRepository {
     }
 
     @Override
-    public boolean update(SessionFactory sessionFactory, Constraint constraint, String oldConstraintName) {
+    public Constraint update(SessionFactory sessionFactory, Constraint constraint, String oldConstraintName) {
         boolean success = false;
         Session session = null;
 
@@ -394,12 +394,12 @@ public class ConstraintRepositoryMySQLImpl implements ConstraintRepository {
                     break;
             }
             if (!check) {
-                return false;
+                throw new RuntimeException("Constraint type is not valid");
             }
 
             session.getTransaction().commit();
             success = true;
-            return success;
+            return constraint;
 
         } catch (GenericJDBCException | SQLGrammarException e) {
             if (afterDelete && !afterAdd) {
@@ -417,7 +417,7 @@ public class ConstraintRepositoryMySQLImpl implements ConstraintRepository {
             System.out.println(e.getLocalizedMessage());
             System.out.println(e.getMessage());
 
-            return success;
+            return null;
 
         } finally {
             try {

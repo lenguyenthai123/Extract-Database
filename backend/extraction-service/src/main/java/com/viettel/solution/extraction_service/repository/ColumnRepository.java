@@ -13,9 +13,9 @@ public interface ColumnRepository {
 
     public List<Column> getAllColumn(SessionFactory sessionFactory, RequestDto requestDto);
 
-    public boolean updateColumn(SessionFactory sessionFactory, ColumnDto columnDto);
+    public Column updateColumn(SessionFactory sessionFactory, ColumnDto columnDto);
 
     public boolean deleteColumn(SessionFactory sessionFactory, ColumnDto columnDto);
 
-    public boolean addColumn(SessionFactory sessionFactory, ColumnDto columnDto);
+    public Column addColumn(SessionFactory sessionFactory, ColumnDto columnDto);
 }

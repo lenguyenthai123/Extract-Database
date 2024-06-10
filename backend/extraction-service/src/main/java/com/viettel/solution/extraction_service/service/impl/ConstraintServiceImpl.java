@@ -12,6 +12,9 @@ import org.hibernate.exception.GenericJDBCException;
 import org.hibernate.exception.SQLGrammarException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -31,10 +34,11 @@ public class ConstraintServiceImpl implements ConstraintService {
     }
 
     @Override
-    public boolean save(String type, String usernameId, ConstraintDto constraintDto) {
+    @CacheEvict(value = "constraint", key = "#constraintDto.getTableId()")
+    public ConstraintDto save(String type, String usernameId, ConstraintDto constraintDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
-            return constraintRepositoryMySql.save(sessionFactory, new Constraint(constraintDto));
+            return new ConstraintDto(constraintRepositoryMySql.save(sessionFactory, new Constraint(constraintDto)));
 
         } catch (GenericJDBCException | SQLGrammarException e) {
             throw e;
@@ -43,10 +47,11 @@ public class ConstraintServiceImpl implements ConstraintService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
+        return null;
     }
 
     @Override
+    @Cacheable(value = "constraint", key = "#usernameId + #type + #schemaName + #tableName")
     public List<ConstraintDto> getListFromTable(String type, String usernameId, String schemaName, String tableName) {
         try {
 
@@ -73,10 +78,11 @@ public class ConstraintServiceImpl implements ConstraintService {
     }
 
     @Override
-    public boolean update(String type, String usernameId, ConstraintDto constraintDto) {
+    @CacheEvict(value = "constraint", key = "#constraintDto.getTableId()")
+    public ConstraintDto update(String type, String usernameId, ConstraintDto constraintDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
-            return constraintRepositoryMySql.update(sessionFactory, new Constraint(constraintDto), constraintDto.getOldName());
+            return new ConstraintDto(constraintRepositoryMySql.update(sessionFactory, new Constraint(constraintDto), constraintDto.getOldName()));
         } catch (GenericJDBCException | SQLGrammarException e) {
             throw e;
         } catch (RuntimeException e) {
@@ -84,10 +90,11 @@ public class ConstraintServiceImpl implements ConstraintService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
+        return null;
     }
 
     @Override
+    @CacheEvict(value = "constraint", key = "#constraintDto.getTableId()")
     public boolean delete(String type, String usernameId, ConstraintDto constraintDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);

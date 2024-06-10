@@ -14,9 +14,9 @@ public interface TriggerRepository {
 
     public List<Trigger> getTriggerListFromTable(SessionFactory sessionFactory, String databaseName, String schemaName, String tableName);
 
-    public boolean save(SessionFactory sessionFactory, Trigger trigger);
+    public Trigger save(SessionFactory sessionFactory, Trigger trigger);
 
     public boolean delete(SessionFactory sessionFactory, String schemaName, String tableName, String triggerName);
 
-    public boolean update(SessionFactory sessionFactory, Trigger trigger);
+    public Trigger update(SessionFactory sessionFactory, Trigger trigger);
 }

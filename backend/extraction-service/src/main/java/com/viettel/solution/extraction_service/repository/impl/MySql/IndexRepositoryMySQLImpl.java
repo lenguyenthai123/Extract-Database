@@ -90,7 +90,7 @@ public class IndexRepositoryMySQLImpl implements IndexRepository {
     }
 
     @Override
-    public boolean save(SessionFactory sessionFactory, Index index) {
+    public Index save(SessionFactory sessionFactory, Index index) {
         boolean success = false;
         Session session = null;
         try {
@@ -126,7 +126,7 @@ public class IndexRepositoryMySQLImpl implements IndexRepository {
 
             session.getTransaction().commit();
             success = true;
-            return success;
+            return index;
 
         } catch (GenericJDBCException | SQLGrammarException e) {
             session.getTransaction().rollback();
@@ -136,7 +136,7 @@ public class IndexRepositoryMySQLImpl implements IndexRepository {
             System.out.println(e.getLocalizedMessage());
             System.out.println(e.getMessage());
 
-            return success;
+            return null;
 
         } finally {
             try {
@@ -171,10 +171,10 @@ public class IndexRepositoryMySQLImpl implements IndexRepository {
             dropNativeQuery.executeUpdate();
 
             List<String> oldColumnList = oldIndex.getColumns();
-            for(String column : columnList){
+            for (String column : columnList) {
                 oldColumnList.remove(column);
             }
-            if(!oldColumnList.isEmpty()){
+            if (!oldColumnList.isEmpty()) {
                 String columnsAfterDelete = "";
                 if (oldColumnList.size() == 1) {
                     columnsAfterDelete = oldColumnList.get(0);
@@ -207,7 +207,7 @@ public class IndexRepositoryMySQLImpl implements IndexRepository {
     }
 
     @Override
-    public boolean update(SessionFactory sessionFactory, Index index, String oldIndexName) {
+    public Index update(SessionFactory sessionFactory, Index index, String oldIndexName) {
         boolean afterDelete = false;
         boolean afterAdd = false;
         Index oldIndex = null;
@@ -259,20 +259,19 @@ public class IndexRepositoryMySQLImpl implements IndexRepository {
             afterAdd = true;
 
             transaction.commit();
-            return true;
+            return index;
         } catch (GenericJDBCException | SQLGrammarException e) {
             if (afterDelete && !afterAdd) {
-                boolean flag = save(sessionFactory, oldIndex);
-                if (flag) System.out.println("Make backup successfull");
+                Index flag = save(sessionFactory, oldIndex);
+                if (flag != null) System.out.println("Make backup successfull");
                 else System.out.println("Make backup successfully!");
             }
             transaction.rollback();
             throw e;
         } catch (Exception e) {
             if (afterDelete && !afterAdd) {
-                boolean flag = save(sessionFactory, oldIndex);
-                if (flag) System.out.println("Make backup successfull");
-                else System.out.println("Make backup successfully!");
+                Index flag = save(sessionFactory, oldIndex);
+
             }
             transaction.rollback();
 
@@ -282,7 +281,7 @@ public class IndexRepositoryMySQLImpl implements IndexRepository {
                 session.close();
             }
         }
-        return false;
+        return null;
     }
 }
 

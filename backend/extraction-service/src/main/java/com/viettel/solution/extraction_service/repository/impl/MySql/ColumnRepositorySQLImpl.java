@@ -123,7 +123,7 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
 
 
     @Override
-    public boolean addColumn(SessionFactory sessionFactory, ColumnDto columnDto) {
+    public Column addColumn(SessionFactory sessionFactory, ColumnDto columnDto) {
 
         Session session = sessionFactory.openSession();
 
@@ -207,7 +207,7 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
             }
 
             transaction.commit();
-            return true;
+            return new Column(columnDto);
         } catch (GenericJDBCException | SQLGrammarException e) {
             session.getTransaction().rollback();
             if (checkRollback) {
@@ -217,11 +217,10 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
         } finally {
             session.close();
         }
-
     }
 
     @Override
-    public boolean updateColumn(SessionFactory sessionFactory, ColumnDto columnDto) {
+    public Column updateColumn(SessionFactory sessionFactory, ColumnDto columnDto) {
 
 
         Session session = null;
@@ -247,7 +246,6 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
             String defaultValue = columnDto.getDefaultValue();
             Boolean primaryKey = columnDto.isPrimaryKey();
             String description = columnDto.getDescription();
-
 
             //Doi ten
             String renameColumnQuery = String.format(
@@ -348,7 +346,7 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
             }
 
             transaction.commit();
-            return true;
+            return new Column(columnDto);
         } catch (GenericJDBCException | SQLGrammarException e) {
 
             if (checkRollback) {
@@ -360,7 +358,7 @@ public class ColumnRepositorySQLImpl implements ColumnRepository {
                 deleteColumn(sessionFactory, columnDto);
             }
             e.printStackTrace();
-            return false;
+            return null;
         } finally {
             session.close();
         }

@@ -28,9 +28,12 @@ public class IndexController {
 
     @PostMapping
     public ResponseEntity<Boolean> save(@RequestBody @Valid IndexDto indexDto) {
-        boolean flag = indexService.save(indexDto.getType(), indexDto.getUsernameId(), indexDto);
+        IndexDto savedIndex = indexService.save(indexDto.getType(), indexDto.getUsernameId(), indexDto);
 
-        return ResponseEntity.ok(flag);
+        if (savedIndex == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(true);
     }
 
     @PutMapping
@@ -39,8 +42,11 @@ public class IndexController {
         if (indexDto.getOldName().isBlank()) {
             throw new RuntimeException("Old name is required");
         }
-        boolean flag = indexService.update(indexDto.getType(), indexDto.getUsernameId(), indexDto);
-        return ResponseEntity.ok(flag);
+        IndexDto updatedIndex = indexService.update(indexDto.getType(), indexDto.getUsernameId(), indexDto);
+        if (updatedIndex == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(true);
     }
 
     @DeleteMapping

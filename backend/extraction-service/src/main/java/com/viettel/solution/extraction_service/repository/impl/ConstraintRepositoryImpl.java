@@ -76,10 +76,7 @@ public class ConstraintRepositoryImpl implements ConstraintRepository {
     }
 
 
-    @Override
-    public boolean update(SessionFactory sessionFactory, Constraint constraint, String oldIndexName) {
-        return false;
-    }
+
 
     @Override
     public List<Constraint> getAllConstraintFromTable(SessionFactory sessionFactory, String databaseName, String schemaName, String tableName) {
@@ -130,12 +127,18 @@ public class ConstraintRepositoryImpl implements ConstraintRepository {
     }
 
     @Override
-    public boolean save(SessionFactory sessionFactory, Constraint constraint) {
-        return false;
+    public Constraint save(SessionFactory sessionFactory, Constraint constraint) {
+        return null;
     }
+
 
     @Override
     public boolean delete(SessionFactory sessionFactory, Constraint constraint) {
         return false;
+    }
+
+    @Override
+    public Constraint update(SessionFactory sessionFactory, Constraint constraint, String oldConstraintxName) {
+        return null;
     }
 }
