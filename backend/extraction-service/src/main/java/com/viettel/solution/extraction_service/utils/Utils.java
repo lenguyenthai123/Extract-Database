@@ -3,6 +3,7 @@ package com.viettel.solution.extraction_service.utils;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.UUID;
 
 public class Utils {
     public static String hashString(String input) {
@@ -19,5 +20,12 @@ public class Utils {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static String generateUUID() {
+        // Tạo UUID ngẫu nhiên
+        UUID uuid = UUID.randomUUID();
+        // Chuyển UUID thành chuỗi và trả về
+        return uuid.toString();
     }
 }

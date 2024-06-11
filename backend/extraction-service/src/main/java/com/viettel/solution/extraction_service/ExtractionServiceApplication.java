@@ -20,17 +20,5 @@ public class ExtractionServiceApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(ExtractionServiceApplication.class, args);
 	}
-	@Bean
-	public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-		RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig() //
-				.prefixCacheNameWith(this.getClass().getPackageName() + ".") //
-				.entryTtl(Duration.ofHours(1)) //
-				.disableCachingNullValues()
-				.serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-				.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
 
-		return RedisCacheManager.builder(connectionFactory) //
-				.cacheDefaults(config) //
-				.build();
-	}
 }

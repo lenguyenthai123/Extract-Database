@@ -2,6 +2,7 @@ package com.viettel.solution.extraction_service.repository;
 
 import com.viettel.solution.extraction_service.entity.Table;
 import org.hibernate.SessionFactory;
+import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 import java.sql.Connection;
 import java.util.List;

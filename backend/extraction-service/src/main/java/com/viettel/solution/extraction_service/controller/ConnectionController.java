@@ -2,16 +2,22 @@ package com.viettel.solution.extraction_service.controller;
 
 import com.viettel.solution.extraction_service.database.DatabaseConnection;
 import com.viettel.solution.extraction_service.entity.DatabaseConfig;
+import com.viettel.solution.extraction_service.service.ConnectionService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/")
 public class ConnectionController {
+
+    @Autowired
+    private ConnectionService connectionService;
+
     @PostMapping("/connect")
     public ResponseEntity<?> getConnection(@RequestBody DatabaseConfig databaseConfigEntity) {
         try {
-            boolean result = DatabaseConnection.createSessionFactory(databaseConfigEntity.getUsernameId(), databaseConfigEntity);
+            boolean result = connectionService.connect(databaseConfigEntity.getUsernameId(), databaseConfigEntity);
             if (result) {
                 return ResponseEntity.ok("Connection successful");
             } else {
@@ -22,23 +28,12 @@ public class ConnectionController {
             return ResponseEntity.badRequest().body("Connection failed");
         }
     }
-    @GetMapping("/test")
-    public ResponseEntity<?> test() {
-        //fake json
-        DatabaseConfig databaseConfigEntity = new DatabaseConfig();
-        databaseConfigEntity.setUrl("jdbc:mysql://localhost:3306/12");
-        databaseConfigEntity.setUsername("root");
-        databaseConfigEntity.setPassword("root");
-        databaseConfigEntity.setType("mysql");
-        return ResponseEntity.ok(databaseConfigEntity);
-
-    }
 
     @PostMapping("/disconnect")
     public ResponseEntity<?> disconnect(@RequestBody DatabaseConfig databaseConfigEntity) {
         try {
 
-            boolean result = DatabaseConnection.closeSessionFactory("12", "mysql");
+            boolean result = connectionService.disconnect(databaseConfigEntity.getUsernameId(), databaseConfigEntity.getType());
 
             if (result) {
                 return ResponseEntity.ok("Connection closed");

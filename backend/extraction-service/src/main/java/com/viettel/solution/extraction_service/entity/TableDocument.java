@@ -1,9 +1,12 @@
 package com.viettel.solution.extraction_service.entity;
 
+import com.viettel.solution.extraction_service.utils.Utils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -13,8 +16,13 @@ import java.util.List;
 @Data               // Bao gồm @Getter, @Setter, @ToString, @EqualsAndHashCode, và @RequiredArgsConstructor
 @AllArgsConstructor // Tạo constructor với tất cả các tham số
 @Builder
-public class Table {
+@Document(indexName = "table")
+public class TableDocument {
 
+    @Id
+    private String id;
+    @Field(name = "usernameId")
+    private String usernameId;
     private String schemaName;
     private String name;
     private List<Column> columns;
@@ -23,13 +31,26 @@ public class Table {
     private List<Trigger> triggers;
     private String description;
 
-    public Table() {
+    public TableDocument() {
         this.columns = new ArrayList<>();
         this.constraints = new ArrayList<>();
         this.indexs = new ArrayList<>();
         this.triggers = new ArrayList<>();
-
+        this.id = Utils.generateUUID();
     }
 
+    public TableDocument(Table table) {
+        this.columns = new ArrayList<>();
+        this.constraints = new ArrayList<>();
+        this.indexs = new ArrayList<>();
+        this.triggers = new ArrayList<>();
+        this.id = Utils.generateUUID();
+        this.schemaName = table.getSchemaName();
 
+
+        this.columns.addAll(table.getColumns());
+        this.constraints.addAll(table.getConstraints());
+        this.indexs.addAll(table.getIndexs());
+        this.triggers.addAll(table.getTriggers());
+    }
 }
