@@ -157,7 +157,7 @@ public class ConstraintRepositoryMySQLImpl implements ConstraintRepository {
 
             NativeQuery<?> createNativeQuery = session.createNativeQuery(createQuery);
 
-            createNativeQuery.executeUpdate();
+                createNativeQuery.executeUpdate();
 
             session.getTransaction().commit();
             success = true;
@@ -170,8 +170,7 @@ public class ConstraintRepositoryMySQLImpl implements ConstraintRepository {
             session.getTransaction().rollback();
             System.out.println(e.getLocalizedMessage());
             System.out.println(e.getMessage());
-
-            return null;
+            throw e;
 
         } finally {
             try {
@@ -315,9 +314,6 @@ public class ConstraintRepositoryMySQLImpl implements ConstraintRepository {
         Constraint backUpConstraint = null;
 
         try {
-            session = sessionFactory.openSession();
-            //Open transaction
-            session.beginTransaction();
 
             String schemaName = constraint.getSchemaName();
             String tableName = constraint.getTableName();
@@ -352,52 +348,16 @@ public class ConstraintRepositoryMySQLImpl implements ConstraintRepository {
 
             boolean check = true;
 
-            switch (constraintType) {
-                case "PRIMARY KEY":
-                    // Tạo câu lệnh UPDATE PRIMARY KEY
-                    updateQuery = String.format("ALTER TABLE %s.%s DROP PRIMARY KEY, ADD PRIMARY KEY(%s)", schemaName, tableName, columns);
+            backUpConstraint = getConstraint(sessionFactory, null, schemaName, tableName, oldConstraintName);
 
-                    updateNativeQuery = session.createNativeQuery(updateQuery);
-                    updateNativeQuery.executeUpdate();
-
-                    break;
-                case "FOREIGN KEY":
-                    // Tạo câu lệnh CREATE FOREIGN KEY
-
-                    backUpConstraint = getConstraint(sessionFactory, null, schemaName, tableName, oldConstraintName);
-
-                    dropQuery = String.format("ALTER TABLE %s.%s DROP FOREIGN KEY %s", schemaName, tableName, oldConstraintName);
-                    dropNativeQuery = session.createNativeQuery(dropQuery);
-                    dropNativeQuery.executeUpdate();
-
-                    afterDelete = true;
-
-                    createQuery = String.format("ALTER TABLE %s.%s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s.%s(%s)", schemaName, tableName, constraintName, columns, schemaName, refTableName, refColumnName);
-                    createNativeQuery = session.createNativeQuery(createQuery);
-                    createNativeQuery.executeUpdate();
-                    afterAdd = true;
-
-                    break;
-                case "UNIQUE":
-                    // Tạo câu lệnh UPDATE UNIQUE
-                    updateQuery = String.format("ALTER TABLE %s.%s DROP INDEX %s, ADD UNIQUE KEY %s (%s)", schemaName, tableName, oldConstraintName, constraintName, columns);
-                    updateNativeQuery = session.createNativeQuery(updateQuery);
-                    updateNativeQuery.executeUpdate();
-
-                    break;
-                case "CHECK":
-                    // Tạo câu lệnh CREATE CHECK
-                    createQuery = String.format("ALTER TABLE %s.%s DROP CHECK %s", schemaName, tableName, constraintName);
-                    break;
-                default:
-                    check = false;
-                    break;
-            }
+            delete(sessionFactory, backUpConstraint);
+            afterDelete =true;
+            save(sessionFactory,constraint);
+            afterAdd=true;
             if (!check) {
                 throw new RuntimeException("Constraint type is not valid");
             }
 
-            session.getTransaction().commit();
             success = true;
             return constraint;
 
@@ -406,14 +366,12 @@ public class ConstraintRepositoryMySQLImpl implements ConstraintRepository {
                 save(sessionFactory, backUpConstraint);
             }
 
-            session.getTransaction().rollback();
             throw e;
         } catch (Exception e) {
             if (afterDelete && !afterAdd) {
                 save(sessionFactory, backUpConstraint);
 
             }
-            session.getTransaction().rollback();
             System.out.println(e.getLocalizedMessage());
             System.out.println(e.getMessage());
 

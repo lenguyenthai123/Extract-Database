@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface TableElasticSearchRepository extends ElasticsearchRepository<TableDocument, String> {
     List<TableDocument> findByUsernameId(String usernameId);
+    //List<TableDocument> saveAll(List<TableDocument> tableDocuments);
 }

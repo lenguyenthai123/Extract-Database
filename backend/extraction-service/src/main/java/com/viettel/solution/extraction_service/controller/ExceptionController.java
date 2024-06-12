@@ -97,8 +97,17 @@ public class ExceptionController {
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<String> handleInvalidOrderException(RuntimeException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    public ResponseEntity<Map<String, Object>> handleInvalidOrderException(RuntimeException ex) {
+        Map<String, Object> response = new HashMap<>();
+
+        response.put("error", "Data access error");
+        response.put("message", ex.getMessage());
+
+        Throwable cause = ex.getCause();
+        if (cause != null) {
+            response.put("cause", cause.getMessage());
+        }
+         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     // Xử lý ngoại lệ chung
