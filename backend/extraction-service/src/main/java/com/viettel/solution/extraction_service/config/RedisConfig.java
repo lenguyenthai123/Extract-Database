@@ -16,14 +16,14 @@ public class RedisConfig {
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig() //
-                .prefixCacheNameWith(this.getClass().getPackageName() + ".") //
-                .entryTtl(Duration.ofHours(1)) //
-                .disableCachingNullValues()
-                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+                .prefixCacheNameWith(this.getClass().getPackageName() + ".") // Thêm tiền tố cho tên cache
+                .entryTtl(Duration.ofHours(2)) // Thời gian sống của cache
+                .disableCachingNullValues() // Không cache giá trị null
+                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())) // Serialize key
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer())); // Serialize value
 
-        return RedisCacheManager.builder(connectionFactory) //
-                .cacheDefaults(config) //
-                .build();
+        return RedisCacheManager.builder(connectionFactory) // Tạo RedisCacheManager
+                .cacheDefaults(config) // Cấu hình mặc định cho cache
+                .build(); // Xây dựng RedisCacheManager
     }
 }

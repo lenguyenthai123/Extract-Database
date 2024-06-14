@@ -19,7 +19,7 @@
         [disabled]="btnAddStatus"
         class="btn btn-dark add-button"
       >
-        Thêm trigger
+        Thêm
       </button>
       <button
         (click)="save()"
@@ -103,8 +103,8 @@
               <td>
                 <input
                   type="text"
-                  (focus)="onFocus('Tên trường', row.id, 2, row.fieldName)"
-                  [(ngModel)]="row.fieldName"
+                  (focus)="onFocus('Tên trường', row.id, 2, row.columnName)"
+                  [(ngModel)]="row.columnName"
                   [disabled]="row['disabled']"
                   (ngModelChange)="
                     onFieldChange('Tên trường', $event, row.id, 2)
@@ -114,11 +114,11 @@
               </td>
               <td>
                 <select
-                  [(ngModel)]="row.typeName"
+                  [(ngModel)]="row.constraintType"
                   [disabled]="row.disabled"
                   (ngModelChange)="onFieldChange('Kiểu', $event, row.id, 3)"
                 >
-                  @for(type of typeList; track type){
+                  @for(type of listTypes; track type){
                   <option [value]="type">{{ type }}</option>
                   }
                 </select>
@@ -127,16 +127,11 @@
                 <input
                   type="text"
                   (focus)="
-                    onFocus(
-                      'Bảng tham chiếu',
-                      row.id,
-                      4,
-                      row.referencedTableName
-                    )
+                    onFocus('Bảng tham chiếu', row.id, 4, row.refTableName)
                   "
-                  [(ngModel)]="row.referencedTableName"
+                  [(ngModel)]="row.refTableName"
                   [disabled]="
-                    row['disabled'] || !row.typeName.includes('FOREIGN')
+                    row['disabled'] || !row.constraintType.includes('FOREIGN')
                   "
                   (ngModelChange)="
                     onFieldChange('Bảng tham chiếu', $event, row.id, 4)
@@ -148,16 +143,11 @@
                 <input
                   type="text"
                   (focus)="
-                    onFocus(
-                      'Cột tham chiếu',
-                      row.id,
-                      5,
-                      row.referencedColumnName
-                    )
+                    onFocus('Cột tham chiếu', row.id, 5, row.refColumnName)
                   "
-                  [(ngModel)]="row.referencedColumnName"
+                  [(ngModel)]="row.refColumnName"
                   [disabled]="
-                    row['disabled'] || !row.typeName.includes('FOREIGN')
+                    row['disabled'] || !row.constraintType.includes('FOREIGN')
                   "
                   (ngModelChange)="
                     onFieldChange('Cột tham chiếu', $event, row.id, 5)

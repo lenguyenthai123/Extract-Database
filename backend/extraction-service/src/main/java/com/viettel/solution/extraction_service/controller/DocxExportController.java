@@ -1,7 +1,8 @@
 package com.viettel.solution.extraction_service.controller;
 
 import com.viettel.solution.extraction_service.dto.RequestDto;
-import com.viettel.solution.extraction_service.service.ExportService;
+import com.viettel.solution.extraction_service.entity.DocumentTemplate;
+import com.viettel.solution.extraction_service.service.ReportService;
 import org.apache.poi.xwpf.usermodel.*;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblWidth;
@@ -22,17 +23,17 @@ import java.math.BigInteger;
 public class DocxExportController {
 
 
-    private ExportService exportService;
+    private ReportService reportService;
 
     @Autowired
-    public DocxExportController(@Qualifier("docxExportServiceImpl") ExportService exportService) {
-        this.exportService = exportService;
+    public DocxExportController(@Qualifier("docxExportServiceImpl") ReportService reportService) {
+        this.reportService = reportService;
     }
 
     @GetMapping("/database")
-    public ResponseEntity<byte[]> exportDatabase(@ModelAttribute RequestDto requestDto) {
+    public ResponseEntity<byte[]> exportDatabase(@ModelAttribute DocumentTemplate documentTemplate) {
         // Tạo phản hồi HTTP
-        byte[] docxfile = exportService.exportDatabase(requestDto);
+        byte[] docxfile = reportService.exportDatabase(documentTemplate);
 
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Báo cáo.docx");

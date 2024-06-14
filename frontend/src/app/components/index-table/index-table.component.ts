@@ -139,8 +139,13 @@ export class IndexTableComponent {
   }
 
   loadAllIndex() {
+    this.actionDelete = false;
+    this.actionUpdate = false;
+    this.actionInsert = false;
     this.indexService.getList(this.table.name).subscribe({
       next: (data) => {
+        this.rows.splice(0, this.rows.length);
+        this.rows.splice(0, this.preRows.length);
         this.rows = [];
         this.preRows = [];
 
@@ -151,6 +156,11 @@ export class IndexTableComponent {
           index1.set(data[i]);
           index2.set(data[i]);
 
+          index1.disabled = index2.disabled = false;
+
+          index1.referencedColumnName = index1.columns[0];
+          index2.referencedColumnName = index2.columns[0];
+
           this.rows.push(index1);
           this.preRows.push(index2);
         }
@@ -158,9 +168,18 @@ export class IndexTableComponent {
         // Cập nhật lại id cho từng hàng
         for (let i = 0; i < this.rows.length; i++) {
           this.rows[i].id = i + 1;
+
+          this.rows[i].disabled =
+            this.rows[i].name === 'PRIMARY' ? true : false;
+          console.log(this.rows[i].disabled);
+
+          console.log(
+            'XOAAAA: ' +
+              (this.rows[i].disabled || this.actionInsert || this.actionUpdate)
+          );
         }
 
-        console.log('Data: ', data);
+        console.log('Data: ', this.rows);
       },
       error: (error) => {
         this.raiseAlert('Lỗi kết nối đến server', 'danger');
@@ -215,6 +234,16 @@ export class IndexTableComponent {
     }
   }
 
+  handleColumns() {
+    for (let i = 0; i < this.rows.length; i++) {
+      let list: string[] = this.rows[i].referencedColumnName.split(',');
+      for (let j = 0; j < list.length; j++) {
+        list[j] = list[j].trim();
+      }
+      this.rows[i].columns = list;
+    }
+  }
+
   save() {
     // Xử lý validation
     for (let i = 0; i < this.rows.length; i++) {
@@ -226,6 +255,9 @@ export class IndexTableComponent {
         return;
       }
     }
+
+    // Xử lý index gồm nhiều cột
+    this.handleColumns();
 
     // Variable to control
     let checkInsert: boolean = true;
@@ -278,6 +310,8 @@ export class IndexTableComponent {
           this.successInformation.message = successMessage;
           this.toastSuccess.show();
           this.isLoading = false;
+
+          this.loadAllIndex();
         },
         error: (error) => {
           console.log(error.error);
@@ -307,86 +341,110 @@ export class IndexTableComponent {
       // Rút gọn lại unique những hàng bị thay đổi.
       changedRow = getUniqueElements(changedRow);
 
+      const updateRow: Index[] = this.aggregateRow(changedRow);
+      console.log('Update row');
+      console.log(updateRow);
+
       // Call api cho từng hàng
+
       // Loading
       this.isLoading = true;
 
       // Số lượng hoàn thành
       let count = 0;
 
-      for (let i = 0; i < changedRow.length; i++) {
-        console.log('Old name: ' + this.preRows[changedRow[i] - 1].name);
-        console.log(this.rows[changedRow[i] - 1]);
-        this.indexService
-          .update(
-            this.rows[changedRow[i] - 1],
-            this.preRows[changedRow[i] - 1].name
-          )
-          .subscribe({
-            next: (data) => {
-              console.log(data);
-              console.log('UPDATE');
-              console.log(data.status);
-              console.log(data);
-              if (data.ok === true) {
-                successMessage += `- Cập nhật index ${changedRow[i]} thành công!<br>`;
+      for (let i = 0; i < updateRow.length; i++) {
+        console.log('Old name: ' + updateRow[i].oldName);
 
-                // Update old row
-                this.preRows[changedRow[i] - 1].set(
-                  this.rows[changedRow[i] - 1]
-                );
+        this.indexService.update(updateRow[i], updateRow[i].oldName).subscribe({
+          next: (data) => {
+            console.log(data);
+            console.log('UPDATE');
+            console.log(data.status);
+            console.log(data);
+            if (data.ok === true) {
+              successMessage += `- Cập nhật index ${updateRow[i].name} thành công!<br>`;
 
-                this.updateChanged(changedRow[i]);
-              } else {
-                failedMessage += `- Cập nhật index ${changedRow[i]} thất bại!<br>`;
-                failedList.push(changedRow[i]);
-                console.log();
-              }
+              // Update old row
 
-              count++;
-              this.onComplete(count, changedRow, successMessage, failedMessage);
-            },
-            error: (error) => {
-              console.log(error);
-              console.log(error.error);
-              console.log('Cause:  ' + error.error.cause);
-              failedMessage += `- Cập nhật index ${changedRow[i]} thất bại!<br> + Nguyên nhân: ${error.error.cause} <br>`;
-
-              //this.raiseAlert('Cập nhật cột thất bại', 'danger');
+              this.updateChanged(changedRow[i]);
+            } else {
+              failedMessage += `- Cập nhật index ${updateRow[i].name} thất bại!<br>`;
               failedList.push(changedRow[i]);
+              console.log();
+            }
 
-              count++;
-              this.onComplete(count, changedRow, successMessage, failedMessage);
-            },
-          });
+            this.loadAllIndex();
+            this.onComplete(successMessage, failedMessage);
+          },
+          error: (error) => {
+            console.log(error);
+            console.log(error.error);
+            console.log('Cause:  ' + error.error.cause);
+            failedMessage += `- Cập nhật index ${updateRow[i].name} thất bại!<br> + Nguyên nhân: ${error.error.cause} <br>`;
+
+            //this.raiseAlert('Cập nhật cột thất bại', 'danger');
+            failedList.push(changedRow[i]);
+
+            this.onComplete(successMessage, failedMessage);
+          },
+        });
       }
     }
 
     //reset numberChanged
   }
 
-  onComplete(
-    count: number,
-    changedRow: number[],
-    successMessage: string,
-    failedMessage: string
-  ) {
-    if (count === changedRow.length) {
-      this.isLoading = false;
+  aggregateRow(changedRow: number[]): Index[] {
+    let updateRow: Index[] = [];
 
-      this.actionUpdate = false;
+    let map = new Map<String, number>();
 
-      // Thông báo
-      if (successMessage.length > 0) {
-        this.successInformation.message = successMessage;
-        this.toastSuccess.show();
+    for (let i = 0; i < changedRow.length; i++) {
+      let idx = changedRow[i] - 1;
+
+      if (map.has(this.rows[idx].name)) {
+        continue;
       }
-      if (failedMessage.length > 0) {
-        this.failInformation.message = failedMessage;
-        this.toastFail.show();
 
-        this.actionUpdate = true;
+      map.set(this.rows[idx].name, idx);
+
+      let row: Index = new Index();
+
+      row.set(this.rows[idx]);
+      row.oldName = this.preRows[idx].name;
+
+      for (let j = 0; j < this.rows.length; j++) {
+        if (idx == j) {
+          continue;
+        }
+
+        if (this.rows[idx].name == this.rows[j].name) {
+          for (let k = 0; k < this.rows[j].columns.length; k++) {
+            row.columns.push(this.rows[j].columns[k]);
+          }
+        }
       }
+      updateRow.push(row);
+    }
+    return updateRow;
+  }
+
+  onComplete(successMessage: string, failedMessage: string) {
+    this.isLoading = false;
+
+    this.actionUpdate = false;
+
+    // Thông báo
+    if (successMessage.length > 0) {
+      this.successInformation.message = successMessage;
+      this.toastSuccess.show();
+    }
+    if (failedMessage.length > 0) {
+      this.failInformation.message = failedMessage;
+      this.toastFail.show();
+
+      this.actionUpdate = true;
     }
   }
 
@@ -409,6 +467,9 @@ export class IndexTableComponent {
     this.isLoading = true;
     let check: boolean = false;
     let name: string = this.rows[index].name;
+
+    console.log(this.rows[index]);
+
     this.indexService.delete(this.rows[index]).subscribe({
       next: (data) => {
         if (data.ok === true) {
@@ -449,6 +510,24 @@ export class IndexTableComponent {
     fieldId: number
   ) {
     let check = false;
+
+    if (fieldId === 2) {
+      this.handleColumns();
+    }
+    if (fieldId === 1 && !this.actionInsert) {
+      for (let i = 0; i < this.preRows.length; i++) {
+        if (this.preRows[i].name == this.preRows[rowId - 1].name) {
+          this.rows[i].name = event;
+        }
+      }
+    }
+
+    for (let i = 0; i < this.rows.length; i++) {
+      if (this.rows[i].name != this.rows[rowId - 1].name) {
+        this.rows[i].disabled = true;
+        console.log(this.preRows[i].oldName);
+      }
+    }
 
     for (let i = 0; i < this.changedList.length; i++) {
       {
@@ -499,6 +578,7 @@ export class IndexTableComponent {
     for (let i = 0; i < this.preRows.length; i++) {
       this.rows[i].set(this.preRows[i]);
       this.rows[i].id = i + 1;
+      this.rows[i].disabled = this.rows[i].name === 'PRIMARY' ? true : false;
     }
     this.enableSaveAndDiscardBtn(false);
     this.numberChanged = 0;
@@ -526,8 +606,17 @@ export class IndexTableComponent {
 
     if (this.fieldChange.fieldId === 1) {
       this.rows[this.fieldChange.rowId - 1].name = this.contentText;
+
+      for (let i = 0; i < this.preRows.length; i++) {
+        if (
+          this.preRows[i].name == this.preRows[this.fieldChange.rowId - 1].name
+        ) {
+          this.rows[i].name = this.rows[this.fieldChange.rowId - 1].name;
+        }
+      }
     }
     if (this.fieldChange.fieldId === 2) {
+      this.handleColumns();
       this.rows[this.fieldChange.rowId - 1].referencedColumnName =
         this.contentText;
     }

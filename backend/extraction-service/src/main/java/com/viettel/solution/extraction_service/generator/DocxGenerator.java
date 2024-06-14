@@ -10,43 +10,46 @@ import java.math.BigInteger;
 import java.util.List;
 
 public class DocxGenerator {
-        public static XWPFDocument addTableToDocument(XWPFDocument document, int numRows, int numCols, List<List<String>> tableData) {
-            // Tạo bảng
-            XWPFTable table = document.createTable(numRows, numCols);
+    public static XWPFDocument addTableToDocument(XWPFDocument document, int numRows, int numCols, List<List<String>> tableData, ParagraphAlignment alignMent) {
+        // Tạo bảng
+        XWPFTable table = document.createTable(numRows, numCols);
 
-            // Định dạng và thêm dữ liệu vào bảng
-            for (int row = 0; row < tableData.size(); row++) {
-                XWPFTableRow tableRow = table.getRow(row);
-                for (int col = 0; col < numCols; col++) {
-                    XWPFTableCell cell = tableRow.getCell(col);
-                    setCellText(cell, tableData.get(row).get(col), row == 0);
-                }
+        // Định dạng và thêm dữ liệu vào bảng
+        for (int row = 0; row < tableData.size(); row++) {
+            XWPFTableRow tableRow = table.getRow(row);
+            for (int col = 0; col < numCols; col++) {
+                XWPFTableCell cell = tableRow.getCell(col);
+                setCellText(cell, tableData.get(row).get(col), row == 0, alignMent);
             }
-
-            // Định dạng bảng
-            CTTblPr tblPr = table.getCTTbl().getTblPr();
-            CTTblWidth tblW = tblPr.addNewTblW();
-            tblW.setType(STTblWidth.DXA);
-            tblW.setW(BigInteger.valueOf(10072)); // Độ rộng của bảng
-
-            // Thêm đoạn văn trống để tạo khoảng cách giữa các bảng
-            addEmptyParagraph(document);
-            return document;
         }
 
-        private static void setCellText(XWPFTableCell cell, String text, boolean isHeader) {
-            XWPFParagraph paragraph = cell.getParagraphs().get(0);
-            XWPFRun run = paragraph.createRun();
-            run.setText(text);
-            run.setFontFamily("Times New Roman"); // Đặt kiểu chữ là Times New Roman
-            if (isHeader) {
-                run.setItalic(true); // Đặt văn bản in nghiêng
-                cell.setColor("F6C5AC"); // Màu nền giống như trong hình (mã màu hex)
-                run.setBold(true);
-            }
+        // Định dạng bảng
+        CTTblPr tblPr = table.getCTTbl().getTblPr();
+        CTTblWidth tblW = tblPr.addNewTblW();
+        tblW.setType(STTblWidth.DXA);
+        tblW.setW(BigInteger.valueOf(10072)); // Độ rộng của bảng
+
+        // Thêm đoạn văn trống để tạo khoảng cách giữa các bảng
+        addEmptyParagraph(document);
+        return document;
+    }
+
+    private static void setCellText(XWPFTableCell cell, String text, boolean isHeader, ParagraphAlignment alignMent) {
+        XWPFParagraph paragraph = cell.getParagraphs().get(0);
+        XWPFRun run = paragraph.createRun();
+        run.setText(text);
+        run.setFontSize(13); // Đặt kích thước chữ là 14
+        run.setFontFamily("Times New Roman"); // Đặt kiểu chữ là Times New Roman
+        if (isHeader) {
+            run.setItalic(true); // Đặt văn bản in nghiêng
+            cell.setColor("F6C5AC"); // Màu nền giống như trong hình (mã màu hex)
+            run.setBold(true);
             paragraph.setAlignment(ParagraphAlignment.CENTER);
-            cell.setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+        } else {
+            paragraph.setAlignment(alignMent);
         }
+        cell.setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+    }
 
     public static void addTitleToDocument(XWPFDocument document, String titleText, int titleLevel, boolean bold) {
         // Tạo tiêu đề và căn giữa
@@ -60,7 +63,8 @@ public class DocxGenerator {
         titleRun.setText(titleText);
         titleRun.setFontFamily("Times New Roman"); // Đặt kiểu chữ là Times New Roman
         titleRun.setBold(bold);
-        titleRun.setFontSize(14);  // Bạn có thể thay đổi kích thước font theo ý muốn
+        titleRun.setColor("000000"); // Đặt màu chữ là đen
+        titleRun.setFontSize(14);
     }
 
     public static void addTitleToDocument(XWPFDocument document, String titleText, int titleLevel) {
@@ -112,7 +116,6 @@ public class DocxGenerator {
         // Tạo đoạn văn và thêm vào footer
         XWPFParagraph paragraph = footer.createParagraph();
         paragraph.setAlignment(ParagraphAlignment.CENTER);
-        paragraph.setAlignment(ParagraphAlignment.CENTER);
         XWPFRun run = paragraph.createRun();
         run.setText(footerText);
         run.setFontFamily("Times New Roman");
@@ -125,7 +128,7 @@ public class DocxGenerator {
 
         // Tạo đoạn văn và căn giữa
         XWPFParagraph paragraph = footer.createParagraph();
-        paragraph.setAlignment(ParagraphAlignment.CENTER);
+        paragraph.setAlignment(ParagraphAlignment.RIGHT);
 
         // Tạo đoạn văn bản cho số trang
         XWPFRun run = paragraph.createRun();
@@ -139,5 +142,25 @@ public class DocxGenerator {
 
         // Thêm trường tổng số trang
         paragraph.getCTP().addNewFldSimple().setInstr("NUMPAGES");
+    }
+
+    public static int countHeadings(XWPFDocument document, String style) {
+        int count = 0;
+        List<XWPFParagraph> paragraphs = document.getParagraphs();
+
+        for (XWPFParagraph paragraph : paragraphs) {
+            String styleId = paragraph.getStyle();
+            if (style.equals(styleId)) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    public static void insertPageBreak(XWPFDocument document) {
+        XWPFParagraph paragraph = document.createParagraph();
+        XWPFRun run = paragraph.createRun();
+        run.addBreak(BreakType.PAGE);
     }
 }

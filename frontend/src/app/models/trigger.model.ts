@@ -30,3 +30,6 @@ export class Trigger {
     this.disabled = trigger.disabled;
   }
 }
+export interface IdList {
+  ids: string[];
+}

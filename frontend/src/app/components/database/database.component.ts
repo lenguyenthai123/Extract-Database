@@ -62,6 +62,12 @@ export class DatabaseComponent {
   }
 
   ngOnInit(): void {
+    // Mock
+    this.tables.push(new Table(1, 'table1', 'description1'));
+    this.tables.push(new Table(2, 'table2', 'description2'));
+    this.tables.push(new Table(3, 'table3', 'description3'));
+    this.tables.push(new Table(4, 'table4', 'description4'));
+
     this.schemaService.getList().subscribe({
       next: (data) => {
         // Lấy danh sách schema từ API

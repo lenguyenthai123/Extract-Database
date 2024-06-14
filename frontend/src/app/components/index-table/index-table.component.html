@@ -19,7 +19,7 @@
         [disabled]="btnAddStatus"
         class="btn btn-dark add-button"
       >
-        Thêm trigger
+        Thêm
       </button>
       <button
         (click)="save()"
@@ -92,7 +92,7 @@
                   type="text"
                   (focus)="onFocus('Tên Index', row.id, 1, row.name)"
                   [(ngModel)]="row.name"
-                  [disabled]="row['disabled']"
+                  [disabled]="row['disabled'] || this.row.name === 'PRIMARY'"
                   (ngModelChange)="
                     onFieldChange('Tên Index', $event, row.id, 1)
                   "
@@ -111,12 +111,21 @@
                     )
                   "
                   [(ngModel)]="row.referencedColumnName"
-                  [disabled]="row['disabled']"
+                  [disabled]="row['disabled'] || this.row.name === 'PRIMARY'"
                   (ngModelChange)="
                     onFieldChange('Cột tham chiếu', $event, row.id, 2)
                   "
                   required
                 />
+              </td>
+              <td>
+                <button
+                  [disabled]="row.disabled || actionInsert || actionUpdate"
+                  (click)="openModal(rows.indexOf(row))"
+                  class="btn btn-danger"
+                >
+                  X
+                </button>
               </td>
             </tr>
             }

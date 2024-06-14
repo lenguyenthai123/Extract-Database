@@ -10,6 +10,7 @@ import { throwError, Observable } from 'rxjs';
 import { environment } from '../../env/environment';
 import { DataService } from '../data/data.service';
 import { Constraint } from '../../models/constraint.model';
+import { Column } from '../../models/column.model';
 @Injectable({
   providedIn: 'root',
 })
@@ -69,10 +70,10 @@ export class ConstraintService {
         usernameId: '12',
 
         name: constraint.name,
-        fieldName: constraint.fieldName,
-        typeName: constraint.typeName,
-        referencedTableName: constraint.referencedTableName,
-        referencedColumnName: constraint.referencedColumnName,
+        columnList: constraint.columnList,
+        constraintType: constraint.constraintType,
+        refTableName: constraint.refTableName,
+        refColumnName: constraint.refColumnName,
       },
       {
         observe: 'response',
@@ -90,10 +91,10 @@ export class ConstraintService {
 
         oldName: identifyName,
         name: constraint.name,
-        fieldName: constraint.fieldName,
-        typeName: constraint.typeName,
-        referencedTableName: constraint.referencedTableName,
-        referencedColumnName: constraint.referencedColumnName,
+        columnList: constraint.columnList,
+        constraintType: constraint.constraintType,
+        refTableName: constraint.refTableName,
+        refColumnName: constraint.refColumnName,
       },
       {
         observe: 'response',
@@ -104,17 +105,20 @@ export class ConstraintService {
   delete(constraint: Constraint) {
     let params = this.createParams();
     console.log(params);
-    params = params.set('constraintName', constraint.name);
-
-    const httpOptions = {
-      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-      params: params,
-      observe: 'response',
-    };
 
     return this.http.delete(`${this.apiUrl}/constraint`, {
-      headers: httpOptions.headers,
-      params: httpOptions.params,
+      params: {
+        type: this.dataService.getData('type'),
+        schemaName: this.dataService.getData('schemaName'),
+        tableName: this.dataService.getData('tableName'),
+        usernameId: '12',
+
+        name: constraint.name,
+        columnList: constraint.columnList,
+        constraintType: constraint.constraintType,
+        refTableName: constraint.refTableName,
+        refColumnName: constraint.refColumnName,
+      },
       observe: 'response',
     });
   }

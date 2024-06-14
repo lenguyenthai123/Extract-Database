@@ -11,13 +11,12 @@ import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.viettel.solution.extraction_service.dto.RequestDto;
-import com.viettel.solution.extraction_service.service.ExportService;
+import com.viettel.solution.extraction_service.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,17 +29,17 @@ import java.io.IOException;
 @RequestMapping("/export-pdf")
 public class PdfExportController {
 
-    private ExportService exportService;
+    private ReportService reportService;
 
     @Autowired
-    public PdfExportController(@Qualifier("pdfExportServiceImpl") ExportService exportService) {
-        this.exportService = exportService;
+    public PdfExportController(@Qualifier("pdfExportServiceImpl") ReportService reportService) {
+        this.reportService = reportService;
     }
 
     @GetMapping("/database")
     public ResponseEntity<byte[]> exportDatabase(@ModelAttribute RequestDto requestDto) {
         // Tạo phản hồi HTTP
-        byte[] pdfFile = exportService.exportDatabase(requestDto);
+        byte[] pdfFile = reportService.exportDatabase(requestDto);
 
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Báo cáo.pdf");

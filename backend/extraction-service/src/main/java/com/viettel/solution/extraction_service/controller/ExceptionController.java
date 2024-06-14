@@ -113,6 +113,7 @@ public class ExceptionController {
     // Xử lý ngoại lệ chung
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
+
         Map<String, Object> response = new HashMap<>();
 
         response.put("error", "Internal server error");

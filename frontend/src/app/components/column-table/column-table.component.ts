@@ -495,10 +495,6 @@ export class ColumnTableComponent implements OnInit {
         }
 
         if (check) {
-          this.raiseAlert(
-            'Hãy bỏ primary key ban đầu để tiến hàng chọn primary key mới',
-            'danger'
-          );
           this.rows[rowId - 1].primaryKey = false;
 
           return;

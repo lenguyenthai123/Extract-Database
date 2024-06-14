@@ -11,7 +11,7 @@ import { environment } from '../../env/environment';
 import { DataService } from '../data/data.service';
 
 import { Index } from '../../models/index.model';
-
+import { IdList } from '../../models/index.model';
 @Injectable({
   providedIn: 'root',
 })
@@ -59,6 +59,13 @@ export class IndexService {
   }
 
   add(index: Index) {
+    let params = this.createParams();
+
+    params = params.set('name', index.name);
+    index.columns.forEach((column) => {
+      params = params.append('columns', column);
+    });
+
     console.log(index);
     return this.http.post(
       `${this.apiUrl}/index`,
@@ -69,7 +76,7 @@ export class IndexService {
         usernameId: '12',
 
         name: index.name,
-        referencedColumnName: index.referencedColumnName,
+        columns: index.columns,
       },
       {
         observe: 'response',
@@ -87,7 +94,7 @@ export class IndexService {
 
         oldName: identifyName,
         name: index.name,
-        referencedColumnName: index.referencedColumnName,
+        columns: index.columns,
       },
       {
         observe: 'response',
@@ -98,7 +105,6 @@ export class IndexService {
   delete(index: Index) {
     let params = this.createParams();
     console.log(params);
-    params = params.set('indexName', index.name);
 
     const httpOptions = {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
@@ -107,8 +113,15 @@ export class IndexService {
     };
 
     return this.http.delete(`${this.apiUrl}/index`, {
-      headers: httpOptions.headers,
-      params: httpOptions.params,
+      params: {
+        type: this.dataService.getData('type'),
+        schemaName: this.dataService.getData('schemaName'),
+        tableName: this.dataService.getData('tableName'),
+        usernameId: '12',
+
+        name: index.name,
+        columns: index.columns,
+      },
       observe: 'response',
     });
   }

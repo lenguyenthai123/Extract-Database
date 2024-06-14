@@ -2,11 +2,6 @@
   <div class="row">
     <aside class="col-md-5 col-lg-2 px-4 py-3 bg-white border-end">
       <div class="mb-3">
-        <select id="database-select" class="form-select design-select">
-          <option value="cinema_management">database: cinema_management</option>
-        </select>
-      </div>
-      <div class="mb-3">
         <select
           id="schema-select"
           class="form-select design-select"
@@ -36,6 +31,12 @@
             />
           </span>
           {{ table.name }}
+          <select id="options" name="options">
+            <option value="option1">Tùy chọn 1</option>
+            <option value="option2">Tùy chọn 2</option>
+            <option value="option3">Tùy chọn 3</option>
+            <option value="option4">Tùy chọn 4</option>
+          </select>
         </li>
         }
       </ul>

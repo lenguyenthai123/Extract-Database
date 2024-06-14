@@ -141,10 +141,14 @@ export class ConstraintTableComponent implements OnInit {
     });
     this.loadAllConstraint();
   }
-
   loadAllConstraint() {
+    this.actionDelete = false;
+    this.actionUpdate = false;
+    this.actionInsert = false;
     this.constraintService.getList(this.table.name).subscribe({
       next: (data) => {
+        this.rows.splice(0, this.rows.length);
+        this.rows.splice(0, this.preRows.length);
         this.rows = [];
         this.preRows = [];
 
@@ -155,6 +159,11 @@ export class ConstraintTableComponent implements OnInit {
           constraint1.set(data[i]);
           constraint2.set(data[i]);
 
+          constraint1.columnName = constraint1.columnList[0];
+          constraint2.columnName = constraint2.columnList[0];
+
+          constraint1.disabled = constraint2.disabled = false;
+
           this.rows.push(constraint1);
           this.preRows.push(constraint2);
         }
@@ -164,7 +173,7 @@ export class ConstraintTableComponent implements OnInit {
           this.rows[i].id = i + 1;
         }
 
-        console.log('Data: ', data);
+        console.log('Data: ', this.rows);
       },
       error: (error) => {
         this.raiseAlert('Lỗi kết nối đến server', 'danger');
@@ -178,11 +187,11 @@ export class ConstraintTableComponent implements OnInit {
   }
 
   // Hàm để mở modal
-  openModal(indexRow: number) {
+  openModal(constraintRow: number) {
     this.modalRef = this.modalService.open(ModalComponent, {
       data: {
         title: 'Xác nhận',
-        content: `Bạn có chắc chắn muốn xóa ràng buộc <b>${this.rows[indexRow].name}</b> này không?`,
+        content: `Bạn có chắc chắn muốn xóa constraint <b>${this.rows[constraintRow].name}</b> này không?`,
       },
     });
 
@@ -190,7 +199,7 @@ export class ConstraintTableComponent implements OnInit {
       console.log(message);
 
       if (message === 'yes') {
-        this.deleteRow(indexRow);
+        this.deleteRow(constraintRow);
       }
     });
   }
@@ -219,6 +228,16 @@ export class ConstraintTableComponent implements OnInit {
     }
   }
 
+  handleColumns() {
+    for (let i = 0; i < this.rows.length; i++) {
+      let list: string[] = this.rows[i].columnName.split(',');
+      for (let j = 0; j < list.length; j++) {
+        list[j] = list[j].trim();
+      }
+      this.rows[i].columnList = list;
+    }
+  }
+
   save() {
     // Xử lý validation
     for (let i = 0; i < this.rows.length; i++) {
@@ -230,6 +249,9 @@ export class ConstraintTableComponent implements OnInit {
         return;
       }
     }
+
+    // Xử lý constraint gồm nhiều cột
+    this.handleColumns();
 
     // Variable to control
     let checkInsert: boolean = true;
@@ -282,11 +304,13 @@ export class ConstraintTableComponent implements OnInit {
           this.successInformation.message = successMessage;
           this.toastSuccess.show();
           this.isLoading = false;
+
+          this.loadAllConstraint();
         },
         error: (error) => {
           console.log(error.error);
 
-          failedMessage += `- Thêm ràng buộc thất bại!<br>  + Nguyên nhân: ${error.error.cause} <br>`;
+          failedMessage += `- Thêm constraint thất bại!<br>  + Nguyên nhân: ${error.error.cause} <br>`;
           this.failInformation.message = failedMessage;
           this.toastFail.show();
           this.isLoading = false;
@@ -311,21 +335,23 @@ export class ConstraintTableComponent implements OnInit {
       // Rút gọn lại unique những hàng bị thay đổi.
       changedRow = getUniqueElements(changedRow);
 
+      const updateRow: Constraint[] = this.aggregateRow(changedRow);
+      console.log('Update row');
+      console.log(updateRow);
+
       // Call api cho từng hàng
+
       // Loading
       this.isLoading = true;
 
       // Số lượng hoàn thành
       let count = 0;
 
-      for (let i = 0; i < changedRow.length; i++) {
-        console.log('Old name: ' + this.preRows[changedRow[i] - 1].name);
-        console.log(this.rows[changedRow[i] - 1]);
+      for (let i = 0; i < updateRow.length; i++) {
+        console.log('Old name: ' + updateRow[i].oldName);
+
         this.constraintService
-          .update(
-            this.rows[changedRow[i] - 1],
-            this.preRows[changedRow[i] - 1].name
-          )
+          .update(updateRow[i], updateRow[i].oldName)
           .subscribe({
             next: (data) => {
               console.log(data);
@@ -333,34 +359,30 @@ export class ConstraintTableComponent implements OnInit {
               console.log(data.status);
               console.log(data);
               if (data.ok === true) {
-                successMessage += `- Cập nhật constraint ${changedRow[i]} thành công!<br>`;
+                successMessage += `- Cập nhật constraint ${updateRow[i].name} thành công!<br>`;
 
                 // Update old row
-                this.preRows[changedRow[i] - 1].set(
-                  this.rows[changedRow[i] - 1]
-                );
 
                 this.updateChanged(changedRow[i]);
               } else {
-                failedMessage += `- Cập nhật constraint ${changedRow[i]} thất bại!<br>`;
+                failedMessage += `- Cập nhật constraint ${updateRow[i].name} thất bại!<br>`;
                 failedList.push(changedRow[i]);
                 console.log();
               }
 
-              count++;
-              this.onComplete(count, changedRow, successMessage, failedMessage);
+              this.loadAllConstraint();
+              this.onComplete(successMessage, failedMessage);
             },
             error: (error) => {
               console.log(error);
               console.log(error.error);
               console.log('Cause:  ' + error.error.cause);
-              failedMessage += `- Cập nhật constraint ${changedRow[i]} thất bại!<br> + Nguyên nhân: ${error.error.cause} <br>`;
+              failedMessage += `- Cập nhật constraint ${updateRow[i].name} thất bại!<br> + Nguyên nhân: ${error.error.cause} <br>`;
 
               //this.raiseAlert('Cập nhật cột thất bại', 'danger');
               failedList.push(changedRow[i]);
 
-              count++;
-              this.onComplete(count, changedRow, successMessage, failedMessage);
+              this.onComplete(successMessage, failedMessage);
             },
           });
       }
@@ -369,28 +391,56 @@ export class ConstraintTableComponent implements OnInit {
     //reset numberChanged
   }
 
-  onComplete(
-    count: number,
-    changedRow: number[],
-    successMessage: string,
-    failedMessage: string
-  ) {
-    if (count === changedRow.length) {
-      this.isLoading = false;
+  aggregateRow(changedRow: number[]): Constraint[] {
+    let updateRow: Constraint[] = [];
 
-      this.actionUpdate = false;
+    let map = new Map<String, number>();
 
-      // Thông báo
-      if (successMessage.length > 0) {
-        this.successInformation.message = successMessage;
-        this.toastSuccess.show();
+    for (let i = 0; i < changedRow.length; i++) {
+      let idx = changedRow[i] - 1;
+
+      if (map.has(this.rows[idx].name)) {
+        continue;
       }
-      if (failedMessage.length > 0) {
-        this.failInformation.message = failedMessage;
-        this.toastFail.show();
 
-        this.actionUpdate = true;
+      map.set(this.rows[idx].name, idx);
+
+      let row: Constraint = new Constraint();
+
+      row.set(this.rows[idx]);
+      row.oldName = this.preRows[idx].name;
+
+      for (let j = 0; j < this.rows.length; j++) {
+        if (idx == j) {
+          continue;
+        }
+
+        if (this.rows[idx].name == this.rows[j].name) {
+          for (let k = 0; k < this.rows[j].columnList.length; k++) {
+            row.columnList.push(this.rows[j].columnList[k]);
+          }
+        }
       }
+      updateRow.push(row);
+    }
+    return updateRow;
+  }
+
+  onComplete(successMessage: string, failedMessage: string) {
+    this.isLoading = false;
+
+    this.actionUpdate = false;
+
+    // Thông báo
+    if (successMessage.length > 0) {
+      this.successInformation.message = successMessage;
+      this.toastSuccess.show();
+    }
+    if (failedMessage.length > 0) {
+      this.failInformation.message = failedMessage;
+      this.toastFail.show();
+
+      this.actionUpdate = true;
     }
   }
 
@@ -413,6 +463,9 @@ export class ConstraintTableComponent implements OnInit {
     this.isLoading = true;
     let check: boolean = false;
     let name: string = this.rows[index].name;
+
+    console.log(this.rows[index]);
+
     this.constraintService.delete(this.rows[index]).subscribe({
       next: (data) => {
         if (data.ok === true) {
@@ -453,6 +506,24 @@ export class ConstraintTableComponent implements OnInit {
     fieldId: number
   ) {
     let check = false;
+
+    if (fieldId === 2) {
+      this.handleColumns();
+    }
+    if (fieldId === 1 && !this.actionInsert) {
+      for (let i = 0; i < this.preRows.length; i++) {
+        if (this.preRows[i].name == this.preRows[rowId - 1].name) {
+          this.rows[i].name = event;
+        }
+      }
+    }
+
+    for (let i = 0; i < this.rows.length; i++) {
+      if (this.rows[i].name != this.rows[rowId - 1].name) {
+        this.rows[i].disabled = true;
+        console.log(this.preRows[i].oldName);
+      }
+    }
 
     for (let i = 0; i < this.changedList.length; i++) {
       {
@@ -530,18 +601,24 @@ export class ConstraintTableComponent implements OnInit {
 
     if (this.fieldChange.fieldId === 1) {
       this.rows[this.fieldChange.rowId - 1].name = this.contentText;
+
+      for (let i = 0; i < this.preRows.length; i++) {
+        if (
+          this.preRows[i].name == this.preRows[this.fieldChange.rowId - 1].name
+        ) {
+          this.rows[i].name = this.rows[this.fieldChange.rowId - 1].name;
+        }
+      }
     }
     if (this.fieldChange.fieldId === 2) {
-      this.rows[this.fieldChange.rowId - 1].fieldName = this.contentText;
+      this.handleColumns();
+      this.rows[this.fieldChange.rowId - 1].columnName = this.contentText;
     }
-
     if (this.fieldChange.fieldId === 4) {
-      this.rows[this.fieldChange.rowId - 1].referencedTableName =
-        this.contentText;
+      this.rows[this.fieldChange.rowId - 1].refTableName = this.contentText;
     }
     if (this.fieldChange.fieldId === 5) {
-      this.rows[this.fieldChange.rowId - 1].referencedColumnName =
-        this.contentText;
+      this.rows[this.fieldChange.rowId - 1].refColumnName = this.contentText;
     }
   }
 
