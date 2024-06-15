@@ -14,7 +14,7 @@ RUN npm ci
 COPY . .
 
 # Build ứng dụng Angular
-RUN npm run build --prod
+RUN npm run build
 
 # Stage 2: Serve the application using Nginx
 FROM nginx:alpine
