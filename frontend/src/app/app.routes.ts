@@ -14,7 +14,7 @@ export const routes: Routes = [
   },
   {
     path: 'database',
-    title: 'Database management',
+    title: 'Database management' ,
     component: DatabaseComponent,
     children: [
       {

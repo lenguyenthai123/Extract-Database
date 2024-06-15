@@ -15,7 +15,7 @@ import java.time.Duration;
 
 @SpringBootApplication
 @EnableCaching
-public class ExtractionServiceApplication {
+public class ExtractionServiceApplication  {
 
 	public static void main(String[] args) {
 		SpringApplication.run(ExtractionServiceApplication.class, args);
