@@ -1,23 +1,28 @@
-# Sử dụng image Node.js làm base image
-FROM node:20
+# Stage 1: Compile and Build angular codebase
 
-# Cài đặt Angular CLI toàn cục
-RUN npm install -g @angular/cli
+# Use official node image as the base image
+FROM node:latest as build
 
-# Tạo thư mục ứng dụng
-WORKDIR /app
+# Set the working directory
+WORKDIR /usr/local/app
 
-# Sao chép file package.json và package-lock.json để cài đặt dependencies
-COPY package*.json ./
+# Add the source code to app
+COPY ./ /usr/local/app/
 
-# Cài đặt các dependencies
+# Install all the dependencies
 RUN npm install
 
-# Sao chép toàn bộ mã nguồn ứng dụng vào thư mục làm việc
-COPY . .
+# Generate the build of the application
+RUN npm run build
 
-# Expose port 4200 để Angular có thể phục vụ ứng dụng
-EXPOSE 4200
 
-# Lệnh khởi động ứng dụng Angular
-CMD ["ng", "serve", "--host", "0.0.0.0"]
+# Stage 2: Serve app with nginx server
+
+# Use official nginx image as the base image
+FROM nginx:latest
+
+# Copy the build output to replace the default nginx contents.
+COPY --from=build /usr/local/app/dist/sample-angular-app /usr/share/nginx/html
+
+# Expose port 80
+EXPOSE 80
