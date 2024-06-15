@@ -44,12 +44,25 @@ aside {
 .table td,
 .table th {
   white-space: nowrap;
+  vertical-align: middle;
 }
 
 .table-bordered td,
 .table-bordered th {
   border: 1px solid #dee2e6;
 }
+
+.table td:first-child {
+  width: 7%;
+}
+
+.table td:nth-child(4) > input {
+  border: none;
+}
+.table td:nth-child(8) > input {
+  border: none;
+}
+
 .navigate-table {
   display: flex;
   flex-direction: row;
