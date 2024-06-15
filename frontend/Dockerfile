@@ -1,32 +1,23 @@
-# Stage 1: Build the Angular application
-FROM node:16-alpine AS build
+# Sử dụng image Node.js làm base image
+FROM node:20
 
-# Đặt thư mục làm việc bên trong container
+# Cài đặt Angular CLI toàn cục
+RUN npm install -g @angular/cli
+
+# Tạo thư mục ứng dụng
 WORKDIR /app
 
-# Sao chép file package.json và package-lock.json vào container
-COPY package.json package-lock.json ./
+# Sao chép file package.json và package-lock.json để cài đặt dependencies
+COPY package*.json ./
 
 # Cài đặt các dependencies
-RUN npm ci
+RUN npm install
 
-# Sao chép toàn bộ mã nguồn vào container
+# Sao chép toàn bộ mã nguồn ứng dụng vào thư mục làm việc
 COPY . .
 
-# Build ứng dụng Angular
-RUN npm run build
+# Expose port 4200 để Angular có thể phục vụ ứng dụng
+EXPOSE 4200
 
-# Stage 2: Serve the application using Nginx
-FROM nginx:alpine
-
-# Copy built Angular application từ stage build vào thư mục phục vụ của Nginx
-COPY --from=build /app/dist/your-angular-app /usr/share/nginx/html
-
-# Copy custom Nginx configuration file (nếu có)
-# COPY nginx.conf /etc/nginx/nginx.conf
-
-# Expose port 80 để truy cập ứng dụng
-EXPOSE 80
-
-# Default command để khởi chạy Nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Lệnh khởi động ứng dụng Angular
+CMD ["ng", "serve", "--host", "0.0.0.0"]
