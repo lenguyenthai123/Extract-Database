@@ -23,13 +23,13 @@ jobs:
             IMAGE_NAME="${{ secrets.DOCKER_USERNAME }}/${{ secrets.FRONTEND }}:latest"
             
             # Kéo image mới nhất từ DockerHub
-            docker pull $IMAGE_NAME
+            docker pull $IMAGE_NAME:latest
 
             # Dừng và xóa tất cả các container cũ tên "frontend" 
-            docker stop $(docker ps -q --filter name=frontend) || true
-            docker rm $(docker ps -q --filter name=frontend) || true
+            docker ps -a -q --filter name=frontend | xargs -r docker stop
+            docker ps -a -q --filter name=frontend | xargs -r docker rm
 
             # Chạy container mới từ image vừa kéo
-            docker run -d --name frontend -p 4200:80 $IMAGE_NAME
+            docker run -dp 4200:80 --name frontend $IMAGE_NAME:latest
 
             echo "Deployment completed with image: $IMAGE_NAME"
