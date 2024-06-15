@@ -1,31 +1,29 @@
-# Stage 1: Compile and Build angular codebase
-
-# Use official node image as the base image
-FROM node:latest as build
+# Stage 1: Build the Angular application
+FROM node:18-alpine as build
 
 # Set the working directory
-WORKDIR /usr/local/app
+WORKDIR /app
 
-# Add the source code to app
-COPY ./ /usr/local/app/
+# Copy package.json and package-lock.json to the working directory
+COPY package*.json ./
 
 # Install all the dependencies
 RUN npm install
 
-# Generate the build of the application
+# Copy the rest of the application source code to the working directory
+COPY . .
+
+# Generate the build of the Angular application
 RUN npm run build
 
+# Stage 2: Serve the application with Nginx
+FROM nginx:alpine
 
-# Stage 2: Serve app with nginx server
-
-# Use official nginx image as the base image
-FROM nginx:latest
-
-# Copy the build output to replace the default nginx contents.
-COPY --from=build /usr/local/app/dist/frontend /usr/share/nginx/html
+# Copy the build output from the previous stage to the Nginx html directory
+COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
 
 # Expose port 80
 EXPOSE 80
 
-# Lệnh khởi động nginx
+# Command to run Nginx
 CMD ["nginx", "-g", "daemon off;"]
