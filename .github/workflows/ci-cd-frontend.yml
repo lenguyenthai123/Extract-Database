@@ -1,0 +1,68 @@
+name: CI/CD Pipeline for frontend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+
+jobs:
+  build-frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image for frontend
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.FRONTEND }}:latest
+
+  ec2-cd-frontend:
+    runs-on: ubuntu-latest
+    needs: build-frontend
+
+    steps:
+      - name: Frontend SSH into EC2 instance
+        uses: appleboy/ssh-action@v0.1.9
+        with:
+          host: ${{ secrets.EC2_HOST_FRONTEND }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            # Đặt biến môi trường cho image tag
+            IMAGE_NAME="${{ secrets.DOCKER_USERNAME }}/${{ secrets.FRONTEND }}:latest"
+            
+            # Kéo image mới nhất từ DockerHub
+            docker pull $IMAGE_NAME
+
+            # Dừng và xóa tất cả các container cũ tên "frontend" 
+            docker ps -a -q --filter name=frontend | xargs -r docker stop
+            docker ps -a -q --filter name=frontend | xargs -r docker rm
+
+            # Chạy container mới từ image vừa kéo
+            docker run -dp 4200:80 --name frontend $IMAGE_NAME
+
+            echo "Deployment completed with image: $IMAGE_NAME"
+            # Xóa các image không sử dụng
+            docker image prune -f
