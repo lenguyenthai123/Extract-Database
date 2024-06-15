@@ -27,12 +27,13 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       with:
-        projectBaseDir: backend/**
+        projectBaseDir: backend
 
 
   # Job build-backend: build backend và đẩy image Docker lên DockerHub
   build-backend:
     runs-on: ubuntu-latest
+    needs: sonarcloud  # Đảm bảo job này chỉ chạy sau khi job build-backend hoàn thành
 
     steps:
       # Bước checkout: Lấy mã nguồn từ repository
