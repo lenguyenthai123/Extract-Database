@@ -93,4 +93,4 @@ jobs:
         context: ./frontend
         file: ./frontend/Dockerfile
         push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.BACKEND }}:${{ github.run_number }}
+        tags: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.FRONTEND }}:${{ github.run_number }}

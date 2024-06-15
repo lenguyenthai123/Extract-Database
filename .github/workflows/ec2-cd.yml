@@ -1,0 +1,35 @@
+name: EC2 CD Pipeline on AWS
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
+
+jobs:
+  ec2-cd-frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Frontend SSH into EC2 instance
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST_FRONTEND }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            # Đặt biến môi trường cho image tag
+            IMAGE_NAME="${{ secrets.DOCKER_USERNAME }}/${{ secrets.FRONTEND }}:${{ github.run_number }}"
+            
+            # Kéo image mới nhất từ DockerHub
+            docker pull $IMAGE_NAME
+
+            # Dừng và xóa tất cả các container cũ tên "frontend" 
+            docker stop $(docker ps -q --filter name=frontend) || true
+            docker rm $(docker ps -q --filter name=frontend) || true
+
+            # Chạy container mới từ image vừa kéo
+            docker run -d --name frontend -p 4200:4200 $IMAGE_NAME
+
+            echo "Deployment completed with image: $IMAGE_NAME"
