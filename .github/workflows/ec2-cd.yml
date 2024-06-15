@@ -33,3 +33,26 @@ jobs:
             docker run -dp 4200:80 --name frontend $IMAGE_NAME
 
             echo "Deployment completed with image: $IMAGE_NAME"
+            # Xóa các image không sử dụng
+            docker image prune -f
+
+  ec2-cd-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Backend SSH into EC2 instance
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST_BACKEND }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            # Kéo các image trong docker-compose nếu có cập nhật
+            docker-compose pull
+
+            # Tái tạo lại các container trong compose mặc dù không có thay đổỉ hay không 
+            docker-compose up --force-recreate --build -d
+
+            # Xóa các image không sử dụng.
+            docker image prune -f
