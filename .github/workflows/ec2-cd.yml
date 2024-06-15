@@ -20,7 +20,7 @@ jobs:
           port: 22
           script: |
             # Đặt biến môi trường cho image tag
-            IMAGE_NAME="${{ secrets.DOCKER_USERNAME }}/${{ secrets.FRONTEND }}:${{ github.run_number }}"
+            IMAGE_NAME="${{ secrets.DOCKER_USERNAME }}/${{ secrets.FRONTEND }}:latest"
             
             # Kéo image mới nhất từ DockerHub
             docker pull $IMAGE_NAME
