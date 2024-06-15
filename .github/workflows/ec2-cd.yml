@@ -30,6 +30,6 @@ jobs:
             docker rm $(docker ps -q --filter name=frontend) || true
 
             # Chạy container mới từ image vừa kéo
-            docker run -d --name frontend -p 4200:4200 $IMAGE_NAME
+            docker run -d --name frontend -p 4200:80 $IMAGE_NAME
 
             echo "Deployment completed with image: $IMAGE_NAME"
