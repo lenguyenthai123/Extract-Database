@@ -81,8 +81,8 @@ public class PdfExportController {
 
             // Định dạng dòng dữ liệu
             table.addCell(new Cell().add(new Paragraph("PRIMARY")));
-            table.addCell(new Cell().add(new Paragraph("ID")));
-            table.addCell(new Cell().add(new Paragraph("PK")));
+            table.addCell(new Cell().add(new Paragraph("ID"))) ;
+            table.addCell(new Cell().add(new Paragraph("PK"))) ;
             table.addCell(new Cell());
             table.addCell(new Cell());
 
