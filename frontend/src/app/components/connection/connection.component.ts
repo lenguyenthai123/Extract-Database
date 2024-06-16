@@ -93,7 +93,7 @@ export class ConnectionComponent implements OnInit {
       port: new FormControl('3308', [Validators.required]),
       type: new FormControl('mysql', [Validators.required]),
       serviceName: new FormControl(''),
-      username: new FormControl('root', [Validators.required]),
+      username: new FormControl('root', [Validators.required])  ,  
       password: new FormControl('password'),
     });
   }
