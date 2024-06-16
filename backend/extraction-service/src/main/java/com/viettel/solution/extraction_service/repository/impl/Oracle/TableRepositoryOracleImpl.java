@@ -145,4 +145,10 @@ public class TableRepositoryOracleImpl implements TableRepository {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public List<Table> getAllTableFromDatabase(SessionFactory sessionFactory) {
+        return List.of();
+    }
+
 }

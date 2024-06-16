@@ -1,27 +1,22 @@
 package com.viettel.solution.extraction_service.config;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchProperties;
-import org.springframework.context.annotation.Bean;
+
+import com.viettel.solution.extraction_service.entity.TableDocument;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.elasticsearch.client.ClientConfiguration;
-import org.springframework.data.elasticsearch.client.RestClients;
-import org.springframework.data.elasticsearch.config.AbstractElasticsearchConfiguration;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 
 @Configuration
-@EnableElasticsearchRepositories(basePackages = "com.viettel.solution.extraction_service.repository")
-@ComponentScan(basePackages = { "com.viettel.solution.extraction_service.service" })
-public class ElasticSearchConfig extends AbstractElasticsearchConfiguration {
+public class ElasticSearchConfig {
 
-    @Bean
-    @Override
-    public RestHighLevelClient elasticsearchClient() {
-        ClientConfiguration clientConfiguration = ClientConfiguration.builder()
-                .connectedTo("elasticsearch:9200")
-                .build();
-
-        return RestClients.create(clientConfiguration)
-                .rest();
-    }
+//    @Autowired
+//    private ElasticsearchRestTemplate elasticsearchRestTemplate;
+//
+//    @PostConstruct
+//    public void deleteAllData() {
+//        elasticsearchRestTemplate.indexOps(TableDocument.class).delete();
+//        elasticsearchRestTemplate.indexOps(TableDocument.class).create();
+//        elasticsearchRestTemplate.indexOps(TableDocument.class).putMapping(elasticsearchRestTemplate.indexOps(TableDocument.class).createMapping());
+//    }
 }

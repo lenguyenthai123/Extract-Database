@@ -7,6 +7,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -21,14 +22,29 @@ public class TableDocument {
 
     @Id
     private String id;
-    @Field(name = "usernameId")
+
+    @Field(name = "usernameId", type = FieldType.Keyword)
     private String usernameId;
+
+    @Field(type = FieldType.Keyword)
     private String schemaName;
+
+    @Field(type = FieldType.Keyword)
     private String name;
+
+    @Field(type = FieldType.Nested, includeInParent = true)
     private List<Column> columns;
+
+    @Field(type = FieldType.Nested, includeInParent = true)
     private List<Constraint> constraints;
+
+    @Field(type = FieldType.Nested, includeInParent = true)
     private List<Index> indexs;
+
+    @Field(type = FieldType.Nested, includeInParent = true)
     private List<Trigger> triggers;
+
+    @Field(type = FieldType.Text)
     private String description;
 
     public TableDocument() {

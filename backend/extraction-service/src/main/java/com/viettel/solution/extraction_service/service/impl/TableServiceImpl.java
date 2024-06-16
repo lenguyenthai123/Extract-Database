@@ -2,9 +2,12 @@ package com.viettel.solution.extraction_service.service.impl;
 
 import com.viettel.solution.extraction_service.database.DatabaseConnection;
 import com.viettel.solution.extraction_service.dto.RequestDto;
+import com.viettel.solution.extraction_service.dto.SearchingDto;
 import com.viettel.solution.extraction_service.entity.Database;
 import com.viettel.solution.extraction_service.entity.Table;
+import com.viettel.solution.extraction_service.entity.TableDocument;
 import com.viettel.solution.extraction_service.repository.TableRepository;
+import com.viettel.solution.extraction_service.repository.elasticsearch.TableElasticSearchRepository;
 import com.viettel.solution.extraction_service.service.TableService;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,9 @@ public class TableServiceImpl implements TableService {
 
 
     private TableRepository tableRepository;
+
+    @Autowired
+    private TableElasticSearchRepository tableElasticSearchRepository;
 
     @Autowired
     public TableServiceImpl(@Qualifier("tableRepositorySQLImpl") TableRepository tableRepository) {
@@ -51,5 +57,18 @@ public class TableServiceImpl implements TableService {
             e.printStackTrace();
             return null;
         }
+    }
+
+    @Override
+    public List<TableDocument> findTables(SearchingDto searchDto) {
+        String usernameId  = searchDto.getUsernameId();
+        String type = searchDto.getType();
+        String keyword = searchDto.getKeyword();
+        return tableElasticSearchRepository.findByUsernameIdAndKeyword(usernameId, keyword);
+    }
+
+    @Override
+    public Iterable<TableDocument> saveAllTableDocuments(List<TableDocument> tableDocuments) {
+        return null;//tableElasticSearchRepository.(tableDocuments);
     }
 }

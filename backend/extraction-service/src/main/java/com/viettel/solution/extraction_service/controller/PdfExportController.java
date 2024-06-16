@@ -99,7 +99,7 @@ public class PdfExportController {
 
             // Tạo phản hồi HTTP
             HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=sample.pdf");
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Bao cao.pdf");
 
             return ResponseEntity.ok()
                     .headers(headers)

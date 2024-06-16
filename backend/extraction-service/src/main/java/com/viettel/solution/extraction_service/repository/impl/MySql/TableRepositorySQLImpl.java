@@ -2,10 +2,7 @@ package com.viettel.solution.extraction_service.repository.impl.MySql;
 
 import com.viettel.solution.extraction_service.database.DatabaseConnection;
 import com.viettel.solution.extraction_service.entity.*;
-import com.viettel.solution.extraction_service.repository.ConstraintRepository;
-import com.viettel.solution.extraction_service.repository.IndexRepository;
-import com.viettel.solution.extraction_service.repository.TableRepository;
-import com.viettel.solution.extraction_service.repository.TriggerRepository;
+import com.viettel.solution.extraction_service.repository.*;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.NativeQuery;
@@ -102,30 +99,63 @@ public class TableRepositorySQLImpl implements TableRepository {
 
     @Override
     public List<Table> getAllTable(SessionFactory sessionFactory, String databaseName, String schemaName) {
+        try (Session session = sessionFactory.openSession()) {
+            String sql = "select TABLE_NAME as name, TABLE_COMMENT as description " +
+                    "from information_schema.tables " +
+                    "where TABLE_SCHEMA=:schemaName";
+
+            NativeQuery<Table> nativeQuery = session.createNativeQuery(sql, Table.class);
+            nativeQuery.setParameter("schemaName", databaseName);
+            nativeQuery.setResultTransformer(Transformers.aliasToBean(Table.class));
+
+            List<Table> tables = nativeQuery.getResultList();
+            List<Table> result = new ArrayList<>();
+            for(Table table: tables){
+                result.add(getTable(sessionFactory,databaseName,schemaName,table.getName()));
+            }
+
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public List<Table> getAllTableFromDatabase(SessionFactory sessionFactory)
+    {
         try {
-            List<Table> tables = new ArrayList<>();
             DatabaseMetaData metaData = DatabaseConnection.getDatabaseMetaData(sessionFactory);
+
+            ResultSet schemaSet = metaData.getCatalogs();
+            List<String> schemas = new ArrayList<>();
+
+            while (schemaSet.next()) {
+                String databaseName = schemaSet.getString(1);
+                schemas.add(databaseName);
+            }
+
+            List<Table> tables = new ArrayList<>();
             if (metaData == null) {
                 return null;
             }
-            try (ResultSet tablesResultSet = metaData.getTables(databaseName, schemaName, "%", new String[]{"TABLE"})) {
 
-                while (tablesResultSet.next()) {
-                    String tableName = tablesResultSet.getString("TABLE_NAME");
-                    String description = tablesResultSet.getString("REMARKS");
-                    if (tableName.equals("sys_config")) {
-                        continue;
-                    }
-                    Table tableEntity = getTable(sessionFactory, databaseName, schemaName, tableName);
-                    tableEntity.setDescription(description);
-                    tables.add(tableEntity);
-                }
-                return tables;
+            for(String schemaName: schemas) {
+                if(Objects.equals(schemaName, "information_schema") || Objects.equals(schemaName, "mydb")
+                        || Objects.equals(schemaName, "mysql") || Objects.equals(schemaName, "performance_schema")
+                        || Objects.equals(schemaName, "sys")) continue;
+
+                tables.addAll(getAllTable(sessionFactory,schemaName,null));
             }
+            return tables;
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
     }
+
+
 
     @Override
     public List<Table> getAllTableName(SessionFactory sessionFactory, String databaseName, String schemaName) {
@@ -146,4 +176,5 @@ public class TableRepositorySQLImpl implements TableRepository {
         }
         return null;
     }
+
 }

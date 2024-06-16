@@ -44,6 +44,24 @@ public class DatabaseConnection {
         return sessionFactory;
     }
 
+    static public synchronized boolean checkConnection(String usernameId, String type) {
+        SessionFactory sessionFactory = null;
+        switch (type.toLowerCase()) {
+            case "mysql":
+                sessionFactory = sessionFactoryMySqlMap.get(usernameId);
+                break;
+            case "oracle":
+                sessionFactory = sessionFactoryOracleMap.get(usernameId);
+                break;
+            case "mariadb":
+                sessionFactory = sessionFactoryMariaDbMap.get(usernameId);
+                break;
+            default:
+        }
+        return sessionFactory != null;
+    }
+
+
     static public synchronized boolean closeSessionFactory(String usernameId, String type) {
         SessionFactory sessionFactory = null;
         switch (type.toLowerCase()) {
@@ -96,6 +114,7 @@ public class DatabaseConnection {
             public void execute(Connection connection) throws SQLException {
                 // Get the DatabaseMetaData from the connection
                 databaseMetaData[0] = connection.getMetaData();
+                System.out.println(connection.getCatalog());
             }
         });
         // Close the session

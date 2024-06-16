@@ -22,6 +22,7 @@ import java.util.List;
 
 
 @Repository
+@Qualifier("mysql")
 public class SchemaRepositorySQLImpl implements SchemaRepository {
 
 
