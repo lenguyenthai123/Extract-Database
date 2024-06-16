@@ -30,7 +30,11 @@ public class TriggerRepositorySQLImpl implements TriggerRepository {
         Trigger trigger = null;
 
         try (Session session = sessionFactory.openSession()) {
-            String query = "SELECT TRIGGER_NAME as name, EVENT_MANIPULATION as event, " + "EVENT_OBJECT_TABLE as tableName, ACTION_TIMING as timing, " + "ACTION_CONDITION as actionCondition, ACTION_STATEMENT as doAction," + "TRIGGER_SCHEMA as schemaName " + "FROM INFORMATION_SCHEMA.TRIGGERS " + "WHERE TRIGGER_SCHEMA = :schemaName AND EVENT_OBJECT_TABLE = :tableName AND TRIGGER_NAME = :triggerName";
+            String query = "SELECT TRIGGER_NAME as name, EVENT_MANIPULATION as event, " +
+                    "EVENT_OBJECT_TABLE as tableName, ACTION_TIMING as timing, " +
+                    "ACTION_CONDITION as actionCondition, ACTION_STATEMENT as doAction," +
+                    "TRIGGER_SCHEMA as schemaName " + "FROM INFORMATION_SCHEMA.TRIGGERS " +
+                    "WHERE TRIGGER_SCHEMA = :schemaName AND EVENT_OBJECT_TABLE = :tableName AND TRIGGER_NAME = :triggerName";
 
             NativeQuery<Trigger> nativeQuery = session.createNativeQuery(query);
             nativeQuery.setParameter("schemaName", schemaName);

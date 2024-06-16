@@ -19,7 +19,7 @@ public class RedisConfig {
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
-        redisStandaloneConfiguration.setHostName("localhost"); // Đặt host là 'redis'
+        redisStandaloneConfiguration.setHostName("redis"); // Đặt host là 'redis'
         redisStandaloneConfiguration.setPort(6379); // Đặt port là 6379
         // Nếu bạn có username và password, bạn có thể đặt chúng ở đây
         // redisStandaloneConfiguration.setUsername("your-username");
