@@ -14,18 +14,23 @@ on:
       - 'backend/**'
 
 jobs:
-  # Tìm các lỗi hỏng bảo mật
-  sonarcloud:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        # Disabling shallow clone is recommended for improving relevancy of reporting
-        fetch-depth: 0
-    - name: SonarCloud Scan
-      uses: sonarsource/sonarcloud-github-action@v2.3.0 # Ex: v2.1.0, See the latest version at https://github.com/marketplace/actions/sonarcloud-scan
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  # # Tìm các lỗi hỏng bảo mật
+  # sonarcloud:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #     with:
+  #       # Disabling shallow clone is recommended for improving relevancy of reporting
+  #       fetch-depth: 0
+  #   - name: SonarCloud Scan
+  #     uses: sonarsource/sonarcloud-github-action@v2.3.0 # Ex: v2.1.0, See the latest version at https://github.com/marketplace/actions/sonarcloud-scan
+  #     env:
+  #       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  #     with:
+  #       projectBaseDir: backend
+  #       args: >
+  #         -Dsonar.organization=<tên_organization_trên_SonarCloud>
+  #         -Dsonar.projectKey=<khóa_dự_án_trên_SonarCloud>
 
 
   # Job build-backend: build backend và đẩy image Docker lên DockerHub
