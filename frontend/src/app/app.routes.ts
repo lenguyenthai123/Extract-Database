@@ -6,15 +6,22 @@ import { TableComponent } from './components/table/table.component';
 import { ConstraintTableComponent } from './components/constraint-table/constraint-table.component';
 import { TriggerTableComponent } from './components/trigger-table/trigger-table.component';
 import { IndexTableComponent } from './components/index-table/index-table.component';
+import { ReportComponent } from './components/report/report.component';
 export const routes: Routes = [
   {
     path: 'connection',
     title: 'Connection',
     component: ConnectionComponent,
   },
+
+  {
+    path: 'report',
+    title: 'Report',
+    component: ReportComponent,
+  },
   {
     path: 'database',
-    title: 'Database management'   ,
+    title: 'Database management',
     component: DatabaseComponent,
     children: [
       {

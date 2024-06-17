@@ -1,0 +1,89 @@
+.container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+}
+
+h2 {
+  margin-bottom: 20px;
+}
+
+.template-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.template-list li {
+  padding: 10px;
+  border: 1px solid #ddd;
+  margin-bottom: 5px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.template-list li:hover {
+  background-color: #f0f0f0;
+}
+
+.template-list li.selected {
+  background-color: rgb(0, 178, 125);
+  color: white;
+}
+
+.upload-container {
+  margin-top: 20px;
+}
+
+.default_button {
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
+  background-color: rgb(0, 178, 125);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.default_button:hover {
+  background-color: rgb(38, 216, 162);
+}
+
+button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
+  background-color: #303f9f;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.button_list {
+  display: flex;
+  justify-content: center;
+  margin-top: 10%;
+  margin-bottom: 50px;
+}
+
+#download_button {
+  margin-right: 20px;
+}
+
+.form-floating {
+}
+
+#floatingTextarea2 {
+  min-height: 500px;
+}
