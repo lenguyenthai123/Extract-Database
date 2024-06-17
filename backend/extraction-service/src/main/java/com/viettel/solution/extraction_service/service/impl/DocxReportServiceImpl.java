@@ -1,11 +1,14 @@
 package com.viettel.solution.extraction_service.service.impl;
 
+import com.amazonaws.AmazonClientException;
 import com.viettel.solution.extraction_service.database.DatabaseConnection;
 import com.viettel.solution.extraction_service.dto.RequestDto;
 import com.viettel.solution.extraction_service.entity.*;
 import com.viettel.solution.extraction_service.generator.DocxGenerator;
+import com.viettel.solution.extraction_service.service.AwsService;
 import com.viettel.solution.extraction_service.service.DatabaseService;
 import com.viettel.solution.extraction_service.service.ReportService;
+import com.viettel.solution.extraction_service.utils.Utils;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
@@ -13,15 +16,18 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,14 +35,24 @@ import java.util.List;
 @Qualifier("docxExportServiceImpl")
 public class DocxReportServiceImpl implements ReportService {
 
+    @Value("${nodejs.url}")
+    private String nodejsUrl;
+
     @Autowired
     DatabaseService databaseService;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Autowired
+    private AwsService awsService;
 
     @Override
     public byte[] exportDatabase(DocumentTemplate documentTemplateDetail) {
         String usernameId = documentTemplateDetail.getUsernameId();
         String type = documentTemplateDetail.getType();
         String fileName = documentTemplateDetail.getFileName();
+        String dataJson = documentTemplateDetail.getDataJson();
 
         SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
         if (sessionFactory == null) {
@@ -45,28 +61,39 @@ public class DocxReportServiceImpl implements ReportService {
 
         Database database = databaseService.getDatabase(new RequestDto().builder().usernameId(usernameId).type(type).build());
 
-        String defaultPath = "";
-        // Check xem đường dẫn tồn tại không?
-        if (fileName.equals("default")) {
-            URL resourceUrl = getClass().getClassLoader().getResource("static/font/template/default.docx");
-            if (resourceUrl != null) {
-                // Lấy đường dẫn tuyệt đối của tài nguyên và giải mã URL
-                String absolutePath = java.net.URLDecoder.decode(resourceUrl.getPath(), java.nio.charset.StandardCharsets.UTF_8);
-                System.out.println("Absolute Path: " + absolutePath);
-                defaultPath = absolutePath.substring(1);
+        // Lấy rsource template path
+        String resourcePath = "";
+        URL resourceUrl = getClass().getClassLoader().getResource("static/font/template/");
+        if (resourceUrl != null) {
+            // Lấy đường dẫn tuyệt đối của tài nguyên và giải mã URL
+            resourcePath = java.net.URLDecoder.decode(resourceUrl.getPath(), java.nio.charset.StandardCharsets.UTF_8);
+            System.out.println("Absolute Path: " + resourcePath);
 
-                // Kiểm tra sự tồn tại của tệp
-                Path path = Paths.get(defaultPath);
-                if (Files.exists(path)) {
-                    System.out.println("File exists at: " + defaultPath);
-                } else {
-                    System.out.println("File not found at: " + defaultPath);
-                }
-            } else {
-                System.out.println("Resource not found");
-            }
         } else {
-            // Call from S3.
+            System.out.println("Resource not found");
+        }
+
+
+        String sourcePath = "";
+        String defaultPath = "";
+
+        if (fileName.equals("default")) {
+            // Trường hợp mặc định không có template được gửi lên
+            defaultPath = resourcePath.substring(1) + "default.docx";
+        } else {
+            // Trương hợp có template được gửi lên.
+            defaultPath = resourcePath.substring(1) + fileName;
+            try {
+                System.out.println("Downloading file: " + usernameId + "/" + fileName);
+                ByteArrayOutputStream outputStream = awsService.downloadFile(usernameId + "/" + fileName);
+
+                // Lưu file vào thư mục tạm
+                Utils.saveFile(outputStream, defaultPath);
+
+            } catch (IOException | AmazonClientException e) {
+                e.printStackTrace();
+                throw new RuntimeException("Error downloading file");
+            }
         }
 
 
@@ -172,7 +199,19 @@ public class DocxReportServiceImpl implements ReportService {
 
             document.write(byteArrayOutputStream);
             document.close();
-            return byteArrayOutputStream.toByteArray();
+
+            Utils.deleteFile(defaultPath);
+
+            if (defaultPath.equals(resourcePath.substring(1) + "default.docx")) {
+
+                // Xóa file tạm
+                return byteArrayOutputStream.toByteArray();
+            } else {
+
+                // Trường hợp này có template được gửi lên => Gửi cho nodejs để Hanlde
+                return sendFileToNodeJsServiceAndReturnFillingFile(byteArrayOutputStream, dataJson, fileName);
+
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -180,6 +219,39 @@ public class DocxReportServiceImpl implements ReportService {
 
         return null;
     }
+
+    private byte[] sendFileToNodeJsServiceAndReturnFillingFile(ByteArrayOutputStream byteArrayOutputStream, String dataJson, String filename) {
+        byte[] fileContent = byteArrayOutputStream.toByteArray();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+
+        // Prepare body
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("file", new org.springframework.core.io.ByteArrayResource(fileContent) {
+            @Override
+            public String getFilename() {
+                return filename;
+            }
+        });
+        body.add("dataJson", dataJson);
+
+        // Create HTTP entity
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+        // Send request to Node.js server
+        ResponseEntity<byte[]> response = restTemplate.exchange(nodejsUrl + "/upload", HttpMethod.POST, requestEntity, byte[].class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            HttpHeaders responseHeaders = new HttpHeaders();
+            responseHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            responseHeaders.setContentDisposition(ContentDisposition.builder("attachment").filename("Báo cáo.docx").build());
+
+            return response.getBody();
+        } else {
+            return null;
+        }
+    }
+
 
     @Override
     public byte[] exportDatabase(RequestDto requestDto) {

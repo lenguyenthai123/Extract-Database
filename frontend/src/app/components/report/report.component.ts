@@ -83,7 +83,7 @@ export class ReportComponent {
       fileNameTemplate = 'default';
     }
     if (this.type === 'doc') {
-      this.reportService.downloadDoc(fileNameTemplate).subscribe((blob) => {
+      this.reportService.downloadDoc('template4.docx').subscribe((blob) => {
         saveAs(blob, `Báo cáo.doc`);
       });
     } else {
