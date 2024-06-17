@@ -1,10 +1,10 @@
 package com.viettel.solution.extraction_service.service.impl;
 
-import com.viettel.solution.extraction_service.dao.TriggerDao;
 import com.viettel.solution.extraction_service.database.DatabaseConnection;
 import com.viettel.solution.extraction_service.dto.TriggerDto;
 import com.viettel.solution.extraction_service.entity.Trigger;
 import com.viettel.solution.extraction_service.repository.TriggerRepository;
+import com.viettel.solution.extraction_service.service.ElasticSearchService;
 import com.viettel.solution.extraction_service.service.TriggerService;
 import org.hibernate.SessionFactory;
 import org.hibernate.exception.GenericJDBCException;
@@ -12,11 +12,8 @@ import org.hibernate.exception.SQLGrammarException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-
-import com.viettel.solution.extraction_service.service.TriggerService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +21,8 @@ import java.util.List;
 @Service
 public class TriggerServiceImpl implements TriggerService {
 
+    @Autowired
+    public ElasticSearchService elasticSearchService;
 
     private TriggerRepository triggerRepositoryMySql;
     private TriggerRepository triggerRepositoryOracle;
@@ -43,7 +42,11 @@ public class TriggerServiceImpl implements TriggerService {
 
             Trigger trigger = new Trigger(triggerDto);
 
-            return new TriggerDto(triggerRepositoryMySql.save(sessionFactory, trigger));
+            TriggerDto result = new TriggerDto(triggerRepositoryMySql.save(sessionFactory, trigger));
+
+            elasticSearchService.updateTable(usernameId, type, triggerDto.getSchemaName(), triggerDto.getTableName());
+            return result;
+
         } catch (GenericJDBCException | SQLGrammarException e) {
             throw e;
         } catch (RuntimeException e) {
@@ -86,7 +89,11 @@ public class TriggerServiceImpl implements TriggerService {
 
             Trigger trigger = new Trigger(triggerDto);
 
-            return new TriggerDto(triggerRepositoryMySql.update(sessionFactory, trigger));
+            TriggerDto result = new TriggerDto(triggerRepositoryMySql.update(sessionFactory, trigger));
+
+            elasticSearchService.updateTable(usernameId, type, triggerDto.getSchemaName(), triggerDto.getTableName());
+            return result;
+
         } catch (GenericJDBCException | SQLGrammarException e) {
             throw e;
         } catch (RuntimeException e) {
@@ -102,7 +109,10 @@ public class TriggerServiceImpl implements TriggerService {
     public boolean delete(String type, String usernameId, String schemaName, String tableName, String triggerName) {
         SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
 
-        return triggerRepositoryMySql.delete(sessionFactory, schemaName, tableName, triggerName);
+        boolean result = triggerRepositoryMySql.delete(sessionFactory, schemaName, tableName, triggerName);
+
+        elasticSearchService.updateTable(usernameId, type, schemaName, tableName);
+        return result;
     }
 
 }

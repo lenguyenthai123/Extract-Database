@@ -12,11 +12,15 @@
           }
         </select>
       </div>
+
       <input
         type="text"
         placeholder="Search tables"
         class="form-control mb-3 design-select"
+        [(ngModel)]="searchText"
+        (ngModelChange)="onSearchTextChange($event)"
       />
+
       <ul class="list-group">
         @for(table of tables; track table.id){
         <li

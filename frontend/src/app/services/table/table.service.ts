@@ -21,4 +21,14 @@ export class TableService {
       },
     });
   }
+
+  search(keyword: string): Observable<Table[]> {
+    return this.http.get<Table[]>(`${this.apiUrl}/table/search`, {
+      params: {
+        type: this.dataService.getData('type'),
+        keyword: keyword,
+        usernameId: '12',
+      },
+    });
+  }
 }

@@ -5,16 +5,16 @@ import com.viettel.solution.extraction_service.database.DatabaseConnection;
 import com.viettel.solution.extraction_service.dto.ColumnDto;
 import com.viettel.solution.extraction_service.dto.RequestDto;
 import com.viettel.solution.extraction_service.entity.Column;
-import com.viettel.solution.extraction_service.entity.Database;
 import com.viettel.solution.extraction_service.repository.ColumnRepository;
+import com.viettel.solution.extraction_service.repository.elasticsearch.TableElasticSearchRepository;
 import com.viettel.solution.extraction_service.service.ColumnService;
+import com.viettel.solution.extraction_service.service.ElasticSearchService;
 import org.hibernate.SessionFactory;
 import org.hibernate.exception.GenericJDBCException;
 import org.hibernate.exception.SQLGrammarException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +23,8 @@ import java.util.List;
 @Service
 public class ColumnServiceImpl implements ColumnService {
 
+    @Autowired
+    public ElasticSearchService elasticSearchService;
 
     private ColumnRepository columnRepositorySQL; // For MariabDB too!!!
 
@@ -31,6 +33,8 @@ public class ColumnServiceImpl implements ColumnService {
         this.columnRepositorySQL = columnRepositorySQL;
     }
 
+    @Autowired
+    private TableElasticSearchRepository tableElasticSearchRepository;
 
     @Override
     public ColumnDto getColumn(RequestDto requestDto) {
@@ -114,8 +118,11 @@ public class ColumnServiceImpl implements ColumnService {
             }
 
             if (type.equalsIgnoreCase("mysql") || type.equalsIgnoreCase("mariadb")) {
-                return new ColumnDto(columnRepositorySQL.addColumn(sessionFactory, column));
+                ColumnDto result  =  new ColumnDto(columnRepositorySQL.addColumn(sessionFactory, column));
 
+                elasticSearchService.updateTable(usernameId,type, column.getSchemaName(), column.getTableName());
+
+                return result;
             } else {
                 return null;
             }
@@ -145,7 +152,9 @@ public class ColumnServiceImpl implements ColumnService {
             }
 
             if (type.equalsIgnoreCase("mysql") || type.equalsIgnoreCase("mariadb")) {
-                return new ColumnDto(columnRepositorySQL.updateColumn(sessionFactory, column));
+                ColumnDto result = new ColumnDto(columnRepositorySQL.updateColumn(sessionFactory, column));
+                elasticSearchService.updateTable(usernameId,type, column.getSchemaName(), column.getTableName());
+                return result;
 
             } else {
                 return null;
@@ -176,8 +185,9 @@ public class ColumnServiceImpl implements ColumnService {
             }
 
             if (type.equalsIgnoreCase("mysql") || type.equalsIgnoreCase("mariadb")) {
-                return columnRepositorySQL.deleteColumn(sessionFactory, column);
-
+                boolean result = columnRepositorySQL.deleteColumn(sessionFactory, column);
+                elasticSearchService.updateTable(usernameId,type, column.getSchemaName(), column.getTableName());
+                return result;
             } else {
                 return false;
             }

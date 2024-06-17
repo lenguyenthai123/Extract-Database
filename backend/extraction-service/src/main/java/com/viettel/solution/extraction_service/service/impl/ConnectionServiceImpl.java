@@ -51,7 +51,7 @@ public class ConnectionServiceImpl implements ConnectionService {
                 List<TableDocument> tableDocuments = new ArrayList<>();
                 for (Table table : allTables) {
                     TableDocument tableDocument = new TableDocument(table);
-                    tableDocument.setUsernameId(usernameId);
+                    tableDocument.setUsernameId(usernameId+type);
                     tableDocuments.add(tableDocument);
                 }
 

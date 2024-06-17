@@ -2,18 +2,16 @@ package com.viettel.solution.extraction_service.service.impl;
 
 import com.viettel.solution.extraction_service.database.DatabaseConnection;
 import com.viettel.solution.extraction_service.dto.ConstraintDto;
-import com.viettel.solution.extraction_service.dto.IndexDto;
 import com.viettel.solution.extraction_service.entity.Constraint;
-import com.viettel.solution.extraction_service.entity.Index;
 import com.viettel.solution.extraction_service.repository.ConstraintRepository;
 import com.viettel.solution.extraction_service.service.ConstraintService;
+import com.viettel.solution.extraction_service.service.ElasticSearchService;
 import org.hibernate.SessionFactory;
 import org.hibernate.exception.GenericJDBCException;
 import org.hibernate.exception.SQLGrammarException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +22,9 @@ import java.util.List;
 @Service
 public class ConstraintServiceImpl implements ConstraintService {
 
+
+    @Autowired
+    public ElasticSearchService elasticSearchService;
 
     private ConstraintRepository constraintRepositoryMySql;
     private ConstraintRepository constraintRepositoryOracle;
@@ -38,8 +39,10 @@ public class ConstraintServiceImpl implements ConstraintService {
     public ConstraintDto save(String type, String usernameId, ConstraintDto constraintDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
-            return new ConstraintDto(constraintRepositoryMySql.save(sessionFactory, new Constraint(constraintDto)));
+            ConstraintDto result =  new ConstraintDto(constraintRepositoryMySql.save(sessionFactory, new Constraint(constraintDto)));
 
+            elasticSearchService.updateTable(usernameId,type, constraintDto.getSchemaName(), constraintDto.getTableName());
+            return result;
         } catch (GenericJDBCException | SQLGrammarException e) {
             throw e;
         } catch (RuntimeException e) {
@@ -83,7 +86,11 @@ public class ConstraintServiceImpl implements ConstraintService {
     public ConstraintDto update(String type, String usernameId, ConstraintDto constraintDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
-            return new ConstraintDto(constraintRepositoryMySql.update(sessionFactory, new Constraint(constraintDto), constraintDto.getOldName()));
+
+            ConstraintDto result = new ConstraintDto(constraintRepositoryMySql.update(sessionFactory, new Constraint(constraintDto), constraintDto.getOldName()));
+            elasticSearchService.updateTable(usernameId,type, constraintDto.getSchemaName(), constraintDto.getTableName());
+            return result;
+
         } catch (GenericJDBCException | SQLGrammarException e) {
             throw e;
         } catch (RuntimeException e) {
@@ -99,7 +106,9 @@ public class ConstraintServiceImpl implements ConstraintService {
     public boolean delete(String type, String usernameId, ConstraintDto constraintDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
-            return constraintRepositoryMySql.delete(sessionFactory, new Constraint(constraintDto));
+            boolean result =  constraintRepositoryMySql.delete(sessionFactory, new Constraint(constraintDto));
+            elasticSearchService.updateTable(usernameId,type, constraintDto.getSchemaName(), constraintDto.getTableName());
+            return result;
         } catch (GenericJDBCException | SQLGrammarException e) {
             throw e;
         } catch (RuntimeException e) {

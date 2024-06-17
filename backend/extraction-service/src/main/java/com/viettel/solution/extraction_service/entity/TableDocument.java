@@ -23,6 +23,9 @@ public class TableDocument {
     @Id
     private String id;
 
+    @Field(type = FieldType.Text)
+    private String type;
+
     @Field(name = "usernameId", type = FieldType.Keyword)
     private String usernameId;
 
@@ -62,7 +65,23 @@ public class TableDocument {
         this.triggers = new ArrayList<>();
         this.id = Utils.generateUUID();
         this.schemaName = table.getSchemaName();
+        this.name = table.getName();
 
+
+        this.columns.addAll(table.getColumns());
+        this.constraints.addAll(table.getConstraints());
+        this.indexs.addAll(table.getIndexs());
+        this.triggers.addAll(table.getTriggers());
+    }
+
+    public void copy(Table table)
+    {
+        this.columns = new ArrayList<>();
+        this.constraints = new ArrayList<>();
+        this.indexs = new ArrayList<>();
+        this.triggers = new ArrayList<>();
+        this.schemaName = table.getSchemaName();
+        this.name = table.getName();
 
         this.columns.addAll(table.getColumns());
         this.constraints.addAll(table.getConstraints());

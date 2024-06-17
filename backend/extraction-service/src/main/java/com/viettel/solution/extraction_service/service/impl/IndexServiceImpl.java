@@ -2,10 +2,9 @@ package com.viettel.solution.extraction_service.service.impl;
 
 import com.viettel.solution.extraction_service.database.DatabaseConnection;
 import com.viettel.solution.extraction_service.dto.IndexDto;
-import com.viettel.solution.extraction_service.dto.TriggerDto;
 import com.viettel.solution.extraction_service.entity.Index;
-import com.viettel.solution.extraction_service.entity.Trigger;
 import com.viettel.solution.extraction_service.repository.IndexRepository;
+import com.viettel.solution.extraction_service.service.ElasticSearchService;
 import com.viettel.solution.extraction_service.service.IndexService;
 import org.hibernate.SessionFactory;
 import org.hibernate.exception.GenericJDBCException;
@@ -13,7 +12,6 @@ import org.hibernate.exception.SQLGrammarException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +21,9 @@ import java.util.List;
 @Service
 public class IndexServiceImpl implements IndexService {
 
+
+    @Autowired
+    public ElasticSearchService elasticSearchService;
 
     private IndexRepository indexRepositoryMySQL;
 
@@ -36,7 +37,9 @@ public class IndexServiceImpl implements IndexService {
     public IndexDto save(String type, String usernameId, IndexDto indexDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
-            return new IndexDto(indexRepositoryMySQL.save(sessionFactory, new Index(indexDto)));
+            IndexDto result = new IndexDto(indexRepositoryMySQL.save(sessionFactory, new Index(indexDto)));
+            elasticSearchService.updateTable(usernameId,type, indexDto.getSchemaName(), indexDto.getTableName());
+            return result;
 
         } catch (GenericJDBCException | SQLGrammarException e) {
             throw e;
@@ -79,7 +82,9 @@ public class IndexServiceImpl implements IndexService {
     public IndexDto update(String type, String usernameId, IndexDto indexDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
-            return new IndexDto(indexRepositoryMySQL.update(sessionFactory, new Index(indexDto), indexDto.getOldName()));
+            IndexDto result =  new IndexDto(indexRepositoryMySQL.update(sessionFactory, new Index(indexDto), indexDto.getOldName()));
+            elasticSearchService.updateTable(usernameId,type, indexDto.getSchemaName(), indexDto.getTableName());
+            return result;
         } catch (GenericJDBCException | SQLGrammarException e) {
             throw e;
         } catch (RuntimeException e) {
@@ -96,7 +101,10 @@ public class IndexServiceImpl implements IndexService {
     public boolean delete(String type, String usernameId, IndexDto indexDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
-            return indexRepositoryMySQL.delete(sessionFactory, new Index(indexDto));
+            boolean result = indexRepositoryMySQL.delete(sessionFactory, new Index(indexDto));
+            elasticSearchService.updateTable(usernameId,type, indexDto.getSchemaName(), indexDto.getTableName());
+            return result;
+
         } catch (GenericJDBCException | SQLGrammarException e) {
             throw e;
         } catch (RuntimeException e) {

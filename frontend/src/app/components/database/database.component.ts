@@ -44,6 +44,26 @@ export class DatabaseComponent {
 
   eventsSubject: Subject<void> = new Subject<void>();
 
+  searchText: string = '';
+
+  onSearchTextChange(event: Event): void {
+    this.tables = [];
+
+    this.tableService.search(this.searchText).subscribe({
+      next: (data) => {
+        this.tables = data;
+        for (let i = 0; i < this.tables.length; i++) {
+          this.tables[i].id = i + 1;
+        }
+        console.log(data);
+      },
+
+      error: (error) => {
+        console.error(error);
+      },
+    });
+  }
+
   emitEventToChild() {
     this.eventsSubject.next();
   }
@@ -117,6 +137,17 @@ export class DatabaseComponent {
   }
 
   onTableSelect(table: Table) {
+    console.log('vo select');
+    console.log(table);
+    if (
+      table.schemaName !== '' &&
+      table.schemaName !== null &&
+      table.schemaName !== undefined
+    ) {
+      this.dataService.saveData('schemaName', table.schemaName);
+      console.log('schemaName: ' + table.schemaName);
+    }
+
     this.chosenTable = table;
     this.dataService.saveData('tableName', this.chosenTable.name);
     this.dataService.saveData('tableDescription', this.tables[0].description);

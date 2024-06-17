@@ -10,8 +10,9 @@ public interface ElasticSearchService {
 
     public List<TableDocument> searchTable(String keyword);
 
+    public void updateTable(String usernameId, String type, String schemaName, String tableName) ;
 
-
+    //public void deleteIndex();
 }
 
 

@@ -2,7 +2,10 @@ package com.viettel.solution.extraction_service.repository.impl.MySql;
 
 import com.viettel.solution.extraction_service.database.DatabaseConnection;
 import com.viettel.solution.extraction_service.entity.*;
-import com.viettel.solution.extraction_service.repository.*;
+import com.viettel.solution.extraction_service.repository.ConstraintRepository;
+import com.viettel.solution.extraction_service.repository.IndexRepository;
+import com.viettel.solution.extraction_service.repository.TableRepository;
+import com.viettel.solution.extraction_service.repository.TriggerRepository;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.NativeQuery;
@@ -11,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -42,7 +44,7 @@ public class TableRepositorySQLImpl implements TableRepository {
             DatabaseMetaData metaData = DatabaseConnection.getDatabaseMetaData(sessionFactory);
             Table tableEntity = new Table();
             tableEntity.setName(tableName);
-
+            tableEntity.setSchemaName(databaseName);
             // Lấy toàn bộ các constraint trong bảng.
             List<Constraint> constraints = constraintRepository.getAllConstraintFromTable(sessionFactory, databaseName, schemaName, tableName);
             if (constraints != null) {
