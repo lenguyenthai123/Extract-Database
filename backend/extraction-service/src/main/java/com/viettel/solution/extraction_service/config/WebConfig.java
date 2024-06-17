@@ -2,9 +2,15 @@ package com.viettel.solution.extraction_service.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+import org.springframework.http.converter.FormHttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.Arrays;
 
 @Configuration
 public class WebConfig {
@@ -21,8 +27,16 @@ public class WebConfig {
             }
         };
     }
+
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplate();
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setMessageConverters(Arrays.asList(
+                new FormHttpMessageConverter(),
+                new StringHttpMessageConverter(),
+                new ByteArrayHttpMessageConverter(),
+                new MappingJackson2HttpMessageConverter()
+        ));
+        return restTemplate;
     }
 }

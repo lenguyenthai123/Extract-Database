@@ -223,23 +223,24 @@ public class DocxReportServiceImpl implements ReportService {
     private byte[] sendFileToNodeJsServiceAndReturnFillingFile(ByteArrayOutputStream byteArrayOutputStream, String dataJson, String filename) {
         byte[] fileContent = byteArrayOutputStream.toByteArray();
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
         // Prepare body
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+
         body.add("file", new org.springframework.core.io.ByteArrayResource(fileContent) {
             @Override
             public String getFilename() {
                 return filename;
             }
         });
-        body.add("dataJson", dataJson);
+        body.add("dataJson", "{\"key1\": \"value1\", \"key2\": \"value2\"}");
 
         // Create HTTP entity
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
         // Send request to Node.js server
-        ResponseEntity<byte[]> response = restTemplate.exchange(nodejsUrl + "/upload", HttpMethod.POST, requestEntity, byte[].class);
+        ResponseEntity<byte[]> response = restTemplate.exchange(nodejsUrl + "/generate-report", HttpMethod.POST, requestEntity, byte[].class);
 
         if (response.getStatusCode() == HttpStatus.OK) {
             HttpHeaders responseHeaders = new HttpHeaders();
