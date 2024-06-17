@@ -103,6 +103,8 @@ aside {
   text-align: center;
   color: rgb(25, 25, 25);
   font-family: intervariable, sans-serif;
+  margin-left: 2px;
+  padding-left: 5px;
 }
 .table-list-item {
   font-weight: 500;
@@ -116,4 +118,11 @@ aside {
 .table-list-item:hover {
   background-color: #ece5e5; /* Thay đổi màu nền khi hover */
   color: #000; /* Thay đổi màu chữ khi hover */
+}
+.modify {
+  padding-left: 5px;
+}
+.chinh {
+  margin-top: 10px;
+  padding-left: 20px;
 }

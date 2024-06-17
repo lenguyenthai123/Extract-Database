@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-2 col-lg-2 modify1">
+          <div class="sidebar modify modify1">
+            <div class="sidebar-section">
+              <h3>PROJECT</h3>
+              <ul>
+                <li routerLink="/home/database" routerLinkActive="active">
+                  <i class="icon change"></i>Database
+                </li>
+                <li
+                  routerLink="/home/report"
+                  routerLinkActive="active"
+                  class="icon change"
+                >
+                  <i class="icon change"></i>Report
+                </li>
+                <li><i class="icon change"></i>SQL Editor</li>
+              </ul>
+            </div>
+
+            <div class="sidebar-section">
+              <h3>BRANCH</h3>
+              <ul>
+                <li><i class="icon"></i>Overview</li>
+                <li class="active"><i class="icon"></i>Tables</li>
+              </ul>
+            </div>
+            <div class="sidebar-section">
+              <h3>RESOURCES</h3>
+              <ul>
+                <li><i class="icon"></i>Feedback</li>
+                <li><i class="icon"></i>Docs</li>
+                <li><i class="icon"></i>Support</li>
+                <li><i class="icon"></i>Changelog</li>
+              </ul>
+            </div>
+            <div class="settings-icon">
+              <i class="icon"></i>
+            </div>
+          </div>
+          <div class="main-content"></div>
+        </div>
+        <div class="col-md-10 col-lg-10 modify2">
+          <router-outlet></router-outlet>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

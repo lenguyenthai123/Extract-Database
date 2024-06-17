@@ -1,6 +1,6 @@
 <div class="container-fluid">
   <div class="row">
-    <aside class="col-md-5 col-lg-2 px-4 py-3 bg-white border-end">
+    <aside class="col-md-5 col-lg-2 modify chinh">
       <div class="mb-3">
         <select
           id="schema-select"
@@ -24,28 +24,28 @@
       <ul class="list-group">
         @for(table of tables; track table.id){
         <li
-          class="list-group-item table-list-item"
+          class="list-group-item table-list-item modify"
           (click)="onTableSelect(table)"
         >
           <span class="icon">
             <img
-              src="assets/icons/table.png"
+              src="../assets/icons/table.png"
               alt="Icon"
               style="width: 24px; height: 24px"
             />
           </span>
           {{ table.name }}
-          <select id="options" name="options">
+          <!-- <select id="options" name="options">
             <option value="option1">Tùy chọn 1</option>
             <option value="option2">Tùy chọn 2</option>
             <option value="option3">Tùy chọn 3</option>
             <option value="option4">Tùy chọn 4</option>
-          </select>
+          </select> -->
         </li>
         }
       </ul>
     </aside>
-    <main class="col-md-7 col-lg-10 px-4 py-3">
+    <main class="col-md-7 col-lg-10 modify">
       @if(isDone) {
       <div
         [ngClass]="{
@@ -77,7 +77,7 @@
 
         <div class="navigate-option">
           <button
-            routerLink="/database/column"
+            routerLink="/home/database/column"
             routerLinkActive="active"
             ariaCurrentWhenActive="page"
             type="button"
@@ -86,7 +86,7 @@
             Cột
           </button>
           <button
-            routerLink="/database/constraint"
+            routerLink="/home/database/constraint"
             routerLinkActive="active"
             type="button"
             class="btn btn-outline-secondary margin-buton"
@@ -94,7 +94,7 @@
             Ràng buộc
           </button>
           <button
-            routerLink="/database/index"
+            routerLink="/home/database/index"
             routerLinkActive="active"
             type="button"
             class="btn btn-outline-secondary margin-buton"
@@ -102,7 +102,7 @@
             Index
           </button>
           <button
-            routerLink="/database/trigger"
+            routerLink="/home/database/trigger"
             routerLinkActive="active"
             type="button"
             class="btn btn-outline-secondary margin-buton"

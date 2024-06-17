@@ -7,6 +7,7 @@ import { ConstraintTableComponent } from './components/constraint-table/constrai
 import { TriggerTableComponent } from './components/trigger-table/trigger-table.component';
 import { IndexTableComponent } from './components/index-table/index-table.component';
 import { ReportComponent } from './components/report/report.component';
+import { HomeComponent } from './components/home/home.component';
 export const routes: Routes = [
   {
     path: 'connection',
@@ -15,34 +16,41 @@ export const routes: Routes = [
   },
 
   {
-    path: 'report',
-    title: 'Report',
-    component: ReportComponent,
-  },
-  {
-    path: 'database',
-    title: 'Database management',
-    component: DatabaseComponent,
+    path: 'home',
+    title: 'Home',
+    component: HomeComponent,
     children: [
       {
-        path: 'column',
-        title: 'Column',
-        component: ColumnTableComponent,
+        path: 'report',
+        title: 'Report',
+        component: ReportComponent,
       },
       {
-        path: 'constraint',
-        title: 'Constraint',
-        component: ConstraintTableComponent,
-      },
-      {
-        path: 'trigger',
-        title: 'Trigger',
-        component: TriggerTableComponent,
-      },
-      {
-        path: 'index',
-        title: 'Index',
-        component: IndexTableComponent,
+        path: 'database',
+        title: 'Database management',
+        component: DatabaseComponent,
+        children: [
+          {
+            path: 'column',
+            title: 'Column',
+            component: ColumnTableComponent,
+          },
+          {
+            path: 'constraint',
+            title: 'Constraint',
+            component: ConstraintTableComponent,
+          },
+          {
+            path: 'trigger',
+            title: 'Trigger',
+            component: TriggerTableComponent,
+          },
+          {
+            path: 'index',
+            title: 'Index',
+            component: IndexTableComponent,
+          },
+        ],
       },
     ],
   },

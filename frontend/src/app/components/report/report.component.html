@@ -15,13 +15,14 @@
     <div class="container">
       <h2>Chọn template</h2>
       <ul class="template-list">
+        @for(template of templates; track templates.indexOf(template)) {
         <li
-          *ngFor="let template of templates"
           (click)="selectTemplate(template)"
           [class.selected]="template === selectedTemplate"
         >
           {{ template }}
         </li>
+        }
       </ul>
 
       <div class="button_list">
@@ -50,7 +51,9 @@
       </div>
 
       <div class="upload-container">
-        <label class="default_button"> Áp dụng Template </label>
+        <label class="default_button" (click)="downloadReport()">
+          Tải báo cáo
+        </label>
       </div>
     </div>
   </body>

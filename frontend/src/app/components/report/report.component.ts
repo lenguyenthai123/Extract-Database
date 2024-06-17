@@ -17,7 +17,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import { DataService } from '../../services/data/data.service';
-
+import { ReportService } from '../../services/report/report.service';
 @Component({
   selector: 'app-report',
   standalone: true,
@@ -44,6 +44,9 @@ export class ReportComponent {
   selectedTemplate: string | null = null;
 
   contentText: string = '';
+  type: string = 'doc';
+
+  constructor(private reportService: ReportService) {}
 
   selectTemplate(template: string) {
     this.selectedTemplate = template;
@@ -58,16 +61,32 @@ export class ReportComponent {
       // Split the file name to get the template name without extension
       const fileName = file.name.split('.')[0];
       this.templates.push(fileName);
+
+      const formData = new FormData();
+      formData.append('file', file, file.name);
+      formData.append('usernameId', '12');
+
+      this.reportService.addTemplate(formData).subscribe({
+        next: (data) => {
+          console.log(data);
+        },
+        error: (error) => {
+          console.log(error);
+        },
+      });
     }
   }
 
-  downloadTemplate() {
-    if (this.selectedTemplate) {
-      // Mock download logic
-      const blob = new Blob(['Template content here...'], {
-        type: 'application/msword',
+  downloadReport() {
+    let fileNameTemplate = this.selectedTemplate;
+    if (!fileNameTemplate) {
+      fileNameTemplate = 'default';
+    }
+    if (this.type === 'doc') {
+      this.reportService.downloadDoc(fileNameTemplate).subscribe((blob) => {
+        saveAs(blob, `Báo cáo.doc`);
       });
-      saveAs(blob, `${this.selectedTemplate}.doc`);
+    } else {
     }
   }
 }
