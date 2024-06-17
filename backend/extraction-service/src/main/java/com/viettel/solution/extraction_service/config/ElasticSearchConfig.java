@@ -44,7 +44,7 @@ public class ElasticSearchConfig {
                 "      \"analyzer\": {\n" +
                 "        \"custom_analyzer\": {\n" +
                 "          \"tokenizer\": \"standard\",\n" +
-                "          \"filter\": [\"lowercase\", \"asciifolding\"]\n" +
+                "          \"filter\": [\"lowercase\"]\n" +
                 "        }\n" +
                 "      }\n" +
                 "    }\n" +

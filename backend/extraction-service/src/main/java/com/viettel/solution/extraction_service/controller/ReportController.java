@@ -51,17 +51,29 @@ public class ReportController {
     }
 
 
-    @GetMapping("/export-docx/{usernameId}")
+    @GetMapping("/export/{usernameId}")
     public ResponseEntity<byte[]> exportDatabase(
             @PathVariable String usernameId,
             @ModelAttribute DocumentTemplate documentTemplate) {
         // Tạo phản hồi HTTP
-        byte[] docxfile = reportServiceDoc.exportDatabase(documentTemplate);
+        byte[] fileBuffer = reportServiceDoc.exportDatabase(documentTemplate);
+
+        String extension = documentTemplate.getExtension();
+
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Báo cáo.docx");
 
-        return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM).body(docxfile);
+        if (extension.equals("docx")) {
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Báo cáo.docx");
+            return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM).body(fileBuffer);
+        }
+        if (extension.equals("pdf")) {
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Báo cáo.pdf");
+            return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_PDF).body(fileBuffer);
+        }
+
+        throw new IllegalArgumentException("Invalid extension");
+
     }
 
     @GetMapping("/export-pdf")

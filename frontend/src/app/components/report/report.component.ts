@@ -18,6 +18,7 @@ import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import { DataService } from '../../services/data/data.service';
 import { ReportService } from '../../services/report/report.service';
+
 @Component({
   selector: 'app-report',
   standalone: true,
@@ -43,10 +44,13 @@ export class ReportComponent {
   ];
   selectedTemplate: string | null = null;
 
-  contentText: string = '';
+  dataJson: string = '';
   type: string = 'doc';
 
-  constructor(private reportService: ReportService) {}
+  constructor(
+    private reportService: ReportService,
+    private dataService: DataService
+  ) {}
 
   selectTemplate(template: string) {
     this.selectedTemplate = template;
@@ -78,14 +82,21 @@ export class ReportComponent {
   }
 
   downloadReport() {
+    console.log(this.dataJson);
+    let json = this.dataService.parseStringToJson(this.dataJson);
+
+    console.log(json);
+
     let fileNameTemplate = this.selectedTemplate;
     if (!fileNameTemplate) {
       fileNameTemplate = 'default';
     }
     if (this.type === 'doc') {
-      this.reportService.downloadDoc('template4.docx').subscribe((blob) => {
-        saveAs(blob, `Báo cáo.doc`);
-      });
+      this.reportService
+        .downloadDoc('my-self.docx', json, 'pdf')
+        .subscribe((blob) => {
+          saveAs(blob, `Báo cáo.docx`);
+        });
     } else {
     }
   }

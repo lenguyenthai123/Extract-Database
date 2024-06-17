@@ -16,10 +16,12 @@ const upload = multer({ storage: storage });
 // POST route to generate and send a .docx file
 app.post('/generate-report', upload.single('file'), (req, res) => {
   var data = req.body.dataJson;
+  var type = req.body.type;
   var file = req.file;
 
-  console.log(req.body);
   console.log(file);
+
+  console.log("Data: ", data);
   console.log("Data: ", JSON.parse(data));
 
   // Lưu file vào thư mục hiện tại
@@ -27,7 +29,7 @@ app.post('/generate-report', upload.single('file'), (req, res) => {
 
 
   var options = {
-    convertTo: 'pdf', //output
+    convertTo: type, //output
   };
 
 
@@ -36,20 +38,8 @@ app.post('/generate-report', upload.single('file'), (req, res) => {
       return console.log(err);
     }
 
-    // const dataConverted = Buffer.from(result, 'binary');
 
-    // carbone.convert(dataConverted, options, function (err, resultConverted) {
-
-    //   if (err) {
-    //     return console.log(err);
-      
-    //   }
-    // // Lưu kết quả vào file tạm thời
-    //   const resultPath = `./result-test.pdf`;
-    //   fs.writeFileSync(resultPath, resultConverted);
-    // });
-
-    const resultPath = `./result-test.pdf`;
+    const resultPath = `./Report.${type}`;
     fs.writeFileSync(resultPath, result);
 
     // Gửi file .docx về client
@@ -66,9 +56,6 @@ app.post('/generate-report', upload.single('file'), (req, res) => {
       //   if (err) console.error('Error deleting result file:', err);
       // });
     });
-
-
-
 
   });
 });

@@ -112,8 +112,8 @@ public class TableRepositorySQLImpl implements TableRepository {
 
             List<Table> tables = nativeQuery.getResultList();
             List<Table> result = new ArrayList<>();
-            for(Table table: tables){
-                result.add(getTable(sessionFactory,databaseName,schemaName,table.getName()));
+            for (Table table : tables) {
+                result.add(getTable(sessionFactory, databaseName, schemaName, table.getName()));
             }
 
             return result;
@@ -124,8 +124,7 @@ public class TableRepositorySQLImpl implements TableRepository {
     }
 
     @Override
-    public List<Table> getAllTableFromDatabase(SessionFactory sessionFactory)
-    {
+    public List<Table> getAllTableFromDatabase(SessionFactory sessionFactory) {
         try {
             DatabaseMetaData metaData = DatabaseConnection.getDatabaseMetaData(sessionFactory);
 
@@ -142,12 +141,9 @@ public class TableRepositorySQLImpl implements TableRepository {
                 return null;
             }
 
-            for(String schemaName: schemas) {
-                if(Objects.equals(schemaName, "information_schema") || Objects.equals(schemaName, "mydb")
-                        || Objects.equals(schemaName, "mysql") || Objects.equals(schemaName, "performance_schema")
-                        || Objects.equals(schemaName, "sys")) continue;
+            for (String schemaName : schemas) {
 
-                tables.addAll(getAllTable(sessionFactory,schemaName,null));
+                tables.addAll(getAllTable(sessionFactory, schemaName, null));
             }
             return tables;
 
@@ -156,7 +152,6 @@ public class TableRepositorySQLImpl implements TableRepository {
         }
 
     }
-
 
 
     @Override

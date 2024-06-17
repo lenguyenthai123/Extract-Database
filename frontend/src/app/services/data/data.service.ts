@@ -152,4 +152,26 @@ export class DataService {
   get events$() {
     return this._subject.asObservable();
   }
+
+  parseStringToJson(input: string): any {
+    try {
+      // Giả sử input là một chuỗi JSON hợp lệ
+      const result = JSON.parse(input);
+
+      // Kiểm tra nếu kết quả là một đối tượng và có các thuộc tính để đệ quy
+      if (result && typeof result === 'object') {
+        for (const key in result) {
+          if (result.hasOwnProperty(key) && typeof result[key] === 'string') {
+            result[key] = this.parseStringToJson(result[key]);
+          }
+        }
+      }
+
+      return result;
+    } catch (error) {
+      // Xử lý lỗi hoặc trả về chuỗi ban đầu nếu không phải là JSON
+      console.error('Error parsing JSON: ', error);
+      return input;
+    }
+  }
 }

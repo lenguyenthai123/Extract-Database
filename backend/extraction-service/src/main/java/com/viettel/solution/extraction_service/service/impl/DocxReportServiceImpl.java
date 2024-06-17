@@ -55,6 +55,8 @@ public class DocxReportServiceImpl implements ReportService {
         String dataJson = documentTemplateDetail.getDataJson();
         String extension = documentTemplateDetail.getExtension();
 
+        dataJson = modifyJsonData(dataJson);
+
         SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
         if (sessionFactory == null) {
             return null;
@@ -140,6 +142,10 @@ public class DocxReportServiceImpl implements ReportService {
             for (int i = 0; i < database.getSchemas().size(); i++) {
                 Schema schema = database.getSchemas().get(i);
 
+                // Không hiển thị các schema mặc định
+                if (schema.getName().equals("information_schema") || schema.getName().equals("sys") || schema.getName().equals("performance_schema"))
+                    continue;
+
                 // Divide heading for schema
                 String headingShema = (i + 1) + "";
 
@@ -210,7 +216,7 @@ public class DocxReportServiceImpl implements ReportService {
             } else {
 
                 // Trường hợp này có template được gửi lên => Gửi cho nodejs để Hanlde
-                return sendFileToNodeJsServiceAndReturnFillingFile(byteArrayOutputStream, dataJson, fileName);
+                return sendFileToNodeJsServiceAndReturnFillingFile(byteArrayOutputStream, dataJson, fileName, extension);
 
             }
 
@@ -221,7 +227,12 @@ public class DocxReportServiceImpl implements ReportService {
         return null;
     }
 
-    private byte[] sendFileToNodeJsServiceAndReturnFillingFile(ByteArrayOutputStream byteArrayOutputStream, String dataJson, String filename) {
+    private String modifyJsonData(String dataJson) {
+        dataJson.replace("\"", "\\\""); // Thay thế ký tự " thành \"
+        return dataJson;
+    }
+
+    private byte[] sendFileToNodeJsServiceAndReturnFillingFile(ByteArrayOutputStream byteArrayOutputStream, String dataJson, String filename, String extension) {
         byte[] fileContent = byteArrayOutputStream.toByteArray();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -235,7 +246,8 @@ public class DocxReportServiceImpl implements ReportService {
                 return filename;
             }
         });
-        body.add("dataJson", "{\"key1\": \"value1\", \"key2\": \"value2\"}");
+        body.add("dataJson", dataJson);
+        body.add("type", extension);
 
         // Create HTTP entity
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);

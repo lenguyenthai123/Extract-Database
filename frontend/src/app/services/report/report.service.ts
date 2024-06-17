@@ -49,14 +49,20 @@ export class ReportService {
     });
   }
 
-  downloadDoc(fileName: string): Observable<Blob> {
+  downloadDoc(
+    fileName: string,
+    dataJson: string,
+    extension: string
+  ): Observable<Blob> {
     let params = this.createParams();
     params = params.set('type', this.dataService.getData('type'));
     params = params.set('usernameId', '12');
     params = params.set('fileName', fileName);
+    params = params.set('dataJson', JSON.stringify(dataJson));
+    params = params.set('extension', extension);
     console.log(fileName);
 
-    return this.http.get(`${this.apiUrl}/report/export-docx/12`, {
+    return this.http.get(`${this.apiUrl}/report/export/12`, {
       params,
       responseType: 'blob',
     });
