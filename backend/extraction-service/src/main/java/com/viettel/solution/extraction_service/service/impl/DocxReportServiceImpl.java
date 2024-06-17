@@ -53,6 +53,7 @@ public class DocxReportServiceImpl implements ReportService {
         String type = documentTemplateDetail.getType();
         String fileName = documentTemplateDetail.getFileName();
         String dataJson = documentTemplateDetail.getDataJson();
+        String extension = documentTemplateDetail.getExtension();
 
         SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
         if (sessionFactory == null) {

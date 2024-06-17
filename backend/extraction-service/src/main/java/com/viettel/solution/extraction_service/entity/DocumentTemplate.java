@@ -16,6 +16,7 @@ public class DocumentTemplate {
     private String usernameId;
     private String type;
     private String fileName; // Cho template
+    private String extension;
     private String dataJson;
     private String headerRight;
     private String headerLeft;

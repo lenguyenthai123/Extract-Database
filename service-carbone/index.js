@@ -20,15 +20,57 @@ app.post('/generate-report', upload.single('file'), (req, res) => {
 
   console.log(req.body);
   console.log(file);
+  console.log("Data: ", JSON.parse(data));
 
-  carbone.render("./template.docx", data, function (err, result) {
+  // Lưu file vào thư mục hiện tại
+  fs.writeFileSync(file.originalname, file.buffer);
+
+
+  var options = {
+    convertTo: 'pdf', //output
+  };
+
+
+  carbone.render(`./${file.originalname}`, JSON.parse(data),options, function (err, result) {
     if (err) {
       return console.log(err);
     }
-    // write the result
-    fs.writeFileSync("result.docx", result);
+
+    // const dataConverted = Buffer.from(result, 'binary');
+
+    // carbone.convert(dataConverted, options, function (err, resultConverted) {
+
+    //   if (err) {
+    //     return console.log(err);
+      
+    //   }
+    // // Lưu kết quả vào file tạm thời
+    //   const resultPath = `./result-test.pdf`;
+    //   fs.writeFileSync(resultPath, resultConverted);
+    // });
+
+    const resultPath = `./result-test.pdf`;
+    fs.writeFileSync(resultPath, result);
+
+    // Gửi file .docx về client
+    res.download(resultPath, resultPath, (err) => {
+      if (err) {
+        console.error('Error sending file:', err);
+      }
+
+      // Xóa các file tạm thời sau khi gửi
+      fs.unlink(file.originalname, err => {
+        if (err) console.error('Error deleting temp file:', err);
+      });
+      // fs.unlink(resultPath, err => {
+      //   if (err) console.error('Error deleting result file:', err);
+      // });
+    });
+
+
+
+
   });
-  res.send("Report generated successfully");
 });
 
 // Start the server
