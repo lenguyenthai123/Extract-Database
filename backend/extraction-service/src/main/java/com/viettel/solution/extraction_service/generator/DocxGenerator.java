@@ -62,7 +62,7 @@ public class DocxGenerator {
         XWPFRun titleRun = title.createRun();
         titleRun.setText(titleText);
         titleRun.setFontFamily("Times New Roman"); // Đặt kiểu chữ là Times New Roman
-        titleRun.setBold(bold);
+        titleRun.setBold(true);
         titleRun.setColor("000000"); // Đặt màu chữ là đen
         titleRun.setFontSize(14);
     }

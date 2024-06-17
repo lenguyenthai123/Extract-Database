@@ -15,6 +15,7 @@ public class DocumentTemplate {
 
     private String usernameId;
     private String type;
+    private String fileName; // Cho template
     private String headerRight;
     private String headerLeft;
     private String footerLeft;
@@ -22,4 +23,5 @@ public class DocumentTemplate {
     private String color;
     private String font;
     private boolean isDefault;
+
 }
