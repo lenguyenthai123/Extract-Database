@@ -46,7 +46,10 @@ public class IndexDto {
     public String getTableId() {
         return usernameId + type + schemaName  + tableName;
     }
-
+    @JsonIgnore
+    public String getDatabaseId() {
+        return usernameId + type;
+    }
     // Nếu bạn muốn serialize giá trị tableId khi chuyển đổi đối tượng thành JSON
     @JsonProperty("tableId")
     public String getSerializedTableId() {

@@ -92,7 +92,13 @@ public class ReportController {
             return ResponseEntity.badRequest().body("User not found");
         }
 
-        ByteArrayOutputStream template = awsService.downloadFile(id + "/" + templateName);
+        ByteArrayOutputStream template = null;
+        if (templateName.equals("default.docx")) {
+            template = awsService.downloadFile(templateName);
+        } else {
+            template = awsService.downloadFile(id + "/" + templateName);
+        }
+
 
         if (template == null) {
             return ResponseEntity.badRequest().body(new MessageDto("Template not found"));

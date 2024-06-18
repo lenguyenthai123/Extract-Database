@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -35,7 +36,10 @@ public class TriggerServiceImpl implements TriggerService {
     }
 
     @Override
-    @CacheEvict(value = "trigger", key = "#triggerDto.getTableId()")
+    @Caching(evict = {
+            @CacheEvict(value = "trigger", key = "#triggerDto.getTableId()"),
+            @CacheEvict(value = "database", key = "#triggerDto.getDatabaseId()")
+    })
     public TriggerDto save(String type, String usernameId, TriggerDto triggerDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
@@ -82,7 +86,10 @@ public class TriggerServiceImpl implements TriggerService {
     }
 
     @Override
-    @CacheEvict(value = "trigger", key = "#triggerDto.getTableId()")
+    @Caching(evict = {
+            @CacheEvict(value = "trigger", key = "#triggerDto.getTableId()"),
+            @CacheEvict(value = "database", key = "#triggerDto.getDatabaseId()")
+    })
     public TriggerDto update(String type, String usernameId, TriggerDto triggerDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
@@ -105,7 +112,10 @@ public class TriggerServiceImpl implements TriggerService {
     }
 
     @Override
-    @CacheEvict(value = "trigger", key = "#usernameId + #type + #schemaName + #tableName")
+    @Caching(evict = {
+            @CacheEvict(value = "trigger", key = "#usernameId + #type + #schemaName + #tableName"),
+            @CacheEvict(value = "database", key = "#usernameId + #type")
+    })
     public boolean delete(String type, String usernameId, String schemaName, String tableName, String triggerName) {
         SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
 

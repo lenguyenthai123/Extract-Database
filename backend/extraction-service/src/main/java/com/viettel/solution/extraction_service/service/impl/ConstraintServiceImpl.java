@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -35,13 +36,16 @@ public class ConstraintServiceImpl implements ConstraintService {
     }
 
     @Override
-    @CacheEvict(value = "constraint", key = "#constraintDto.getTableId()")
+    @Caching(evict = {
+            @CacheEvict(value = "constraint", key = "#constraintDto.getTableId()"),
+            @CacheEvict(value = "database", key = "#constraintDto.getDatabaseId()")
+    })
     public ConstraintDto save(String type, String usernameId, ConstraintDto constraintDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
-            ConstraintDto result =  new ConstraintDto(constraintRepositoryMySql.save(sessionFactory, new Constraint(constraintDto)));
+            ConstraintDto result = new ConstraintDto(constraintRepositoryMySql.save(sessionFactory, new Constraint(constraintDto)));
 
-            elasticSearchService.updateTable(usernameId,type, constraintDto.getSchemaName(), constraintDto.getTableName());
+            elasticSearchService.updateTable(usernameId, type, constraintDto.getSchemaName(), constraintDto.getTableName());
             return result;
         } catch (GenericJDBCException | SQLGrammarException e) {
             throw e;
@@ -56,6 +60,7 @@ public class ConstraintServiceImpl implements ConstraintService {
 
     @Override
     @Cacheable(value = "constraint", key = "#usernameId + #type + #schemaName + #tableName")
+
     public List<ConstraintDto> getListFromTable(String type, String usernameId, String schemaName, String tableName) {
         try {
 
@@ -82,13 +87,16 @@ public class ConstraintServiceImpl implements ConstraintService {
     }
 
     @Override
-    @CacheEvict(value = "constraint", key = "#constraintDto.getTableId()")
+    @Caching(evict = {
+            @CacheEvict(value = "constraint", key = "#constraintDto.getTableId()"),
+            @CacheEvict(value = "database", key = "#constraintDto.getDatabaseId()")
+    })
     public ConstraintDto update(String type, String usernameId, ConstraintDto constraintDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
 
             ConstraintDto result = new ConstraintDto(constraintRepositoryMySql.update(sessionFactory, new Constraint(constraintDto), constraintDto.getOldName()));
-            elasticSearchService.updateTable(usernameId,type, constraintDto.getSchemaName(), constraintDto.getTableName());
+            elasticSearchService.updateTable(usernameId, type, constraintDto.getSchemaName(), constraintDto.getTableName());
             return result;
 
         } catch (GenericJDBCException | SQLGrammarException e) {
@@ -102,12 +110,15 @@ public class ConstraintServiceImpl implements ConstraintService {
     }
 
     @Override
-    @CacheEvict(value = "constraint", key = "#constraintDto.getTableId()")
+    @Caching(evict = {
+            @CacheEvict(value = "constraint", key = "#constraintDto.getTableId()"),
+            @CacheEvict(value = "database", key = "#constraintDto.getDatabaseId()")
+    })
     public boolean delete(String type, String usernameId, ConstraintDto constraintDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
-            boolean result =  constraintRepositoryMySql.delete(sessionFactory, new Constraint(constraintDto));
-            elasticSearchService.updateTable(usernameId,type, constraintDto.getSchemaName(), constraintDto.getTableName());
+            boolean result = constraintRepositoryMySql.delete(sessionFactory, new Constraint(constraintDto));
+            elasticSearchService.updateTable(usernameId, type, constraintDto.getSchemaName(), constraintDto.getTableName());
             return result;
         } catch (GenericJDBCException | SQLGrammarException e) {
             throw e;

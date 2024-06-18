@@ -3,19 +3,14 @@ package com.viettel.solution.extraction_service.service.impl;
 import com.viettel.solution.extraction_service.database.DatabaseConnection;
 import com.viettel.solution.extraction_service.dto.RequestDto;
 import com.viettel.solution.extraction_service.entity.Database;
-import com.viettel.solution.extraction_service.entity.Schema;
 import com.viettel.solution.extraction_service.repository.DatabaseRepository;
 import com.viettel.solution.extraction_service.repository.SchemaRepository;
 import com.viettel.solution.extraction_service.service.DatabaseService;
-
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-
-import javax.xml.crypto.Data;
-import java.sql.Connection;
-import java.util.List;
 
 @Service
 public class DatabaseServiceImpl implements DatabaseService {
@@ -36,6 +31,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
 
     @Override
+    @Cacheable(value = "database", key = "#requestDto.getDatabaseId()")
     public Database getDatabase(RequestDto requestDto) {
         try {
 

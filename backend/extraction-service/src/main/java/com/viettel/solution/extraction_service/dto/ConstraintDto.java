@@ -6,7 +6,6 @@ import com.viettel.solution.extraction_service.entity.Constraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -54,6 +53,11 @@ public class ConstraintDto {
     @JsonIgnore
     public String getTableId() {
         return usernameId + type + schemaName + tableName;
+    }
+
+    @JsonIgnore
+    public String getDatabaseId() {
+        return usernameId + type;
     }
 
     // Nếu bạn muốn serialize giá trị tableId khi chuyển đổi đối tượng thành JSON

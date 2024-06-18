@@ -30,7 +30,6 @@ public class RedisConfig {
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig() //
-                .prefixCacheNameWith(this.getClass().getPackageName() + ".") // Thêm tiền tố cho tên cache
                 .entryTtl(Duration.ofHours(2)) // Thời gian sống của cache
                 .disableCachingNullValues() // Không cache giá trị null
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())) // Serialize key

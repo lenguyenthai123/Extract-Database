@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -105,7 +106,10 @@ public class ColumnServiceImpl implements ColumnService {
 
 
     @Override
-    @CacheEvict(value = "column", key = "#column.getTableId()")
+    @Caching(evict = {
+            @CacheEvict(value = "column", key = "#column.getTableId()"),
+            @CacheEvict(value = "database", key = "#column.getDatabaseId()")
+    })
     public ColumnDto addColumn(ColumnDto column) {
         try {
 
@@ -118,9 +122,9 @@ public class ColumnServiceImpl implements ColumnService {
             }
 
             if (type.equalsIgnoreCase("mysql") || type.equalsIgnoreCase("mariadb")) {
-                ColumnDto result  =  new ColumnDto(columnRepositorySQL.addColumn(sessionFactory, column));
+                ColumnDto result = new ColumnDto(columnRepositorySQL.addColumn(sessionFactory, column));
 
-                elasticSearchService.updateTable(usernameId,type, column.getSchemaName(), column.getTableName());
+                elasticSearchService.updateTable(usernameId, type, column.getSchemaName(), column.getTableName());
 
                 return result;
             } else {
@@ -139,7 +143,10 @@ public class ColumnServiceImpl implements ColumnService {
 
 
     @Override
-    @CacheEvict(value = "column", key = "#column.getTableId()")
+    @Caching(evict = {
+            @CacheEvict(value = "column", key = "#column.getTableId()"),
+            @CacheEvict(value = "database", key = "#column.getDatabaseId()")
+    })
     public ColumnDto updateColumn(ColumnDto column) {
         try {
 
@@ -153,7 +160,7 @@ public class ColumnServiceImpl implements ColumnService {
 
             if (type.equalsIgnoreCase("mysql") || type.equalsIgnoreCase("mariadb")) {
                 ColumnDto result = new ColumnDto(columnRepositorySQL.updateColumn(sessionFactory, column));
-                elasticSearchService.updateTable(usernameId,type, column.getSchemaName(), column.getTableName());
+                elasticSearchService.updateTable(usernameId, type, column.getSchemaName(), column.getTableName());
                 return result;
 
             } else {
@@ -172,7 +179,10 @@ public class ColumnServiceImpl implements ColumnService {
     }
 
     @Override
-    @CacheEvict(value = "column", key = "#column.getTableId()")
+    @Caching(evict = {
+            @CacheEvict(value = "column", key = "#column.getTableId()"),
+            @CacheEvict(value = "database", key = "#column.getDatabaseId()")
+    })
     public boolean deleteColumn(ColumnDto column) {
         try {
 
@@ -186,7 +196,7 @@ public class ColumnServiceImpl implements ColumnService {
 
             if (type.equalsIgnoreCase("mysql") || type.equalsIgnoreCase("mariadb")) {
                 boolean result = columnRepositorySQL.deleteColumn(sessionFactory, column);
-                elasticSearchService.updateTable(usernameId,type, column.getSchemaName(), column.getTableName());
+                elasticSearchService.updateTable(usernameId, type, column.getSchemaName(), column.getTableName());
                 return result;
             } else {
                 return false;

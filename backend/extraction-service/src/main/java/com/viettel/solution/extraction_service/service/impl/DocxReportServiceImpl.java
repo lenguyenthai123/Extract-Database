@@ -55,6 +55,10 @@ public class DocxReportServiceImpl implements ReportService {
         String dataJson = documentTemplateDetail.getDataJson();
         String extension = documentTemplateDetail.getExtension();
 
+        if (fileName.equals("default.docx")) {
+            fileName = "default";
+        }
+
         dataJson = modifyJsonData(dataJson);
 
         SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
@@ -207,7 +211,6 @@ public class DocxReportServiceImpl implements ReportService {
             document.write(byteArrayOutputStream);
             document.close();
 
-            Utils.deleteFile(defaultPath);
 
             if (defaultPath.equals(resourcePath.substring(1) + "default.docx")) {
 
@@ -215,6 +218,7 @@ public class DocxReportServiceImpl implements ReportService {
                 return byteArrayOutputStream.toByteArray();
             } else {
 
+                Utils.deleteFile(defaultPath);
                 // Trường hợp này có template được gửi lên => Gửi cho nodejs để Hanlde
                 return sendFileToNodeJsServiceAndReturnFillingFile(byteArrayOutputStream, dataJson, fileName, extension);
 

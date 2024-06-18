@@ -39,7 +39,7 @@ import { Toast } from 'bootstrap';
 })
 export class ReportComponent {
   templates: string[] = [];
-  selectedTemplate: string = 'default';
+  selectedTemplate: string = 'default.docx';
   docHtml: string = '';
 
   isLoading: boolean = true;
@@ -67,7 +67,7 @@ export class ReportComponent {
     this.reportService.getListTemplate().subscribe({
       next: (data) => {
         this.templates = data;
-        this.templates.push('default');
+        this.templates.push('default.docx');
         console.log(data);
         this.isLoading = false;
       },
@@ -87,7 +87,7 @@ export class ReportComponent {
   selectTemplate(template: string) {
     this.selectedTemplate = template;
 
-    if (template === 'default') {
+    if (template === 'default.docx') {
       this.docHtml = '';
       return;
     }

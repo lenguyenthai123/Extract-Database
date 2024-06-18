@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -33,12 +34,15 @@ public class IndexServiceImpl implements IndexService {
     }
 
     @Override
-    @CacheEvict(value = "index", key = "#indexDto.getTableId()")
+    @Caching(evict = {
+            @CacheEvict(value = "index", key = "#indexDto.getTableId()"),
+            @CacheEvict(value = "database", key = "#column.getDatabaseId()")
+    })
     public IndexDto save(String type, String usernameId, IndexDto indexDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
             IndexDto result = new IndexDto(indexRepositoryMySQL.save(sessionFactory, new Index(indexDto)));
-            elasticSearchService.updateTable(usernameId,type, indexDto.getSchemaName(), indexDto.getTableName());
+            elasticSearchService.updateTable(usernameId, type, indexDto.getSchemaName(), indexDto.getTableName());
             return result;
 
         } catch (GenericJDBCException | SQLGrammarException e) {
@@ -78,12 +82,15 @@ public class IndexServiceImpl implements IndexService {
     }
 
     @Override
-    @CacheEvict(value = "index", key = "#indexDto.getTableId()")
+    @Caching(evict = {
+            @CacheEvict(value = "index", key = "#indexDto.getTableId()"),
+            @CacheEvict(value = "database", key = "#column.getDatabaseId()")
+    })
     public IndexDto update(String type, String usernameId, IndexDto indexDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
-            IndexDto result =  new IndexDto(indexRepositoryMySQL.update(sessionFactory, new Index(indexDto), indexDto.getOldName()));
-            elasticSearchService.updateTable(usernameId,type, indexDto.getSchemaName(), indexDto.getTableName());
+            IndexDto result = new IndexDto(indexRepositoryMySQL.update(sessionFactory, new Index(indexDto), indexDto.getOldName()));
+            elasticSearchService.updateTable(usernameId, type, indexDto.getSchemaName(), indexDto.getTableName());
             return result;
         } catch (GenericJDBCException | SQLGrammarException e) {
             throw e;
@@ -97,12 +104,15 @@ public class IndexServiceImpl implements IndexService {
 
 
     @Override
-    @CacheEvict(value = "index", key = "#indexDto.getTableId()")
+    @Caching(evict = {
+            @CacheEvict(value = "index", key = "#indexDto.getTableId()"),
+            @CacheEvict(value = "database", key = "#column.getDatabaseId()")
+    })
     public boolean delete(String type, String usernameId, IndexDto indexDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
             boolean result = indexRepositoryMySQL.delete(sessionFactory, new Index(indexDto));
-            elasticSearchService.updateTable(usernameId,type, indexDto.getSchemaName(), indexDto.getTableName());
+            elasticSearchService.updateTable(usernameId, type, indexDto.getSchemaName(), indexDto.getTableName());
             return result;
 
         } catch (GenericJDBCException | SQLGrammarException e) {

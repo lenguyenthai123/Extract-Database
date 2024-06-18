@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.viettel.solution.extraction_service.entity.Column;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -86,6 +85,11 @@ public class ColumnDto {
     @JsonIgnore
     public String getTableId() {
         return usernameId + type + schemaName + tableName;
+    }
+
+    @JsonIgnore
+    public String getDatabaseId() {
+        return usernameId + type;
     }
 
     // Nếu bạn muốn serialize giá trị tableId khi chuyển đổi đối tượng thành JSON
