@@ -34,11 +34,12 @@ export class ReportService {
       .set('usernameId', this.dataService.getData('usernameId'));
   }
 
-  getList(tableName: string): Observable<Index[]> {
+  getListTemplate(): Observable<string[]> {
     let params = this.createParams();
-    return this.http.get<Index[]>(`${this.apiUrl}/index/list-from-table`, {
-      params: params,
-    });
+    const usernameId = this.dataService.getData('usernameId');
+    return this.http.get<string[]>(
+      `${this.apiUrl}/report/list-template/${usernameId}`
+    );
   }
 
   addTemplate(formData: FormData) {
@@ -47,6 +48,20 @@ export class ReportService {
     return this.http.post(`${this.apiUrl}/report/upload`, formData, {
       observe: 'response',
     });
+  }
+
+  downloadTemplate(fileName: string): Observable<Blob> {
+    let params = this.createParams();
+    params = params.set('type', this.dataService.getData('type'));
+    params = params.set('usernameId', this.dataService.getData('usernameId'));
+    const usernameId = this.dataService.getData('usernameId');
+
+    return this.http.get(
+      `${this.apiUrl}/report/download-template/${usernameId}/${fileName}`,
+      {
+        responseType: 'blob',
+      }
+    );
   }
 
   downloadDoc(
@@ -61,8 +76,9 @@ export class ReportService {
     params = params.set('dataJson', JSON.stringify(dataJson));
     params = params.set('extension', extension);
     console.log(fileName);
+    const usernameId = this.dataService.getData('usernameId');
 
-    return this.http.get(`${this.apiUrl}/report/export/12`, {
+    return this.http.get(`${this.apiUrl}/report/export/${usernameId}`, {
       params,
       responseType: 'blob',
     });
@@ -72,10 +88,14 @@ export class ReportService {
     let params = this.createParams();
     params = params.set('type', this.dataService.getData('type'));
     params = params.set('usernameId', this.dataService.getData('usernameId'));
+    const usernameId = this.dataService.getData('usernameId');
 
-    return this.http.get(`${this.apiUrl}/report/export-docx/12/${fileName}`, {
-      params,
-      responseType: 'blob',
-    });
+    return this.http.get(
+      `${this.apiUrl}/report/export-docx/${usernameId}/${fileName}`,
+      {
+        params,
+        responseType: 'blob',
+      }
+    );
   }
 }

@@ -18,6 +18,7 @@ import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import { DataService } from '../../services/data/data.service';
 import { ReportService } from '../../services/report/report.service';
+import * as mammoth from 'mammoth';
 
 @Component({
   selector: 'app-report',
@@ -35,14 +36,9 @@ import { ReportService } from '../../services/report/report.service';
   styleUrl: './report.component.scss',
 })
 export class ReportComponent {
-  templates: string[] = [
-    'Template 1',
-    'Template 2',
-    'Template 3',
-    'Template 4',
-    'Template 5',
-  ];
+  templates: string[] = [];
   selectedTemplate: string | null = null;
+  docHtml: string = '';
 
   dataJson: string = '';
   type: string = 'doc';
@@ -52,8 +48,48 @@ export class ReportComponent {
     private dataService: DataService
   ) {}
 
+  ngOnInit() {
+    this.reportService.getListTemplate().subscribe({
+      next: (data) => {
+        this.templates = data;
+        this.templates.push('default');
+        console.log(data);
+      },
+      error: (error) => {
+        console.log(error);
+      },
+    });
+  }
+
   selectTemplate(template: string) {
     this.selectedTemplate = template;
+
+    if (template === 'default') {
+      this.docHtml = '';
+      return;
+    }
+    console.log('Template selected: ', template);
+
+    this.reportService.downloadTemplate(template).subscribe({
+      next: (blob) => {
+        let reader = new FileReader();
+        reader.onload = (event: any) => {
+          let arrayBuffer = event.target.result;
+          mammoth
+            .convertToHtml({ arrayBuffer: arrayBuffer })
+            .then((result) => {
+              this.docHtml = result.value;
+            })
+            .catch((error) => {
+              console.error('Error converting file:', error);
+            });
+        };
+        reader.readAsArrayBuffer(blob);
+      },
+      error: (err) => {
+        console.error('Error downloading file:', err);
+      },
+    });
   }
 
   uploadTemplate(event: any) {
@@ -64,15 +100,15 @@ export class ReportComponent {
       // Add template to the list
       // Split the file name to get the template name without extension
       const fileName = file.name.split('.')[0];
-      this.templates.push(fileName);
 
       const formData = new FormData();
       formData.append('file', file, file.name);
-      formData.append('usernameId', '12');
+      formData.append('usernameId', this.dataService.getData('usernameId'));
 
       this.reportService.addTemplate(formData).subscribe({
         next: (data) => {
           console.log(data);
+          this.templates.push(file.name);
         },
         error: (error) => {
           console.log(error);
@@ -88,12 +124,13 @@ export class ReportComponent {
     console.log(json);
 
     let fileNameTemplate = this.selectedTemplate;
+    console.log('fileNameTemplate: ', fileNameTemplate);
     if (!fileNameTemplate) {
       fileNameTemplate = 'default';
     }
     if (this.type === 'doc') {
       this.reportService
-        .downloadDoc('my-self.docx', json, 'pdf')
+        .downloadDoc(fileNameTemplate, json, 'pdf')
         .subscribe((blob) => {
           saveAs(blob, `Báo cáo.docx`);
         });

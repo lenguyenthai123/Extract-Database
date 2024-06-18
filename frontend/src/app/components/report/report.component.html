@@ -12,48 +12,64 @@
     />
   </head>
   <body>
-    <div class="container">
-      <h2>Chọn template</h2>
-      <ul class="template-list">
-        @for(template of templates; track templates.indexOf(template)) {
-        <li
-          (click)="selectTemplate(template)"
-          [class.selected]="template === selectedTemplate"
-        >
-          {{ template }}
-        </li>
-        }
-      </ul>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-6 report-left">
+          <div class="report-left content-container">
+            <h2 class="upload-container header">Chọn Template cho Báo Cáo</h2>
+            <ul class="template-list">
+              <div class="container-fluid">
+                <div class="row template-container">
+                  @for(template of templates; track templates.indexOf(template))
+                  {
+                  <li
+                    (click)="selectTemplate(template)"
+                    [class.selected]="template === selectedTemplate"
+                  >
+                    {{ template }}
+                  </li>
+                  }
+                </div>
+              </div>
+            </ul>
 
-      <div class="button_list">
-        <div class="upload-container">
-          <label for="upload-template" class="default_button">
-            <input
-              type="file"
-              id="upload-template"
-              (change)="uploadTemplate($event)"
-              accept=".doc,.docx"
-              hidden
-            />
-            Tải Template lên
-          </label>
+            <div class="button_list">
+              <div class="upload-container">
+                <label for="upload-template" class="default_button">
+                  <input
+                    type="file"
+                    id="upload-template"
+                    (change)="uploadTemplate($event)"
+                    accept=".doc,.docx"
+                    hidden
+                  />
+                  Tải Template lên
+                </label>
+              </div>
+              <div class="upload-container">
+                <label class="default_button" (click)="downloadReport()">
+                  Tải báo cáo
+                </label>
+              </div>
+            </div>
+
+            <div class="form-floating box2">
+              <textarea
+                class="form-control"
+                placeholder="Leave a comment here"
+                id="floatingTextarea2"
+                [(ngModel)]="dataJson"
+                style="height: 100%"
+              ></textarea>
+              <label for="floatingTextarea2"
+                >Nhập dữ liệu dạng chuỗi JSON vào đây</label
+              >
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div class="form-floating box2">
-        <textarea
-          class="form-control"
-          placeholder="Leave a comment here"
-          id="floatingTextarea2"
-          [(ngModel)]="dataJson"
-          style="height: 100%"
-        ></textarea>
-      </div>
-
-      <div class="upload-container">
-        <label class="default_button" (click)="downloadReport()">
-          Tải báo cáo
-        </label>
+        <div class="col-sm-6 report-right">
+          <div class="content-container" [innerHTML]="docHtml"></div>
+        </div>
       </div>
     </div>
   </body>
