@@ -103,7 +103,7 @@ export class DatabaseComponent {
         console.error(error);
       },
     });
-    this.router.navigate(['/database/column']);
+    this.router.navigate(['/home/database/column']);
   }
   onSchemaChange(event: any) {
     const schemaName: string = event.target.value;

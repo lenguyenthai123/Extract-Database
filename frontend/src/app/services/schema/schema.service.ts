@@ -16,7 +16,7 @@ export class SchemaService {
     return this.http.get<string[]>(`${this.apiUrl}/schema/list`, {
       params: {
         type: this.dataService.getData('type'),
-        usernameId: '12',
+        usernameId: this.dataService.getData('usernameId'),
       },
     });
   }

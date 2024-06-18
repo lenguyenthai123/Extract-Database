@@ -48,7 +48,7 @@ export class IndexService {
       .set('type', this.dataService.getData('type'))
       .set('schemaName', this.dataService.getData('schemaName'))
       .set('tableName', this.dataService.getData('tableName'))
-      .set('usernameId', '12');
+      .set('usernameId', this.dataService.getData('usernameId'));
   }
 
   getList(tableName: string): Observable<Index[]> {
@@ -73,7 +73,7 @@ export class IndexService {
         type: this.dataService.getData('type'),
         schemaName: this.dataService.getData('schemaName'),
         tableName: this.dataService.getData('tableName'),
-        usernameId: '12',
+        usernameId: this.dataService.getData('usernameId'),
 
         name: index.name,
         columns: index.columns,
@@ -90,7 +90,7 @@ export class IndexService {
         type: this.dataService.getData('type'),
         schemaName: this.dataService.getData('schemaName'),
         tableName: this.dataService.getData('tableName'),
-        usernameId: '12',
+        usernameId: this.dataService.getData('usernameId'),
 
         oldName: identifyName,
         name: index.name,
@@ -117,7 +117,7 @@ export class IndexService {
         type: this.dataService.getData('type'),
         schemaName: this.dataService.getData('schemaName'),
         tableName: this.dataService.getData('tableName'),
-        usernameId: '12',
+        usernameId: this.dataService.getData('usernameId'),
 
         name: index.name,
         columns: index.columns,

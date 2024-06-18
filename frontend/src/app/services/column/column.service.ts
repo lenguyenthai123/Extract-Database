@@ -58,7 +58,7 @@ export class ColumnService {
       .set('type', this.dataService.getData('type'))
       .set('schemaName', this.dataService.getData('schemaName'))
       .set('tableName', this.dataService.getData('tableName'))
-      .set('usernameId', '12');
+      .set('usernameId', this.dataService.getData('usernameId'));
   }
 
   httpOptionsWithJson = {
@@ -79,7 +79,7 @@ export class ColumnService {
         type: this.dataService.getData('type'),
         schemaName: this.dataService.getData('schemaName'),
         tableName: this.dataService.getData('tableName'),
-        usernameId: '12',
+        usernameId: this.dataService.getData('usernameId'),
 
         name: column.name,
         dataType: dataType,
@@ -111,7 +111,7 @@ export class ColumnService {
         tableName: this.dataService.getData('tableName'),
 
         oldName: identifyName,
-        usernameId: '12',
+        usernameId: this.dataService.getData('usernameId'),
         name: column.name,
         dataType: dataType,
         size: '',

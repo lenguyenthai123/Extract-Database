@@ -38,7 +38,7 @@ public class SchemaServiceImpl implements SchemaService {
 
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            throw e;
         }
     }
 }
