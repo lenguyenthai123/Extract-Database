@@ -75,14 +75,15 @@ export class LoginComponent {
   }
 
   login() {
+    console.log(this.user);
     this.authenticationService.login(this.user).subscribe(
       (data) => {
-        const body: any = data.body || {};
-
-        if (body) {
-          this.dataService.saveData('usernameId', body.id);
-          this.router.navigate(['/connection']);
-        }
+        const json = JSON.parse(JSON.stringify(data));
+        console.log(json);
+        console.log(json.body);
+        console.log(json.body.id);
+        this.dataService.saveData('usernameId', JSON.stringify(json.body.id));
+        this.router.navigate(['/connection']);
       },
       (error) => {
         console.log(error);

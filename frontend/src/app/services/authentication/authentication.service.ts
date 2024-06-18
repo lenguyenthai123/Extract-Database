@@ -34,7 +34,7 @@ export class AuthenticationService {
     );
   }
   login(user: User) {
-    return this.http.post(
+    return this.http.post<User>(
       `${this.apiUrl}/auth/login`,
       {
         username: user.username,
