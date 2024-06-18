@@ -21,6 +21,7 @@ app.post('/generate-report', upload.single('file'), (req, res) => {
 
   console.log(file);
 
+  console.log("type: ", type); // "docx"
   console.log("Data: ", data);
   console.log("Data: ", JSON.parse(data));
 

@@ -122,6 +122,30 @@ public class ReportController {
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Báo cáo.pdf");
             return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_PDF).body(fileBuffer);
         }
+        if (extension.equals("xlsx")) {
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Báo cáo.xlsx");
+            return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM).body(fileBuffer);
+        }
+        if (extension.equals("txt")) {
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Báo cáo.txt");
+            return ResponseEntity.ok().headers(headers).contentType(MediaType.TEXT_PLAIN).body(fileBuffer);
+        }
+        if (extension.equals("csv")) {
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Báo cáo.csv");
+            return ResponseEntity.ok().headers(headers).contentType(MediaType.TEXT_PLAIN).body(fileBuffer);
+        }
+        if (extension.equals("html")) {
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Báo cáo.html");
+            return ResponseEntity.ok().headers(headers).contentType(MediaType.TEXT_HTML).body(fileBuffer);
+        }
+        if (extension.equals("jpg")) {
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Báo cáo.jpg");
+            return ResponseEntity.ok().headers(headers).contentType(MediaType.IMAGE_JPEG).body(fileBuffer);
+        }
+        if (extension.equals("png")) {
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Báo cáo.png");
+            return ResponseEntity.ok().headers(headers).contentType(MediaType.IMAGE_PNG).body(fileBuffer);
+        }
 
         throw new IllegalArgumentException("Invalid extension");
 

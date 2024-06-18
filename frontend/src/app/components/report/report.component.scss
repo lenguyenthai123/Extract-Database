@@ -33,7 +33,7 @@ h2 {
 }
 
 .template-list li.selected {
-  background-color: rgb(0, 178, 125);
+  background-color: rgb(0, 62, 178);
   color: white;
 }
 
@@ -54,6 +54,19 @@ h2 {
   border-radius: 4px;
   cursor: pointer;
   text-align: center;
+  align-items: center;
+}
+
+.tmp {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.dinh-dang {
+  padding-bottom: 3px;
+}
+.template-extension {
+  justify-content: center;
   align-items: center;
 }
 
@@ -113,4 +126,18 @@ button:disabled {
 }
 .header {
   margin-bottom: 50px;
+  display: flex; /* Thiết lập container là flexbox */
+  align-items: center; /* Căn giữa các items theo chiều dọc */
+  justify-content: space-between; /* Phân bố khoảng cách đều giữa các items */
+}
+
+.title {
+  flex-grow: 1; /* Cho phép h2 mở rộng để chiếm khoảng trống còn lại */
+  text-align: center; /* Căn giữa nội dung của h2 */
+}
+.loading {
+  margin-left: auto; /* Đẩy spinner lên vị trí cuối cùng của container */
+}
+.title-header {
+  margin-top: 20px;
 }

@@ -256,10 +256,6 @@ public class DocxReportServiceImpl implements ReportService {
         ResponseEntity<byte[]> response = restTemplate.exchange(nodejsUrl + "/generate-report", HttpMethod.POST, requestEntity, byte[].class);
 
         if (response.getStatusCode() == HttpStatus.OK) {
-            HttpHeaders responseHeaders = new HttpHeaders();
-            responseHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            responseHeaders.setContentDisposition(ContentDisposition.builder("attachment").filename("Báo cáo.docx").build());
-
             return response.getBody();
         } else {
             return null;

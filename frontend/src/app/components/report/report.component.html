@@ -16,7 +16,24 @@
       <div class="row">
         <div class="col-sm-6 report-left">
           <div class="report-left content-container">
-            <h2 class="upload-container header">Chọn Template cho Báo Cáo</h2>
+            <div class="container-fluid title-header">
+              <div class="row">
+                <div class="col-sm-2"></div>
+                <div class="col-sm-8">
+                  <h2 class="title">Chọn Template cho Báo Cáo</h2>
+                </div>
+                <div class="col-sm-2">
+                  @if(isLoading) {
+                  <div
+                    class="spinner-border text-primary loading"
+                    role="status"
+                  >
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                  }
+                </div>
+              </div>
+            </div>
             <ul class="template-list">
               <div class="container-fluid">
                 <div class="row template-container">
@@ -51,6 +68,23 @@
                   Tải báo cáo
                 </label>
               </div>
+              <div class="upload-container tmp">
+                <label class="dinh-dang" for="file-format"
+                  >Chọn định dạng tệp:</label
+                >
+                <select
+                  class="template-extension form-select form-select-lg mb-3"
+                  aria-label=".form-select-lg example"
+                  (ngModelChange)="onChangeExtension($event)"
+                  [(ngModel)]="extension"
+                  id="file-format"
+                  name="file-format"
+                >
+                  <option value="docx">DOCX</option>
+                  <option value="pdf">PDF</option>
+                  <option value="csv">CSV</option>
+                </select>
+              </div>
             </div>
 
             <div class="form-floating box2">
@@ -70,6 +104,69 @@
         <div class="col-sm-6 report-right">
           <div class="content-container" [innerHTML]="docHtml"></div>
         </div>
+      </div>
+    </div>
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+      <div
+        #toastFail
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        class="toast fade"
+        data-bs-autohide="false"
+      >
+        <div class="toast-header">
+          <img
+            class="icon-img"
+            src="assets/icons/fail.png"
+            height="25px"
+            width="25px"
+            class="rounded me-2"
+            alt="..."
+          />
+          <strong class="me-auto">{{
+            failInformation.title | uppercase
+          }}</strong>
+          <small></small>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="toast-body" [innerHTML]="failInformation.message"></div>
+      </div>
+
+      <div
+        #toastSuccess
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        class="toast fade"
+        data-bs-autohide="false"
+      >
+        <div class="toast-header">
+          <img
+            class="icon-img"
+            height="25px"
+            width="25px"
+            src="assets/icons/success.png"
+            class="rounded me-2"
+            alt="..."
+          />
+          <strong class="me-auto">{{
+            successInformation.title | uppercase
+          }}</strong>
+          <small></small>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="toast-body" [innerHTML]="successInformation.message"></div>
       </div>
     </div>
   </body>

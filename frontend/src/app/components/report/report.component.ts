@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { saveAs } from 'file-saver';
 import {
   RouterOutlet,
@@ -19,6 +19,8 @@ import { Subject } from 'rxjs';
 import { DataService } from '../../services/data/data.service';
 import { ReportService } from '../../services/report/report.service';
 import * as mammoth from 'mammoth';
+import { Notification } from '../../models/notification.model';
+import { Toast } from 'bootstrap';
 
 @Component({
   selector: 'app-report',
@@ -37,28 +39,49 @@ import * as mammoth from 'mammoth';
 })
 export class ReportComponent {
   templates: string[] = [];
-  selectedTemplate: string | null = null;
+  selectedTemplate: string = 'default';
   docHtml: string = '';
 
+  isLoading: boolean = true;
   dataJson: string = '';
-  type: string = 'doc';
+  extension: string = 'docx';
 
+  failInformation: Notification = new Notification();
+  successInformation: Notification = new Notification();
+
+  @ViewChild('toastFail', { static: true }) toastFailEl: any;
+  @ViewChild('toastSuccess', { static: true }) toastSuccessEl: any;
+
+  toastFail: any;
+  toastSuccess: any;
   constructor(
     private reportService: ReportService,
     private dataService: DataService
   ) {}
 
   ngOnInit() {
+    this.toastFail = new Toast(this.toastFailEl.nativeElement, {});
+    this.toastSuccess = new Toast(this.toastSuccessEl.nativeElement, {});
+
+    this.isLoading = true;
     this.reportService.getListTemplate().subscribe({
       next: (data) => {
         this.templates = data;
         this.templates.push('default');
         console.log(data);
+        this.isLoading = false;
       },
       error: (error) => {
         console.log(error);
+        this.isLoading = false;
+
+        this.failInformation.message = error.error.message;
+        this.toastFail.show();
       },
     });
+  }
+  onChangeExtension(event: any) {
+    this.extension = event.target.value;
   }
 
   selectTemplate(template: string) {
@@ -68,6 +91,7 @@ export class ReportComponent {
       this.docHtml = '';
       return;
     }
+    this.isLoading = true;
     console.log('Template selected: ', template);
 
     this.reportService.downloadTemplate(template).subscribe({
@@ -79,15 +103,20 @@ export class ReportComponent {
             .convertToHtml({ arrayBuffer: arrayBuffer })
             .then((result) => {
               this.docHtml = result.value;
+              this.isLoading = false;
             })
             .catch((error) => {
               console.error('Error converting file:', error);
+              this.isLoading = false;
             });
         };
         reader.readAsArrayBuffer(blob);
       },
-      error: (err) => {
-        console.error('Error downloading file:', err);
+      error: (error) => {
+        console.error('Error downloading file:', error);
+        this.isLoading = false;
+        this.failInformation.message = error.error.message;
+        this.toastFail.show();
       },
     });
   }
@@ -95,6 +124,7 @@ export class ReportComponent {
   uploadTemplate(event: any) {
     const file = event.target.files[0];
     if (file) {
+      this.isLoading = true;
       console.log(`File uploaded: ${file.name}`);
       // Handle file upload logic here
       // Add template to the list
@@ -109,9 +139,13 @@ export class ReportComponent {
         next: (data) => {
           console.log(data);
           this.templates.push(file.name);
+          this.isLoading = false;
         },
         error: (error) => {
           console.log(error);
+          this.isLoading = false;
+          this.failInformation.message = error.error.message;
+          this.toastFail.show();
         },
       });
     }
@@ -122,19 +156,14 @@ export class ReportComponent {
     let json = this.dataService.parseStringToJson(this.dataJson);
 
     console.log(json);
+    console.log(this.extension);
 
-    let fileNameTemplate = this.selectedTemplate;
-    console.log('fileNameTemplate: ', fileNameTemplate);
-    if (!fileNameTemplate) {
-      fileNameTemplate = 'default';
-    }
-    if (this.type === 'doc') {
-      this.reportService
-        .downloadDoc(fileNameTemplate, json, 'pdf')
-        .subscribe((blob) => {
-          saveAs(blob, `Báo cáo.docx`);
-        });
-    } else {
-    }
+    this.isLoading = true;
+    this.reportService
+      .downloadDoc(this.selectedTemplate, json, this.extension)
+      .subscribe((blob) => {
+        saveAs(blob, `Báo cáo.${this.extension}`);
+        this.isLoading = false;
+      });
   }
 }
