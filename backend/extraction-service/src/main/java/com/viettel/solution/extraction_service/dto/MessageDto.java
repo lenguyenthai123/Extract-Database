@@ -12,12 +12,12 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor // Tạo constructor với tất cả các tham số
 @Builder
 @NoArgsConstructor
-public class ErrorDto {
+public class MessageDto {
 
     private String message;
     private String code;
 
-    public ErrorDto(String message) {
+    public MessageDto(String message) {
         this.message = message;
     }
 }

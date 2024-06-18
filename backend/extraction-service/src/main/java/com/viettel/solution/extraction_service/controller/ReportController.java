@@ -1,21 +1,24 @@
 package com.viettel.solution.extraction_service.controller;
 
+import com.viettel.solution.extraction_service.dto.MessageDto;
 import com.viettel.solution.extraction_service.dto.RequestDto;
+import com.viettel.solution.extraction_service.dto.UserDto;
 import com.viettel.solution.extraction_service.entity.DocumentTemplate;
+import com.viettel.solution.extraction_service.entity.TemplateUser;
 import com.viettel.solution.extraction_service.service.AwsService;
 import com.viettel.solution.extraction_service.service.ReportService;
-import lombok.SneakyThrows;
+import com.viettel.solution.extraction_service.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/report")
@@ -28,26 +31,74 @@ public class ReportController {
     private AwsService awsService;
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     public ReportController(@Qualifier("docxExportServiceImpl") ReportService reportServiceDoc, @Qualifier("pdfExportServiceImpl") ReportService reportServicePdf) {
         this.reportServiceDoc = reportServiceDoc;
         this.reportServicePdf = reportServicePdf;
     }
 
     @PostMapping("/upload")
-    @SneakyThrows(IOException.class)
     public ResponseEntity<?> addTemplate(@RequestParam("file") MultipartFile file, @RequestParam("usernameId") String usernameId) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body("File is empty");
         }
+        Long id = null;
+        try {
+            id = Long.parseLong(usernameId);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid usernameId");
+        }
 
-        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-        String contentType = file.getContentType();
-        long fileSize = file.getSize();
-        InputStream inputStream = file.getInputStream();
+        TemplateUser template = userService.addTemplate(id, file);
 
-        awsService.uploadFile(usernameId + "/" + fileName, fileSize, contentType, inputStream);
+        if (template == null) {
+            return ResponseEntity.badRequest().body(new MessageDto("Template not added"));
+        }
 
-        return ResponseEntity.ok().body("File uploaded successfully");
+        return ResponseEntity.ok().body(new MessageDto("Template added successfully"));
+    }
+
+    @GetMapping("/list-template/{usernameId}")
+    public ResponseEntity<?> listTemplate(@PathVariable String usernameId) {
+
+        if (usernameId.isEmpty()) {
+            return ResponseEntity.badRequest().body("Username is empty");
+        }
+        Long id = Long.parseLong(usernameId);
+
+        UserDto userDto = userService.getUserById(id);
+
+        if (userDto == null) {
+            return ResponseEntity.badRequest().body("User not found");
+        }
+
+        List<String> listTemplate = userService.getListTemplate(id);
+        return ResponseEntity.ok().body(listTemplate);
+    }
+
+    @GetMapping("/download-template/{usernameId}/{templateName}")
+    public ResponseEntity<?> downloadTemplate(@PathVariable String usernameId, @PathVariable String templateName) throws IOException {
+        if (usernameId.isEmpty() || templateName.isEmpty()) {
+            return ResponseEntity.badRequest().body("Username or template name is empty");
+        }
+
+        Long id = Long.parseLong(usernameId);
+
+        UserDto userDto = userService.getUserById(id);
+
+        if (userDto == null) {
+            return ResponseEntity.badRequest().body("User not found");
+        }
+
+        ByteArrayOutputStream template = awsService.downloadFile(id + "/" + templateName);
+
+        if (template == null) {
+            return ResponseEntity.badRequest().body(new MessageDto("Template not found"));
+        }
+
+        return ResponseEntity.ok().body(template.toByteArray());
     }
 
 
