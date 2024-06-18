@@ -31,7 +31,7 @@ export class ReportService {
       .set('type', this.dataService.getData('type'))
       .set('schemaName', this.dataService.getData('schemaName'))
       .set('tableName', this.dataService.getData('tableName'))
-      .set('usernameId', '12');
+      .set('usernameId', this.dataService.getData('usernameId'));
   }
 
   getList(tableName: string): Observable<Index[]> {
@@ -56,7 +56,7 @@ export class ReportService {
   ): Observable<Blob> {
     let params = this.createParams();
     params = params.set('type', this.dataService.getData('type'));
-    params = params.set('usernameId', '12');
+    params = params.set('usernameId', this.dataService.getData('usernameId'));
     params = params.set('fileName', fileName);
     params = params.set('dataJson', JSON.stringify(dataJson));
     params = params.set('extension', extension);
@@ -71,7 +71,7 @@ export class ReportService {
   downloadPdf(fileName: string): Observable<Blob> {
     let params = this.createParams();
     params = params.set('type', this.dataService.getData('type'));
-    params = params.set('usernameId', '12');
+    params = params.set('usernameId', this.dataService.getData('usernameId'));
 
     return this.http.get(`${this.apiUrl}/report/export-docx/12/${fileName}`, {
       params,

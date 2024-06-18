@@ -17,7 +17,7 @@ export class TableService {
       params: {
         type: this.dataService.getData('type'),
         schemaName: schemaName,
-        usernameId: '12',
+        usernameId: this.dataService.getData('usernameId'),
       },
     });
   }
@@ -27,7 +27,7 @@ export class TableService {
       params: {
         type: this.dataService.getData('type'),
         keyword: keyword,
-        usernameId: '12',
+        usernameId: this.dataService.getData('usernameId'),
       },
     });
   }

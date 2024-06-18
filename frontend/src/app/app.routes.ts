@@ -8,11 +8,24 @@ import { TriggerTableComponent } from './components/trigger-table/trigger-table.
 import { IndexTableComponent } from './components/index-table/index-table.component';
 import { ReportComponent } from './components/report/report.component';
 import { HomeComponent } from './components/home/home.component';
+import { LoginComponent } from './components/login/login.component';
+import { RegisterComponent } from './components/register/register.component';
 export const routes: Routes = [
   {
     path: 'connection',
     title: 'Connection',
     component: ConnectionComponent,
+  },
+  {
+    path: 'login',
+    title: 'Login',
+    component: LoginComponent,
+  },
+
+  {
+    path: 'register',
+    title: 'Register',
+    component: RegisterComponent,
   },
 
   {

@@ -9,6 +9,7 @@ import { catchError } from 'rxjs/operators';
 import { throwError, Observable } from 'rxjs';
 import { environment } from '../../env/environment';
 import { Connection } from '../../models/connection.model';
+import { DataService } from '../data/data.service';
 
 @Injectable({
   providedIn: 'root',
@@ -16,7 +17,7 @@ import { Connection } from '../../models/connection.model';
 export class ConnectionService {
   private apiUrl = environment.apiUrl; // Đặt URL API của bạn ở đây
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private dataService: DataService) {}
 
   connect(con: Connection): Observable<unknown> {
     const requestOptions: Object = {
@@ -36,7 +37,7 @@ export class ConnectionService {
         username: con.username,
         password: con.password,
         databaseName: '',
-        usernameId: '12',
+        usernameId: this.dataService.getData('usernameId'),
       },
       requestOptions
     );

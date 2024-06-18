@@ -50,7 +50,7 @@ export class TriggerService {
       .set('type', this.dataService.getData('type'))
       .set('schemaName', this.dataService.getData('schemaName'))
       .set('tableName', this.dataService.getData('tableName'))
-      .set('usernameId', '12');
+      .set('usernameId', this.dataService.getData('usernameId'));
   }
 
   getList(tableName: string): Observable<Trigger[]> {
@@ -68,7 +68,7 @@ export class TriggerService {
         type: this.dataService.getData('type'),
         schemaName: this.dataService.getData('schemaName'),
         tableName: this.dataService.getData('tableName'),
-        usernameId: '12',
+        usernameId: this.dataService.getData('usernameId'),
 
         name: trigger.name,
         event: trigger.event,
@@ -88,7 +88,7 @@ export class TriggerService {
         type: this.dataService.getData('type'),
         schemaName: this.dataService.getData('schemaName'),
         tableName: this.dataService.getData('tableName'),
-        usernameId: '12',
+        usernameId: this.dataService.getData('usernameId'),
 
         oldName: identifyName,
         name: trigger.name,
