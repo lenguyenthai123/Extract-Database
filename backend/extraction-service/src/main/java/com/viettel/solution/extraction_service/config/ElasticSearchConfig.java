@@ -17,7 +17,7 @@ public class ElasticSearchConfig {
 //        elasticsearchRestTemplate.indexOps(TableDocument.class).create();
 //        elasticsearchRestTemplate.indexOps(TableDocument.class).putMapping(elasticsearchRestTemplate.indexOps(TableDocument.class).createMapping());
 //    }
-    private static final String ELASTICSEARCH_URL = "http://localhost:9200/table";
+    private static final String ELASTICSEARCH_URL = "http://elasticsearch:9200/table";
 
     @Autowired
     private RestTemplate restTemplate;

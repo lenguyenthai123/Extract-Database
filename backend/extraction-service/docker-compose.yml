@@ -1,3 +1,4 @@
+# Docker - compose này được chạy tren EC2
 version: '3.8'
 
 services:
@@ -8,51 +9,30 @@ services:
     depends_on:
       - redis
       - elasticsearch
-    networks:
-      - app_network
 
   redis:
     image: redis:latest
     expose:
       - "6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - app_network
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
     environment:
       - discovery.type=single-node
     expose:
       - "9200"
-    volumes:
-      - es_data:/usr/share/elasticsearch/data
-    networks:
-      - app_network
-
-  mysql:
-    image: mysql:latest
-    container_name: my-mysql
+  db:
+    image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: mypassword
-      MYSQL_DATABASE: mydatabase
+      MYSQL_ROOT_PASSWORD: password_lenguyenthai
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: pass
     volumes:
       - ./mysql-scripts:/docker-entrypoint-initdb.d
       - mysql-data:/var/lib/mysql
     ports:
-      - "3306:3306"
-    restart: always
-
-    networks:
-      - app_network
-
-
-networks:
-  app_network:
-    driver: bridge
+      - "3304:3306"
 
 volumes:
-  redis_data:
-  es_data:
   mysql-data:
