@@ -13,7 +13,9 @@ Nên chạy trong docker-compose
    - Chạy init script SQL được để trong thư mục backend/extraction-service/mysql-scripts/database.sql
      
 #### Frontend:
- Yêu cầu có cần Angular và không có yêu cầu gì đặc biệt khác
+ Yêu cầu: Sau khi npm install để tải các thư viện cần thiết cần tải thêm 2 thư viện sau:
+  1. npm install mammoth  (thư viện chuyển dữ liệu file thành html)
+  2. npm install util  
 #### Service-Carbone:
 Yêu cầu trên máy cần phải có ứng dụng  Libreoffice để hỗ trợ việc convert sang các định dạng file khác nhau như pdf, docx, xlxs
 
