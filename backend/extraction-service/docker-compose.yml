@@ -1,19 +1,27 @@
-# Docker - compose này được chạy tren EC2
+# File này chạy test trước khi chuyển sang trên EC2
 version: '3.8'
 
 services:
   app:
-    image: lenguyenthai/extractdatabasebackend:latest
+    build: .
+    restart: on-failure
     ports:
       - "8080:8080"
     depends_on:
       - redis
       - elasticsearch
+      - db
+    networks:
+      - my_network
 
   redis:
     image: redis:latest
     expose:
       - "6379"
+    ports:
+      - "6379:6379"
+    networks:
+      - my_network
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
@@ -21,6 +29,13 @@ services:
       - discovery.type=single-node
     expose:
       - "9200"
+      - "9300"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - my_network
+
   db:
     image: mysql:8.0
     environment:
@@ -32,7 +47,15 @@ services:
       - ./mysql-scripts:/docker-entrypoint-initdb.d
       - mysql-data:/var/lib/mysql
     ports:
-      - "3304:3306"
+      - "3306:3306"
+    expose:
+      - "3306"
+    networks:
+      - my_network
 
 volumes:
   mysql-data:
+
+networks:
+  my_network:
+    driver: bridge

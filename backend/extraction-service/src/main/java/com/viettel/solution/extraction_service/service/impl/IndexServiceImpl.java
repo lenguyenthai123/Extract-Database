@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -34,10 +33,7 @@ public class IndexServiceImpl implements IndexService {
     }
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "index", key = "#indexDto.getTableId()"),
-            @CacheEvict(value = "database", key = "#column.getDatabaseId()")
-    })
+    @CacheEvict(value = "index", key = "#indexDto.getTableId()")
     public IndexDto save(String type, String usernameId, IndexDto indexDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
@@ -82,10 +78,7 @@ public class IndexServiceImpl implements IndexService {
     }
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "index", key = "#indexDto.getTableId()"),
-            @CacheEvict(value = "database", key = "#column.getDatabaseId()")
-    })
+    @CacheEvict(value = "index", key = "#indexDto.getTableId()")
     public IndexDto update(String type, String usernameId, IndexDto indexDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);
@@ -104,10 +97,7 @@ public class IndexServiceImpl implements IndexService {
 
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "index", key = "#indexDto.getTableId()"),
-            @CacheEvict(value = "database", key = "#column.getDatabaseId()")
-    })
+    @CacheEvict(value = "index", key = "#indexDto.getTableId()")
     public boolean delete(String type, String usernameId, IndexDto indexDto) {
         try {
             SessionFactory sessionFactory = DatabaseConnection.getSessionFactory(usernameId, type);

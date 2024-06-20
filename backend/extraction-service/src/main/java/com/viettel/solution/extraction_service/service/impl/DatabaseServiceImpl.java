@@ -9,7 +9,6 @@ import com.viettel.solution.extraction_service.service.DatabaseService;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -31,7 +30,6 @@ public class DatabaseServiceImpl implements DatabaseService {
 
 
     @Override
-    @Cacheable(value = "database", key = "#requestDto.getDatabaseId()")
     public Database getDatabase(RequestDto requestDto) {
         try {
 

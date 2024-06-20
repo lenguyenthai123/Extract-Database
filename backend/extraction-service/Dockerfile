@@ -1,4 +1,4 @@
-FROM eclipse-temurin:22-jre-alpine
+FROM openjdk:22
 
 # Sao chép file JAR vào container
 COPY target/extraction-service-0.0.1-SNAPSHOT.jar /app.jar

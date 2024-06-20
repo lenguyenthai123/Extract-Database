@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -106,10 +105,7 @@ public class ColumnServiceImpl implements ColumnService {
 
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "column", key = "#column.getTableId()"),
-            @CacheEvict(value = "database", key = "#column.getDatabaseId()")
-    })
+    @CacheEvict(value = "column", key = "#column.getTableId()")
     public ColumnDto addColumn(ColumnDto column) {
         try {
 
@@ -143,10 +139,7 @@ public class ColumnServiceImpl implements ColumnService {
 
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "column", key = "#column.getTableId()"),
-            @CacheEvict(value = "database", key = "#column.getDatabaseId()")
-    })
+    @CacheEvict(value = "column", key = "#column.getTableId()")
     public ColumnDto updateColumn(ColumnDto column) {
         try {
 
@@ -179,10 +172,7 @@ public class ColumnServiceImpl implements ColumnService {
     }
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "column", key = "#column.getTableId()"),
-            @CacheEvict(value = "database", key = "#column.getDatabaseId()")
-    })
+    @CacheEvict(value = "column", key = "#column.getTableId()")
     public boolean deleteColumn(ColumnDto column) {
         try {
 
