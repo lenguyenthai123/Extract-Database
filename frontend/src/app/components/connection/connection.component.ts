@@ -89,7 +89,7 @@ export class ConnectionComponent implements OnInit {
   ngOnInit(): void {
     this.connectionForm = this.fb.group({
       // Define the form controls
-      host: new FormControl('localhost', [Validators.required]),
+      host: new FormControl('  localhost', [Validators.required]),
       port: new FormControl('3308', [Validators.required]),
       type: new FormControl('mysql', [Validators.required]),
       serviceName: new FormControl(''),
