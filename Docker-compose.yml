@@ -1,0 +1,41 @@
+# Đây là script docker-compose được gắn cứng ở trên EC2
+# Để chạy được script này, cần phải cài đặt docker-compose trên EC2
+# Mỗi lần CI/CD trên git action thì docker-compose trên EC2 sẽ pull về 
+# các image mới nhất được đẩy lên dockerhub từ git action.
+version: '3.8'
+
+services:
+  app:
+    image: lenguyenthai/extractdatabasebackend:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+      - elasticsearch
+      - db
+
+  redis:
+    image: redis:latest
+    expose:
+      - "6379"
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
+    environment:
+      - discovery.type=single-node
+    expose:
+      - "9200"
+    ports:
+      - "9200:9200"
+  db:
+    image: mysql:8.0
+    environment:
+        MYSQL_ROOT_PASSWORD: password_lenguyenthai
+        MYSQL_DATABASE: mydb
+        MYSQL_USER: user
+        MYSQL_PASSWORD: pass
+    volumes:
+      - ./mysql-scripts:/docker-entrypoint-initdb.d
+      - mysql-data:/var/lib/mysql
+    expose:
+      - "3306"
