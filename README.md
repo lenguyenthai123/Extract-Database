@@ -25,5 +25,5 @@ Link tải: https://download.documentfoundation.org/libreoffice/stable/24.2.4/wi
 * Hiện tại quá trình CI/CD đang không ổn định cho việc các thư viện phụ thuộc ở phần Backend đang có sự xung đột với nhau: Cụ thể là phần Backend Spring Boot không kết nối được với Elastic Search trên môi trường Docker
 
  Yêu cầu:
-  1. Vào file application.properties của backend để congig lại các thông số cho phần hợp với môi trường docker và EC2
+  1. Vào file application.properties của backend để config lại các thông số cho phần hợp với môi trường docker và EC2
   2. Vào file env trong frontend để chuyển đổi địa chỉ ip tương ứng với địa chỉ IP của backend khi được deploy trên EC2
