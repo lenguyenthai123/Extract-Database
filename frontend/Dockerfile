@@ -10,6 +10,7 @@ COPY package*.json ./
 # Install all the dependencies
 RUN npm install
 RUN npm install mammoth
+RUN npm install util
 
 # Copy the rest of the application source code to the working directory
 COPY . .
